@@ -9,6 +9,11 @@ on:
 permissions:
   contents: write
 
+# Satu build saja pada satu waktu, supaya commit version.json tidak bentrok.
+concurrency:
+  group: build-apk-main
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -62,22 +67,35 @@ jobs:
           DATE_STR=$(date -u +%Y-%m-%d)
 
           tag="build-${GITHUB_RUN_NUMBER}"
+          published=""
           for i in 1 2 3; do
             gh release delete "$tag" --cleanup-tag -y 2>/dev/null || true
             if gh release create "$tag" SwadayaTV.apk \
               --title "SwadayaTV ${tag} (v${VNAME})" \
-              --notes "Built from ${GITHUB_SHA::7}. Unduh SwadayaTV.apk untuk Android TV / STB." \
+              --notes "Dibangun dari commit ${GITHUB_SHA::7}. Unduh SwadayaTV.apk untuk Android TV / STB." \
               --latest; then
+              published="yes"
               break
             fi
             sleep 4
           done
 
+          if [ -z "$published" ]; then
+            echo "::error::Gagal membuat GitHub Release; version.json TIDAK diperbarui."
+            exit 1
+          fi
+
+          # Pastikan aset APK benar-benar ada di rilis terbaru sebelum OTA diarahkan ke sana.
+          gh release view "$tag" --json assets --jq '.assets[].name' | grep -qx "SwadayaTV.apk" || {
+            echo "::error::Aset SwadayaTV.apk tidak ditemukan pada rilis $tag."
+            exit 1
+          }
+
           mkdir -p release
           cat > release/version.json <<EOF
           {
-            "versionCode": ${VCODE:-31},
-            "versionName": "${VNAME:-3.4.0-id}",
+            "versionCode": ${VCODE},
+            "versionName": "${VNAME}",
             "apkUrl": "https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/SwadayaTV.apk",
             "changelog": "${COMMIT_MSG}",
             "releaseDate": "${DATE_STR}"
@@ -89,7 +107,13 @@ jobs:
           git add release/version.json
           if ! git diff --cached --quiet; then
             git commit -m "chore(release): update OTA version.json to v${VNAME} (${VCODE})"
+            pushed=""
             for i in 1 2 3; do
-              git pull --rebase origin main && git push origin main && break || sleep 4
+              if git pull --rebase origin main && git push origin main; then
+                pushed="yes"
+                break
+              fi
+              sleep 4
             done
+            [ -n "$pushed" ] || { echo "::error::Gagal push version.json"; exit 1; }
           fi

@@ -1125,6 +1125,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             root.setBackground(null);
             getWindow().setBackgroundDrawable(null);
         }
+        // Latar hidup menutupi wallpaper statis; jangan munculkan lagi saat wallpaper berganti.
+        if (isLiveOceanOn() || isLiveStadiumOn()) wallView.setVisibility(View.GONE);
     }
 
     /** Hands the picture now on screen to the glass, which blurs it once, off the main thread. */

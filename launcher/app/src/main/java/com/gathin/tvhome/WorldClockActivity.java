@@ -200,5 +200,3 @@ public class WorldClockActivity extends Activity {
         return Math.round(v * getResources().getDisplayMetrics().density);
     }
 }
-EOF
-echo "written"; wc -l WorldClockActivity.java
