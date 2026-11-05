@@ -10,84 +10,62 @@
 [![Platform](https://img.shields.io/badge/Platform-Android%20TV%20%7C%20Google%20TV%20%7C%20STB-10B981)](#)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-[**📥 Unduh APK (SwadayaTV.apk)**](https://github.com/frhnkrnwn/SwadayaTV/releases/latest/download/SwadayaTV.apk) • [**Fitur**](#-fitur-swadiyatv) • [**Tema**](#-tiga-tema-minimal-swadayatv) • [**Tutorial Lengkap**](#-tutorial-lengkap-untuk-orang-awam) • [**Bola & Sholat**](#-bola-klasemen--jadwal--waktu-sholat) • [**OTA**](#-update-otomatis-ota)
+[**📥 Unduh APK (SwadayaTV.apk)**](https://github.com/frhnkrnwn/SwadayaTV/releases/latest/download/SwadayaTV.apk)
 
 ---
 
 </div>
 
-## 🎉 Selamat Datang di SwadayaTV
+## Daftar Isi
 
-Kalau kamu buka repo ini pertama kali, santai aja — semua yang kamu butuhin buat pasang dan pakai SwadayaTV ada di sini dalam **satu halaman**. Bahasa Indonesia santai, langkahnya urut dari unduh sampai jalan di TV.
+1. [Apa Itu SwadayaTV?](#apa-itu-swadayatv)
+2. [Fitur Lengkap](#fitur-lengkap)
+3. [Bahan-Bahan yang Dibutuhkan](#bahan-bahan-yang-dibutuhkan)
+4. [Cara Install — Paling Gampang (Flashdisk)](#cara-install--paling-gampang--flashdisk)
+5. [Cara Install — Lewat ADB (Wi-Fi)](#cara-install--lewat-adb-wi-fi)
+6. [Cara Bersihkan (Debloat) Launcher Bawaan STB](#cara-bersihkan-debloat-launcher-bawaan-stb)
+7. [Cara Ganti Tema](#cara-ganti-tema)
+8. [Cara Ganti Wallpaper HD Gratis](#cara-ganti-wallpaper-hd-gratis)
+9. [Fitur Bola: Klasemen & Jadwal](#fitur-bola-klasemen--jadwal)
+10. [Waktu Sholat & Ayat Harian](#waktu-sholat--ayat-harian)
+11. [Cuaca & Kualitas Udara (AQI)](#cuaca--kualitas-udara-aqi)
+12. [Now Playing Musik](#now-playing-musik)
+13. [Update Otomatis (OTA)](#update-otomatis-ota)
+14. [Addon (Jam Dunia, Kurs Koin, dll)](#addon-jam-dunia-kurs-koin-dll)
+15. [Struktur Repo](#struktur-repo)
+16. [Build Sendiri dari Source](#build-sendiri-dari-source)
+17. [Bahasa](#bahasa)
+18. [Kredit & Sumber](#kredit--sumber)
 
-SwadayaTV adalah **launcher (layar utama) pengganti** untuk Android TV / Google TV / STB Indonesia (a la IndiHome, Biznet, ZTE, FiberHome). Bedanya dari launcher bawaan pabrik:
+---
+
+## Apa Itu SwadayaTV?
+
+SwadayaTV adalah **launcher (layar utama) pengganti** untuk Android TV / Google TV / STB Indonesia (IndiHome, Biznet, ZTE, FiberHome). Bedanya dari launcher bawaan pabrik:
 
 - Lebih bersih dan minimal — cuma aplikasi yang kamu pakai yang nongol
-- Bisa ganti tema, wallpaper HD gratis, dan tambah kartu addon (cuaca, bola, sholat, doa)
+- Bisa ganti tema, wallpaper HD gratis, dan lihat cuaca/bola/sholat/ayat langsung di layar utama
 - Ringan (~700 KB) dan smooth — dirancang jalan lancar di chip STB kelas menengah bawah (Amlogic, Rockchip, Allwinner)
 
-### ✅ Yang bisa dilakukan SwadayaTV
+---
+
+## Fitur Lengkap
 
 | No | Fitur | Keterangan |
 |---|---|---|
-| 1 | **Ganti tema** | 3 tema minimal hijau-abu buatan Swadaya sendiri (lihat bawah) |
-| 2 | **Ganti wallpaper HD** | Koleksi 60+ foto 4K gratis dari Unsplash & Pexels, otomatis ganti tiap 6 jam |
+| 1 | **Ganti tema** | 3 tema minimal hijau-abu buatan Swadaya (Swadaya, Swadaya Malam, Swadaya Terang) |
+| 2 | **Ganti wallpaper HD** | 60+ foto 4K gratis dari Unsplash & Pexels, otomatis ganti tiap 6 jam |
 | 3 | **Cuaca + AQI** | Suhu, ramalan 3/6/9 jam, kualitas udara, kelembapan, angin — dari Open-Meteo (tanpa API key) |
 | 4 | **Bola: klasemen & jadwal** | Liga Inggris, Spanyol, Italia, Jerman, Prancis, Liga 1 Indonesia, UCL — dari FotMob |
 | 5 | **Waktu sholat (Kemenag)** | Hitung offline pakai rumus Kemenag (Subuh 20°, Isya 18°) — jalan tanpa internet |
-| 6 | **Doa harian + ayat** | Rotasi doa harian dari GitHub quran-json, tersimpan offline |
+| 6 | **Ayat/Doa harian** | Rotasi ayat dan doa harian, tersimpan offline |
 | 7 | **Now Playing musik** | Judul + cover album dari Spotify / YouTube / VLC / Apple Music, muncul otomatis pas musik jalan |
-| 8 | **Addon kartu modul** | Install APK addon kecil (Cuaca, Sholat, Koin, Jam Dunia, dll) — masing-masing nyala/mati sendiri biar nggak bentrok |
+| 8 | **Addon kartu modul** | Install APK addon kecil (Jam Dunia, Kurs Koin, Capacity Stats, Photo Screensaver) |
 | 9 | **OTA update** | Tombol update di TV, langsung download & install dari GitHub |
 
 ---
 
-## 🌿 Tiga Tema Minimal SwadayaTV
-
-Tema SwadayaTV dibuat sendiri dari nol dengan gaya hijau-abu minimalis — **bukan plek ketiplek tema launcher lain**. Tiga-tiganya smooth, tanpa animasi berat.
-
-### 1. 🌿 Swadaya (Default)
-Kaca jernih hijau-abu. Kartu mengambang tenang di atas wallpaper, aksen hijau lembut (`#14E8A0`). Cocok buat semua TV.
-
-### 2. 🌙 Swadaya Malam
-Hitam zamrud OLED (`#0A140F`). Paling hemat mata, paling hemat baterai di TV OLED. Aksen hijau lembut biar juga enak di mata.
-
-### 3. ☀️ Swadaya Terang
-Porselen terang hijau-abu (`#F2F0EB`). Bersih dan terang untuk siang hari atau ruang tamu yang cerah.
-
-**Cara ganti:** Buka **Pengaturan → Tema** → pilih tema → selesai. Tema langsung berubah tanpa restart. Nama tema lama Fitz (`Frosted Glass`, `Neumorphism`, `Dark Glow`) otomatis dipetakan jadi tema Swadaya versi baru.
-
----
-
-## ⚽ Bola: Klasemen & Jadwal + Waktu Sholat
-
-Buka **Pengaturan → Klasemen & Jadwal Bola** dari launcher.
-
-- Liga: **Premier League (EPL), LaLiga, Serie A, Bundesliga, Ligue 1, Liga 1 Indonesia, Champions League (UCL)**
-- Tab **Klasemen** (posisi, tim, main, menang-seri-kalah, poin) dan **Jadwal** (hasil & jadwal ke depan)
-- Pilih **liga favorit** dan **tim favorit** (misal: AS Roma di Serie A) — tim favorit akan disorot hijau
-- Data dari FotMob, tanpa API key, dengan cache offline — terakhir diupdate musim berjalan
-
-**Waktu sholat Kemenag:** Dihitung langsung di TV pakai rumus Bimas Islam Kemenag (Subuh 20°, Isya 18°, Asr Syafi'i) — bukan dari web. Jalan offline, auto on/off dan nggak bentrok dengan launcher. Kotanya pilih di **Pengaturan → Lokasi**.
-
----
-
-## 🖼️ Wallpaper HD Gratis
-
-SwadayaTV sudah bawa koleksi **60+ foto wallpaper 4K (3840×2160) gratis** dari:
-
-- **Unsplash** (lisensi Unsplash — gratis komersial)
-- **Pexels** (lisensi Pexels — gratis komersial)
-
-Kategorinya: Indonesia (Bromo, Bali, Lombok, dll), alam, kota, pantai, pegunungan. Diunduh sekali lalu **cache lokal**, diganti otomatis tiap 6 jam. Ada juga foto tempat wisata dengan nama tempat + cerita singkatnya (dari Bing).
-
-Di **Pengaturan → Wallpaper** kamu bisa: ganti manual, upload gambar sendiri dari HP (scan QR), atau matikan wallpaper online (`"places": false` di `config.json`).
-
----
-
-## 📥 Tutorial Lengkap untuk Orang Awam
-
-### Bahan-bahan (sekali aja)
+## Bahan-Bahan yang Dibutuhkan
 
 | Bahan | Untuk apa | Link |
 |---|---|---|
@@ -95,9 +73,11 @@ Di **Pengaturan → Wallpaper** kamu bisa: ganti manual, upload gambar sendiri d
 | **HP Android / Laptop / PC** | Buat install via USB atau ADB | — |
 | **SwadayaTV.apk** | Launcher-nya | [Unduh terbaru](https://github.com/frhnkrnwn/SwadayaTV/releases/latest/download/SwadayaTV.apk) |
 | *(Opsional)* **Flashdisk kosong** | Kalau install cara USB | — |
-| *(Opsional)* **JDK 17 + Android SDK** | Kalau mau build sendiri dari source | [Panduan build](#-bonus-build-sendiri-dari-source) |
+| *(Opsional)* **JDK 17 + Android SDK** | Kalau mau build sendiri dari source | [Panduan build](#build-sendiri-dari-source) |
 
-### Cara 1: Paling Gampang — Pakai Flashdisk
+---
+
+## Cara Install — Paling Gampang (Flashdisk)
 
 1. Di HP/PC, unduh `SwadayaTV.apk` dari tombol biru di atas
 2. Salin file `SwadayaTV.apk` ke Flashdisk
@@ -107,9 +87,11 @@ Di **Pengaturan → Wallpaper** kamu bisa: ganti manual, upload gambar sendiri d
 6. Tekan tombol **Home** di remote → pilih **SwadayaTV** → pilih **"Selalu" (Always)**
 7. Selesai! Sekarang layar utama TV udah SwadayaTV 🎉
 
-### Cara 2: Pakai ADB (tanpa flashdisk, via Wi-Fi)
+---
 
-Butuh PC/Laptop/HP dengan internet yang sama jaringan Wi-Fi-nya sama TV.
+## Cara Install — Lewat ADB (Wi-Fi)
+
+Butuh PC/Laptop/HP yang satu jaringan Wi-Fi dengan TV.
 
 1. Install **platform-tools** (isi file `adb`):  
    - Windows/Linux/Mac: [Android SDK Platform-Tools](https://developer.android.com/tools/releases/platform-tools)  
@@ -132,14 +114,15 @@ Butuh PC/Laptop/HP dengan internet yang sama jaringan Wi-Fi-nya sama TV.
 
 > 💡 Ini perintah **cuma sekali** aja. Kalau nanti ganti TV baru, ulangi langkah 2–5.
 
-### Cara 3: Bersihkan (Debloat) Launcher Bawaan STB
+---
+
+## Cara Bersihkan (Debloat) Launcher Bawaan STB
 
 Kalau tombol Home masih balik ke launcher pabrik (IndiHome, Android TV Core, Google TV bawaan), matikan launcher bawaannya. **Aman** — bisa dinyalakan lagi kapan aja.
 
 **Baris perintahnya ada di tool bawaan repo ini:**
 
 ```bash
-# lihat tools/ yang tersedia
 bash tools/disable.sh          # matikan aplikasi pabrik yang mengganggu
 bash tools/restore.sh          # nyalakan lagi kalau mau balik normal
 bash tools/theme.sh themes/swadaya      # ganti tema tanpa build ulang
@@ -157,26 +140,82 @@ adb shell pm disable-user --user 0 com.fiberhome.myindihome              # Fiber
 
 Balikin lagi: ganti `disable-user` jadi `enable`.
 
-### Cara 4: Tambah Addon (Cuaca, Koin, Sholat, dll)
+---
 
-Addon = APK kecil terpisah yang nempel sebagai kartu di layar utama. Masing-masing addon jalan mandiri (auto on/off) jadi nggak bentrok sama launcher.
+## Cara Ganti Tema
 
-1. Unduh addon dari folder [`addons/`](addons/) di repo ini (misal `addons/cuaca`, `addons/sholat`, `addons/koin`)
-2. Install APK addon ke TV seperti Cara 1/2
-3. Setujui **"Show card" / "Tampilkan kartu"** sekali aja pas pertama buka
-4. Kartu bakal muncul di layar utama — contoh: tile Cuaca, tile Sholat, tile Kurs koin
+Buka **Pengaturan → Tema** di launcher, pilih salah satu:
 
-> File lengkap addon ada di `addons/` dan `docs/ADDONS_RESEARCH.md`. Yang siap dipakai: Cuaca (Open-Meteo), Sholat (Kemenag offline), Koin (Frankfurter, tanpa API key).
+1. **🌿 Swadaya** (default) — kaca jernih hijau-abu, kartu mengambang tenang tanpa neon
+2. **🌙 Swadaya Malam** — hitam zamrud OLED, hemat mata untuk malam
+3. **☀️ Swadaya Terang** — porselen terang hijau-abu, nyaman untuk siang hari
+
+Tema langsung berubah tanpa restart. Nama tema lama (`Frosted Glass`, `Neumorphism`, `Dark Glow`) otomatis dipetakan jadi tema Swadaya versi baru.
 
 ---
 
-## 🔄 Update Otomatis (OTA)
+## Cara Ganti Wallpaper HD Gratis
+
+SwadayaTV sudah bawa koleksi **60+ foto wallpaper 4K (3840×2160) gratis** dari:
+
+- **Unsplash** (lisensi Unsplash — gratis komersial)
+- **Pexels** (lisensi Pexels — gratis komersial)
+
+Kategorinya: Indonesia (Bromo, Bali, Lombok, dll), alam, kota, pantai, pegunungan. Diunduh sekali lalu **cache lokal**, diganti otomatis tiap 6 jam. Ada juga foto tempat wisata dengan nama tempat + cerita singkatnya (dari Bing).
+
+Di **Pengaturan → Wallpaper** kamu bisa: ganti manual, upload gambar sendiri dari HP (scan QR), atau matikan wallpaper online (`"places": false` di `config.json`).
+
+---
+
+## Fitur Bola: Klasemen & Jadwal
+
+Buka **Pengaturan → Klasemen & Jadwal Bola** dari launcher.
+
+- Liga: **Premier League (EPL), LaLiga, Serie A, Bundesliga, Ligue 1, Liga 1 Indonesia, Champions League (UCL)**
+- Tab **Klasemen** (posisi, tim, main, menang-seri-kalah, poin) dan **Jadwal** (hasil & jadwal ke depan)
+- Pilih **liga favorit** dan **tim favorit** (misal: AS Roma di Serie A) — tim favorit akan disorot hijau
+- Data dari FotMob, tanpa API key, dengan cache offline — terakhir diupdate musim berjalan
+
+---
+
+## Waktu Sholat & Ayat Harian
+
+- **Waktu sholat Kemenag:** Dihitung langsung di TV pakai rumus Bimas Islam Kemenag (Subuh 20°, Isya 18°, Asr Syafi'i) — bukan dari web. Jalan offline, tampil langsung di layar utama.
+- **Ayat/Doa harian:** Rotasi ayat dan doa harian, tersimpan offline, tampil langsung di layar utama.
+- Kotanya pilih di **Pengaturan → Lokasi**.
+
+---
+
+## Cuaca & Kualitas Udara (AQI)
+
+- Menampilkan lokasi, suhu besar, ikon vektor cuaca, dan kondisi cuaca saat ini
+- **Slot Ramalan 3 Jam ke Depan:** Memantau ramalan cuaca pada rentang waktu `+3 jam`, `+6 jam`, dan `+9 jam` secara akurat dari Open-Meteo
+- Dua pil informasi di bagian bawah: **AQI (Indeks Kualitas Udara)** dan **Peluang Hujan (%)**
+- Posisi widget terkunci statis tepat di tengah antara Jam dan Nama Aplikasi Baris 1 tanpa bergeser
+
+---
+
+## Now Playing Musik
+
+- Kapsul status dinamis setinggi 42dp yang sejajar dengan bilah menu atas (hanya muncul saat musik diputar)
+- Menampilkan cover album asli, judul lagu berjalan (*marquee*), nama artis, serta tombol kontrol instan `[ ⏯ Play/Pause ]` dan `[ ⏭ Next ]`
+- Mendukung berbagai pemutar musik & media (Spotify TV, YouTube TV, SmartTube, Apple Music, VLC, pemutar lagu lokal USB, dll)
+- Tampilan beradaptasi 100% mengikuti tema aktif
+
+> 💡 Jalankan perintah ADB setelah install agar fitur Now Playing langsung aktif:
+> ```bash
+> adb shell cmd notification allow_listener com.gathin.tvhome/com.gathin.tvhome.MediaNotificationListener
+> ```
+
+---
+
+## Update Otomatis (OTA)
 
 SwadayaTV punya tombol **update langsung di TV**:
 
 1. Kalau ada versi baru, launcher akan cek GitHub otomatis saat dibuka
 2. Akan muncul notifikasi **"Update tersedia: SwadayaTV vX.Y.Z"**
-3. Tekan **Update** → download → install → restart sendiri, dan performa langsung ikut berubah
+3. Tekan **Update** → download → install → restart sendiri
 
 Metadata versi tersimpan di:
 
@@ -186,17 +225,30 @@ https://raw.githubusercontent.com/frhnkrnwn/SwadayaTV/main/release/version.json
 
 ---
 
-## 🗂️ Struktur Repo
+## Addon (Jam Dunia, Kurs Koin, dll)
+
+Addon = APK kecil terpisah yang nempel sebagai kartu di layar utama. Masing-masing addon jalan mandiri (auto on/off) jadi nggak bentrok sama launcher.
+
+1. Unduh addon dari folder [`addons/`](addons/) di repo ini atau dari [CleanYourTV addons](https://cleanyour.tv/addons)
+2. Install APK addon ke TV seperti Cara 1/2
+3. Setujui **"Show card" / "Tampilkan kartu"** sekali aja pas pertama buka
+4. Kartu bakal muncul di layar utama
+
+> File lengkap addon ada di `addons/` dan `docs/ADDONS_RESEARCH.md`. Yang siap dipakai: Cuaca (Open-Meteo), Sholat (Kemenag offline), Koin (Frankfurter, tanpa API key), Jam Dunia, Capacity Stats, Photo Screensaver.
+
+---
+
+## Struktur Repo
 
 ```
 SwadayaTV/
-├─ launcher/            App launcher utama (Kotlin/Compose, aplikasi Android TV)
+├─ launcher/            App launcher utama (Android TV)
 │  └─ app/src/main/java/com/gathin/tvhome/
 │     ├─ MainActivity.java       Layar utama + semua pengaturan
-│     ├─ ThemeManager.java       3 tema Suadaya (default, malam, terang)
+│     ├─ ThemeManager.java       3 tema Swadaya (default, malam, terang)
 │     ├─ SoccerData/FotMob       Klasemen & Jadwal Liga 1/EPL/dll
 │     ├─ KemenagPrayer.java      Kalkulator sholat offline Kemenag
-│     ├─ DailyDoa.java           Doa harian offline
+│     ├─ DailyAyat.java          Ayat/Doa harian offline
 │     ├─ OnlineWallpapers.java   Wallpaper HD Unsplash/Pexels
 │     └─ ... (cuaca, Now Playing, dll)
 ├─ addons/              Addon kartu modul (cuaca, sholat, koin, jam dunia, ...)
@@ -209,9 +261,9 @@ SwadayaTV/
 
 ---
 
-## 🛠️ Bonus: Build Sendiri dari Source
+## Build Sendiri dari Source
 
-Kalau kamu pengen compile ulang sendiri (misal mau tambah bahasa Inggris penuh, atau custom icon):
+Kalau kamu pengen compile ulang sendiri:
 
 1. Install **JDK 17** dan **Android SDK 34 + build-tools 34**
 2. Klon repo ini, buka folder `launcher/`
@@ -223,7 +275,9 @@ Kalau kamu pengen compile ulang sendiri (misal mau tambah bahasa Inggris penuh, 
    ```
 4. Install via `adb install -r app-release.apk` atau upload ke Release GitHub
 
-## 🌐 Bahasa
+---
+
+## Bahasa
 
 Utama: **Bahasa Indonesia** (santai, gampang dimengerti orang awam). Tambahan: **US English** (`values-en-rUS`) — banyak menu udah ada terjemahan Inggrisnya. Sistem mengikuti bahasa HP/TV otomatis.
 
