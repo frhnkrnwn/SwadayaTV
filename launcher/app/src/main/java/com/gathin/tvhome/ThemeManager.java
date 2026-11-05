@@ -4,91 +4,113 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 /**
- * Manages the visual themes of Glass TV Home.
- * Supports:
- * 1. Frosted Glass (Default Apple TV-inspired glassmorphism)
- * 2. Neumorphism (Soft UI tactile extruded design with soft shadows)
- * 3. Dark Glow (Pitch black OLED banners with vibrant cyber neon glow)
+ * Tema visual SwadayaTV.
+ *
+ * Ada tiga tema resmi — semuanya minimalis, tanpa meniru tema launcher lain:
+ * 1. Swadaya       — kaca jernih hijau-abu, kartu mengambang tenang (default)
+ * 2. Swadaya Malam — OLED hijau zamrud pekat, hemat mata untuk malam
+ * 3. Swadaya Terang— porselen terang hijau-abu, nyaman untuk siang
+ *
+ * Kunci tema lama (frosted_glass / dark_glow / neumorphism) tetap dipakai
+ * sebagai alias supaya seluruh kode tampilan yang sudah ada tidak perlu diubah.
  */
 public final class ThemeManager {
-    public static final String THEME_FROSTED_GLASS = "frosted_glass";
-    public static final String THEME_NEUMORPHISM = "neumorphism";
-    public static final String THEME_DARK_GLOW = "dark_glow";
+    public static final String THEME_SWADAYA = "swadaya";
+    public static final String THEME_SWADAYA_MALAM = "swadaya_malam";
+    public static final String THEME_SWADAYA_TERANG = "swadaya_terang";
+
+    /** Alias kompatibilitas untuk kode lama. */
+    public static final String THEME_FROSTED_GLASS = THEME_SWADAYA;
+    public static final String THEME_DARK_GLOW = THEME_SWADAYA_MALAM;
+    public static final String THEME_NEUMORPHISM = THEME_SWADAYA_TERANG;
 
     private static final String PREFS_NAME = "tvhome_theme_prefs";
     private static final String KEY_ACTIVE_THEME = "active_theme";
 
     private ThemeManager() {}
 
-    /**
-     * Gets the currently active theme identifier.
-     */
+    /** Tema yang sedang aktif. Default: Swadaya. */
     public static String getActiveTheme(Context context) {
-        if (context == null) return THEME_FROSTED_GLASS;
+        if (context == null) return THEME_SWADAYA;
         SharedPreferences sp = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        return sp.getString(KEY_ACTIVE_THEME, THEME_FROSTED_GLASS);
+        String theme = sp.getString(KEY_ACTIVE_THEME, THEME_SWADAYA);
+        return migrate(theme);
     }
 
-    /**
-     * Sets and persists the new active theme.
-     */
+    /** Menyimpan tema aktif. */
     public static void setActiveTheme(Context context, String theme) {
         if (context == null || theme == null) return;
         SharedPreferences sp = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        sp.edit().putString(KEY_ACTIVE_THEME, theme).apply();
+        sp.edit().putString(KEY_ACTIVE_THEME, migrate(theme)).apply();
     }
 
-    /**
-     * Returns true if the active theme is Dark Glow (all black banners + neon glow).
-     */
-    public static boolean isDarkGlow(Context context) {
-        return THEME_DARK_GLOW.equalsIgnoreCase(getActiveTheme(context));
-    }
-
-    /**
-     * Returns true if the active theme is Neumorphism (Soft UI).
-     */
-    public static boolean isNeumorphism(Context context) {
-        return THEME_NEUMORPHISM.equalsIgnoreCase(getActiveTheme(context));
-    }
-
-    /**
-     * Returns true if the active theme is Frosted Glass (Default).
-     */
-    public static boolean isFrostedGlass(Context context) {
-        String theme = getActiveTheme(context);
-        return THEME_FROSTED_GLASS.equalsIgnoreCase(theme) || (!isDarkGlow(context) && !isNeumorphism(context));
-    }
-
-    /**
-     * User-facing display title for each theme.
-     */
-    public static String getThemeDisplayName(String theme) {
-        if (theme == null) return "Frosted Glass";
+    /** Memetakan nama tema lama (dari versi sebelumnya) ke tema Swadaya baru. */
+    private static String migrate(String theme) {
+        if (theme == null) return THEME_SWADAYA;
         switch (theme) {
-            case THEME_NEUMORPHISM:
-                return "Neumorphism";
-            case THEME_DARK_GLOW:
-                return "Dark Glow";
-            case THEME_FROSTED_GLASS:
+            case "frosted_glass":
+                return THEME_SWADAYA;
+            case "dark_glow":
+                return THEME_SWADAYA_MALAM;
+            case "neumorphism":
+                return THEME_SWADAYA_TERANG;
             default:
-                return "Frosted Glass";
+                return theme;
         }
     }
 
-    /**
-     * Descriptive subtitle explaining each theme's visual style.
-     */
-    public static String getThemeSubtitle(String theme) {
-        if (theme == null) return "";
-        switch (theme) {
-            case THEME_NEUMORPHISM:
-                return "Tampilan cerah Soft UI taktil dengan bayangan lembut dan kanvas porselen elegan";
-            case THEME_DARK_GLOW:
-                return "Wallpaper ekstra gelap OLED, top menu hitam cyber, dan pendaran neon cyan terang";
-            case THEME_FROSTED_GLASS:
+    public static boolean isSwadaya(Context context) {
+        return THEME_SWADAYA.equalsIgnoreCase(getActiveTheme(context));
+    }
+
+    public static boolean isSwadayaMalam(Context context) {
+        return THEME_SWADAYA_MALAM.equalsIgnoreCase(getActiveTheme(context));
+    }
+
+    public static boolean isSwadayaTerang(Context context) {
+        return THEME_SWADAYA_TERANG.equalsIgnoreCase(getActiveTheme(context));
+    }
+
+    /** True untuk tema gelap (Swadaya Malam). */
+    public static boolean isDarkGlow(Context context) {
+        return isSwadayaMalam(context);
+    }
+
+    /** True untuk tema terang (Swadaya Terang). */
+    public static boolean isNeumorphism(Context context) {
+        return isSwadayaTerang(context);
+    }
+
+    /** True untuk tema kaca jernih (Swadaya). */
+    public static boolean isFrostedGlass(Context context) {
+        return isSwadaya(context);
+    }
+
+    /** Nama tema untuk ditampilkan di UI. */
+    public static String getThemeDisplayName(String theme) {
+        String key = migrate(theme);
+        switch (key) {
+            case THEME_SWADAYA_MALAM:
+                return "Swadaya Malam";
+            case THEME_SWADAYA_TERANG:
+                return "Swadaya Terang";
+            case THEME_SWADAYA:
             default:
-                return "Efek kaca transparan bawaan Apple TV dengan wallpaper dinamis";
+                return "Swadaya";
+        }
+    }
+
+    /** Deskripsi singkat tiap tema. */
+    public static String getThemeSubtitle(String theme) {
+        String key = migrate(theme);
+        switch (key) {
+            case THEME_SWADAYA_MALAM:
+                return "Hitam zamrud OLED, aksen hijau lembut, paling hemat mata untuk malam";
+            case THEME_SWADAYA_TERANG:
+                return "Porselen terang hijau-abu, bersih dan nyaman untuk siang hari";
+            case THEME_SWADAYA:
+            default:
+                return "Kaca jernih hijau-abu, kartu mengambang tenang tanpa neon";
         }
     }
 }

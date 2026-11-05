@@ -64,6 +64,13 @@
         </activity>
 
         <activity
+            android:name=".SoccerActivity"
+            android:label="Klasemen &amp; Jadwal Bola"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.TvHome" />
+
+        <activity
             android:name=".WeatherActivity"
             android:label="Weather &amp; Air Quality"
             android:exported="false"
