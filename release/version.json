@@ -1,0 +1,7 @@
+{
+  "versionCode": 33,
+  "versionName": "3.4.2-id",
+  "apkUrl": "https://github.com/frhnkrnwn/SwadayaTV/releases/latest/download/SwadayaTV.apk",
+  "changelog": "fix: remove unused button references for compact top Now Playing Pill",
+  "releaseDate": "2026-11-05"
+}
