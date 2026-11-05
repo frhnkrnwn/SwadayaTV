@@ -2642,13 +2642,13 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     }
 
     private void updatePrayerTimes() {
-        // Tampilkan jadwal sholat Kemenag (offline) untuk kota default Jakarta.
-        // Bisa diganti kota via AppLocationManager nanti.
-        double lat = -6.2615;
-        double lon = 106.8106;
+        // Tampilkan jadwal sholat Kemenag (offline) untuk kota yang dipilih user.
+        // Koordinat dari AppLocationManager (WIB/WITA/WIT menyesuaikan longitude).
+        double lat = AppLocationManager.getLatitude(this);
+        double lon = AppLocationManager.getLongitude(this);
+        String kota = AppLocationManager.getLocationName(this);
         long now = System.currentTimeMillis();
         long[] t = KemenagPrayer.times(lat, lon, now, 0);
-        String[] nama = KemenagPrayer.names();
         // t: [Subuh, Dzuhur, Ashar, Maghrib, Isya] (epoch ms)
         java.text.SimpleDateFormat fmt = new java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault());
         if (timeSubuh != null && t.length > 0) timeSubuh.setText(fmt.format(new java.util.Date(t[0])));
@@ -2659,9 +2659,44 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         // Syuruk = sunrise (approx sunrise angle). Pakai t[0]-offset sederhana: tampilkan "-"
         if (timeSyuruk != null) timeSyuruk.setText("-");
         if (prayerHeader != null) {
-            prayerHeader.setText("WAKTU SHOLAT • KEMENAG (OFFLINE)");
+            prayerHeader.setText("WAKTU SHOLAT • " + (kota != null ? kota.toUpperCase() : "KEMENAG") + " (OFFLINE)");
             prayerHeader.setVisibility(View.VISIBLE);
         }
+        // Sinkron otomatis dari server (Aladhan, metode Kemenag 20) bila online; fallback offline tetap tampil.
+        final double flat = lat, flon = lon;
+        final String fkota = kota;
+        new Thread(() -> {
+            try {
+                java.text.SimpleDateFormat ddf = new java.text.SimpleDateFormat("dd-MM-yyyy", java.util.Locale.getDefault());
+                String tgl = ddf.format(new java.util.Date());
+                String url = "https://api.aladhan.com/v1/timings/" + tgl + "?latitude=" + flat + "&longitude=" + flon + "&method=20";
+                java.net.HttpURLConnection c = (java.net.HttpURLConnection) new java.net.URL(url).openConnection();
+                c.setConnectTimeout(8000);
+                c.setReadTimeout(8000);
+                java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(c.getInputStream(), "UTF-8"));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) sb.append(line);
+                br.close();
+                org.json.JSONObject root = new org.json.JSONObject(sb.toString());
+                org.json.JSONObject timings = root.getJSONObject("data").getJSONObject("timings");
+                final String subuh = timings.optString("Fajr");
+                final String dzuhur = timings.optString("Dhuhr");
+                final String ashar = timings.optString("Asr");
+                final String maghrib = timings.optString("Maghrib");
+                final String isya = timings.optString("Isha");
+                runOnUiThread(() -> {
+                    if (timeSubuh != null) timeSubuh.setText(subuh);
+                    if (timeZohor != null) timeZohor.setText(dzuhur);
+                    if (timeAsar != null) timeAsar.setText(ashar);
+                    if (timeMaghrib != null) timeMaghrib.setText(maghrib);
+                    if (timeIsyak != null) timeIsyak.setText(isya);
+                    if (prayerHeader != null) prayerHeader.setText("WAKTU SHOLAT • " + (fkota != null ? fkota.toUpperCase() : "KEMENAG") + " (SERVER)");
+                });
+            } catch (Exception ignore) {
+                // tetap pakai offline
+            }
+        }).start();
         View table = findViewById(R.id.prayerTable);
         if (table != null) table.setVisibility(View.VISIBLE);
         if (prayerTimesView != null) prayerTimesView.setVisibility(View.VISIBLE);
