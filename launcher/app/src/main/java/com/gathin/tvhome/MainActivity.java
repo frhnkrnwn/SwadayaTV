@@ -2658,6 +2658,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (timeIsyak != null && t.length > 4) timeIsyak.setText(fmt.format(new java.util.Date(t[4])));
         // Syuruk = sunrise (approx sunrise angle). Pakai t[0]-offset sederhana: tampilkan "-"
         if (timeSyuruk != null) timeSyuruk.setText("-");
+        if (islamicShelf != null) {
+            islamicShelf.setVisibility(View.VISIBLE);
+            islamicShelf.setAlpha(1f);
+        }
         if (prayerHeader != null) {
             prayerHeader.setText("WAKTU SHOLAT • " + (kota != null ? kota.toUpperCase() : "KEMENAG") + " (OFFLINE)");
             prayerHeader.setVisibility(View.VISIBLE);
