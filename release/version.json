@@ -1,7 +1,7 @@
 {
-  "versionCode": 35,
-  "versionName": "3.5.1-id",
+  "versionCode": 36,
+  "versionName": "3.5.2-id",
   "apkUrl": "https://github.com/frhnkrnwn/SwadayaTV/releases/latest/download/SwadayaTV.apk",
-  "changelog": "README: rapihkan kredit, hapus kata rebrand; bump v3.5.1",
+  "changelog": "Fix SoccerData parse: wins/draws/losses, goalConDiff, status.utcTime/scoreStr/finished (v3.5.2)",
   "releaseDate": "2026-11-05"
 }
