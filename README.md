@@ -128,8 +128,6 @@ Setiap kali rilis baru diterbitkan di repositori ini, pengguna akan mendapatkan 
 
 ## 📜 Kredit & Lisensi
 
-Proyek ini adalah **rebrand dari [Aura TV Home](https://github.com/luthpunk/aura-tv-home)** yang dibuat oleh **luthpunk / Gathin** dan dirilis di bawah lisensi MIT. Nama, ikon, dan teks antarmuka diubah menjadi **SwadayaTV**; kode inti tetap karya pengembang aslinya.
-
 Proyek asli tersebut dibangun dengan basis fondasi utama dari:
 - **Basis Proyek Utama:** [**CleanYourTV**](https://github.com/Gathin23/cleanyourtv) oleh **Gathin23**  
   *Terima kasih yang sebesar-besarnya kepada pengembang asli atas arsitektur launcher Android TV yang luar biasa.*
