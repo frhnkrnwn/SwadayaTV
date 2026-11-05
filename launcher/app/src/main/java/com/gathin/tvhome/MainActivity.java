@@ -2640,17 +2640,35 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     }
 
     private void updatePrayerTimes() {
-        applyPrayerVisibility();
+        // Tampilkan jadwal sholat Kemenag (offline) untuk kota default Jakarta.
+        // Bisa diganti kota via AppLocationManager nanti.
+        double lat = -6.2615;
+        double lon = 106.8106;
+        long now = System.currentTimeMillis();
+        long[] t = KemenagPrayer.times(lat, lon, now, 0);
+        String[] nama = KemenagPrayer.names();
+        // t: [Subuh, Dzuhur, Ashar, Maghrib, Isya] (epoch ms)
+        java.text.SimpleDateFormat fmt = new java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault());
+        if (timeSubuh != null && t.length > 0) timeSubuh.setText(fmt.format(new java.util.Date(t[0])));
+        if (timeZohor != null && t.length > 1) timeZohor.setText(fmt.format(new java.util.Date(t[1])));
+        if (timeAsar != null && t.length > 2) timeAsar.setText(fmt.format(new java.util.Date(t[2])));
+        if (timeMaghrib != null && t.length > 3) timeMaghrib.setText(fmt.format(new java.util.Date(t[3])));
+        if (timeIsyak != null && t.length > 4) timeIsyak.setText(fmt.format(new java.util.Date(t[4])));
+        // Syuruk = sunrise (approx sunrise angle). Pakai t[0]-offset sederhana: tampilkan "-"
+        if (timeSyuruk != null) timeSyuruk.setText("-");
+        if (prayerHeader != null) {
+            prayerHeader.setText("WAKTU SHOLAT • KEMENAG (OFFLINE)");
+            prayerHeader.setVisibility(View.VISIBLE);
+        }
+        View table = findViewById(R.id.prayerTable);
+        if (table != null) table.setVisibility(View.VISIBLE);
+        if (prayerTimesView != null) prayerTimesView.setVisibility(View.VISIBLE);
     }
 
-    /** Hides the Waktu Solat, Ayah/Doa and Islamic shelf completely. */
+    /** Sembunyikan blok ayat/islamic shelf yang belum diimplementasikan penuh. */
     private void applyPrayerVisibility() {
-        if (prayerTimesView != null) prayerTimesView.setVisibility(View.GONE);
-        if (prayerHeader != null) prayerHeader.setVisibility(View.GONE);
         if (ayahBlock != null) ayahBlock.setVisibility(View.GONE);
         if (islamicShelf != null) islamicShelf.setVisibility(View.GONE);
-        View table = findViewById(R.id.prayerTable);
-        if (table != null) table.setVisibility(View.GONE);
     }
 
     private CharSequence boldSuffix(String prefix, String boldPart, String suffix) {
