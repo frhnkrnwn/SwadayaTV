@@ -657,6 +657,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             });
         }
         updatePrayerTimes();
+        updateAyah();
         PrayerTimes.syncIfDue(this, this::updatePrayerTimes);
         vpnApp = cfg.vpnApp;
         moduleCards = cfg.moduleCards;
@@ -1250,6 +1251,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         reloadApps(true);
         updateShamsiDate();
         updatePrayerTimes();
+        updateAyah();
         updateDateAndPeriod();
         updateWifiLabel();
         updateWeatherAqi();
@@ -2741,12 +2743,19 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     }
 
     private void updateAyah() {
+        WeeklyAyah.Ayah a = WeeklyAyah.stored(this);
+        if (a == null) a = WeeklyAyah.last(this);
+        showAyah(a);
+        WeeklyAyah.syncIfDue(this, ayah -> showAyah(ayah));
     }
 
     private void showAyah(WeeklyAyah.Ayah a) {
-        if (ayahBlock != null) {
-            ayahBlock.setVisibility(View.GONE);
-        }
+        if (ayahBlock == null) return;
+        if (a == null) { ayahBlock.setVisibility(View.GONE); return; }
+        if (ayahLabel != null) ayahLabel.setText(a.reference);
+        if (ayahArabic != null) ayahArabic.setText(a.arabic);
+        if (ayahText != null) ayahText.setText(a.translation(false));
+        ayahBlock.setVisibility(View.VISIBLE);
     }
 
     private void updateDateAndPeriod() {
