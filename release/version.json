@@ -1,7 +1,7 @@
 {
-  "versionCode": 36,
-  "versionName": "3.5.2-id",
+  "versionCode": 37,
+  "versionName": "3.5.3-id",
   "apkUrl": "https://github.com/frhnkrnwn/SwadayaTV/releases/latest/download/SwadayaTV.apk",
-  "changelog": "Fix SoccerData parse: wins/draws/losses, goalConDiff, status.utcTime/scoreStr/finished (v3.5.2)",
+  "changelog": "Wire Kemenag prayer times into launcher (v3.5.3)",
   "releaseDate": "2026-11-05"
 }
