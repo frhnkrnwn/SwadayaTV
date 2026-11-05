@@ -1,7 +1,7 @@
 {
-  "versionCode": 45,
-  "versionName": "3.6.1-id",
+  "versionCode": 46,
+  "versionName": "3.6.2-id",
   "apkUrl": "https://github.com/frhnkrnwn/SwadayaTV/releases/latest/download/SwadayaTV.apk",
-  "changelog": "Fix build: hapus artefak heredoc di CapacityStats/WorldClock; perbaiki workflow OTA; v3.6.1",
+  "changelog": "Perbaikan bug + fitur doa harian + versi 3.6.2",
   "releaseDate": "2026-11-05"
 }
