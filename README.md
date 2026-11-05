@@ -150,7 +150,7 @@ Buka **Pengaturan → Tema** di launcher, pilih salah satu:
 2. **🌙 Swadaya Malam** — hitam zamrud OLED, hemat mata untuk malam
 3. **☀️ Swadaya Terang** — porselen terang hijau-abu, nyaman untuk siang hari
 
-Tema langsung berubah tanpa restart. Nama tema lama (`Frosted Glass`, `Neumorphism`, `Dark Glow`) otomatis dipetakan jadi tema Swadaya versi baru.
+Tema langsung berubah tanpa restart.
 
 ---
 
