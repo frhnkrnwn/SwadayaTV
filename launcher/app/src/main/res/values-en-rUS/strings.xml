@@ -3,4 +3,25 @@
      regions keep the default "Tuesday 20 October". Everything else falls back to values/. -->
 <resources>
     <string name="date_format">MMM d, yyyy</string>
+    <string name="theme_swadaya_name">🌿 Swadaya</string>
+    <string name="theme_swadaya_desc">Clear green-grey glass, calm floating cards without neon</string>
+    <string name="theme_swadaya_malam_name">🌙 Swadaya Night</string>
+    <string name="theme_swadaya_malam_desc">Dark emerald OLED, soft green accent, easy on the eyes at night</string>
+    <string name="theme_swadaya_terang_name">☀️ Swadaya Light</string>
+    <string name="theme_swadaya_terang_desc">Bright porcelain green-grey, clean for daytime</string>
+    <string name="menu_soccer_title">⚽ League Table &amp; Fixtures</string>
+    <string name="soccer_title">League Table &amp; Fixtures</string>
+    <string name="soccer_standings_tab">Table</string>
+    <string name="soccer_fixtures_tab">Fixtures</string>
+    <string name="soccer_refresh">Refresh</string>
+    <string name="soccer_back">Back</string>
+    <string name="soccer_loading">Loading league data…</string>
+    <string name="soccer_no_data">No data yet. Tap Refresh.</string>
+    <string name="soccer_fav_league">Pick Favorite League</string>
+    <string name="soccer_fav_team">Pick Favorite Team</string>
+    <string name="prayer_next">Next Prayer</string>
+    <string name="prayer_no_data">Prayer times not available</string>
+    <string name="doa_title">Daily Dua</string>
+    <string name="wallpaper_hd_title">Free HD Wallpapers</string>
+    <string name="wallpaper_hd_desc">Free HD photos from Unsplash, Pixabay &amp; Pexels for TV screens</string>
 </resources>
