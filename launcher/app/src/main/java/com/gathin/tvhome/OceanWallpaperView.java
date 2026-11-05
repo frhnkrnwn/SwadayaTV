@@ -121,15 +121,15 @@ public final class OceanWallpaperView extends View {
         float horizon = h * 0.58f;
 
         int[] top = new int[3], hor = new int[3];
-        stops(SKY_TOP, hour, top, hor);
+        stops(SKY_TOP, hour, top, new int[3]);
         stops(SKY_HOR, hour, hor, new int[3]);
-        int skyTop = lerp(top, hor, 0f);
+        int skyTop = lerp(top, top, 0f);
         int skyHor = lerp(hor, hor, 0f);
 
         int[] seaTop = new int[3], seaBot = new int[3];
-        stops(SEA_TOP, hour, seaTop, seaBot);
+        stops(SEA_TOP, hour, seaTop, new int[3]);
         stops(SEA_BOT, hour, seaBot, new int[3]);
-        int seaT = lerp(seaTop, seaBot, 0f);
+        int seaT = lerp(seaTop, seaTop, 0f);
         int seaB = lerp(seaBot, seaBot, 0f);
 
         // langit

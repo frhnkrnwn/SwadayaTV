@@ -160,5 +160,3 @@ public class CapacityStatsActivity extends Activity {
         return Math.round(v * getResources().getDisplayMetrics().density);
     }
 }
-EOF
-echo done
