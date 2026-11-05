@@ -69,6 +69,18 @@
             android:exported="false"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.TvHome" />
+        <activity
+            android:name=".KoinActivity"
+            android:label="Kurs Koin"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.TvHome" />
+        <activity
+            android:name=".WorldClockActivity"
+            android:label="Jam Dunia"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.TvHome" />
 
         <activity
             android:name=".WeatherActivity"

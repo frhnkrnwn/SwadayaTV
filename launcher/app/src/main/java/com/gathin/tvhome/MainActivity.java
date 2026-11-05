@@ -2919,6 +2919,20 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             startActivity(new Intent(MainActivity.this, SoccerActivity.class));
         });
 
+        // Row 2c: Kurs Koin
+        addInputRow(rows, close, R.drawable.ic_theme, "💱 Kurs Koin", -1, () -> {
+            SoundEffects.playSelect();
+            closeMenu(true);
+            startActivity(new Intent(MainActivity.this, KoinActivity.class));
+        });
+
+        // Row 2d: Jam Dunia
+        addInputRow(rows, close, R.drawable.ic_theme, "🌍 Jam Dunia", -1, () -> {
+            SoundEffects.playSelect();
+            closeMenu(true);
+            startActivity(new Intent(MainActivity.this, WorldClockActivity.class));
+        });
+
         // Row 3: Lokasi Cuaca
         String locName = AppLocationManager.getLocationName(this) + " (" + AppLocationManager.getActiveRegion(this) + ")";
         addInputRow(rows, close, R.drawable.ic_location, "Lokasi: " + locName, -1, () -> {
