@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, height=1080">
+<title>Arsyan TV Launcher — Ocean &amp; Coast Vector Wallpaper</title>
+<link rel="stylesheet" href="home.css">
+</head>
+<body>
+<div id="stage">
+  <div id="sky" class="layer">
+    <canvas id="oceanCanvas" width="1920" height="1080"></canvas>
+    <div class="grad day"></div>
+    <div class="grad night"></div>
+    <canvas id="bgA" width="48" height="27"></canvas>
+    <canvas id="bgB" width="48" height="27"></canvas>
+    <div class="veil"></div>
+    <div class="lift"></div>
+  </div>
+  <div id="home" class="layer">
+    <div id="top" class="layer">
+      <h1 id="title"></h1>
+      <div id="tabs"></div>
+      <div id="quotes"></div>
+      <div id="buttons"></div>
+      <div id="cards"></div>
+      <div id="clock"><span class="time"></span><span class="date"></span></div>
+    </div>
+    <div id="platter"></div>
+    <div id="tiles"></div>
+  </div>
+  <div id="drawer" class="layer"></div>
+  <div id="apps" class="layer sheet"><h2></h2><div class="grid"></div></div>
+  <div id="settings" class="layer sheet"><div class="box"></div></div>
+  <div id="shelfedit" class="layer sheet"><div class="box"></div></div>
+  <div id="saver" class="layer"></div>
+  <div id="toast"></div>
+</div>
+
+<!-- Floating Interactive Controls for Remote Review -->
+<div id="oceanHud" style="position:fixed;bottom:20px;right:20px;z-index:9999;background:rgba(10,16,26,0.92);border:1px solid rgba(255,255,255,0.18);border-radius:14px;padding:12px 16px;color:#f0f6fc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:12px;box-shadow:0 10px 30px rgba(0,0,0,0.5);display:flex;flex-direction:column;gap:8px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:600;color:#38bdf8;">
+    <span>Ocean &amp; Coast Reviewer HUD</span>
+    <span style="font-size:10px;opacity:0.75;cursor:pointer;" onclick="this.parentElement.parentElement.style.display='none'">[Press H to hide]</span>
+  </div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+    <button type="button" style="background:#1e293b;border:1px solid #334155;color:#f8fafc;padding:5px 9px;border-radius:6px;cursor:pointer;font-size:11px;" onclick="if(window.oceanEngine){window.oceanEngine.setHour(6.0);}">1. Sunrise (06:00)</button>
+    <button type="button" style="background:#1e293b;border:1px solid #334155;color:#f8fafc;padding:5px 9px;border-radius:6px;cursor:pointer;font-size:11px;" onclick="if(window.oceanEngine){window.oceanEngine.setHour(12.0);}">2. Daylight (12:00)</button>
+    <button type="button" style="background:#1e293b;border:1px solid #334155;color:#f8fafc;padding:5px 9px;border-radius:6px;cursor:pointer;font-size:11px;" onclick="if(window.oceanEngine){window.oceanEngine.setHour(18.0);}">3. Sunset (18:00)</button>
+    <button type="button" style="background:#1e293b;border:1px solid #334155;color:#f8fafc;padding:5px 9px;border-radius:6px;cursor:pointer;font-size:11px;" onclick="if(window.oceanEngine){window.oceanEngine.setHour(23.5);}">4. Night (23:30)</button>
+    <button type="button" style="background:#1e293b;border:1px solid #334155;color:#f8fafc;padding:5px 9px;border-radius:6px;cursor:pointer;font-size:11px;" onclick="if(window.oceanEngine){window.oceanEngine.setHour(-1);}">0. Live Real-time</button>
+  </div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;padding-top:4px;border-top:1px solid rgba(255,255,255,0.08);align-items:center;">
+    <span style="font-size:11px;color:#94a3b8;">Fish School (D-Pad):</span>
+    <button type="button" style="background:#0f766e;border:1px solid #14b8a6;color:#fff;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:10px;" onclick="if(window.oceanEngine){window.oceanEngine.onDpad(-1,0);}">&larr; Swim Left</button>
+    <button type="button" style="background:#0f766e;border:1px solid #14b8a6;color:#fff;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:10px;" onclick="if(window.oceanEngine){window.oceanEngine.onDpad(1,0);}">Swim Right &rarr;</button>
+    <button type="button" style="background:#0f766e;border:1px solid #14b8a6;color:#fff;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:10px;" onclick="if(window.oceanEngine){window.oceanEngine.onDpad(0,-1);}">&uarr; Surface</button>
+    <button type="button" style="background:#0f766e;border:1px solid #14b8a6;color:#fff;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:10px;" onclick="if(window.oceanEngine){window.oceanEngine.onDpad(0,1);}">&darr; Dive</button>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:4px;border-top:1px solid rgba(255,255,255,0.08);">
+    <div style="display:flex;gap:6px;align-items:center;">
+      <button type="button" id="btnRainToggle" style="background:#0284c7;border:none;color:#fff;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;" onclick="if(window.oceanEngine){window.oceanEngine.isRaining=!window.oceanEngine.isRaining;this.textContent=window.oceanEngine.isRaining?'Rain: ON':'Rain: OFF';}">Rain: OFF (Key R)</button>
+      <button type="button" style="background:#b45309;border:1px solid #f59e0b;color:#fff;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;" onclick="document.getElementById('coffeeModal').style.display='flex'">☕ Traktir Kopi</button>
+    </div>
+    <span style="font-size:10px;color:#94a3b8;">Use Arrow Keys for D-Pad Fish Steering</span>
+  </div>
+</div>
+
+<!-- Modal Popup Traktir Kopi -->
+<div id="coffeeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:10000;align-items:center;justify-content:center;backdrop-filter:blur(10px);" onclick="if(event.target===this)this.style.display='none'">
+  <div style="background:#161c24;border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:26px 32px;max-width:440px;text-align:center;color:#f0f6fc;box-shadow:0 24px 48px rgba(0,0,0,0.7);display:flex;flex-direction:column;align-items:center;">
+    <h3 style="margin:0 0 12px;font-size:20px;color:#f59e0b;display:flex;align-items:center;gap:8px;">☕ Traktir Kopi</h3>
+    <p style="margin:0 0 18px;font-size:14px;line-height:1.45;color:rgba(255,255,255,0.92);">traktir developer untuk beli kopi, berapapun developer sangat amat berterimakasih, semoga anda dilancarkan rejekinya</p>
+    <div style="background:#ffffff;padding:12px;border-radius:16px;display:inline-block;box-shadow:0 8px 24px rgba(0,0,0,0.35);">
+      <img src="qr_kopi.png" alt="QR Code Traktir Kopi" style="width:260px;height:260px;display:block;" />
+    </div>
+    <p style="margin:16px 0 20px;font-size:12px;color:rgba(255,255,255,0.65);">Buka kamera HP atau aplikasi m-Banking / e-Wallet (GoPay, OVO, Dana, BCA, dll) untuk scan QR</p>
+    <button type="button" style="background:#334155;border:1px solid #475569;color:#fff;padding:8px 28px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;" onclick="document.getElementById('coffeeModal').style.display='none'">Tutup</button>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="coins.js"></script>
+<script src="strings.js"></script>
+<script src="tv.js"></script>
+<script src="zones.js"></script>
+<script src="data.js"></script>
+<script src="ocean.js"></script>
+<script src="home.js"></script>
+<script>
+  window.addEventListener('keydown', function(e) {
+    if (e.key === 'h' || e.key === 'H') {
+      var hud = document.getElementById('oceanHud');
+      if (hud) hud.style.display = (hud.style.display === 'none' ? 'flex' : 'none');
+    }
+  });
+</script>
+</body>
+</html>
