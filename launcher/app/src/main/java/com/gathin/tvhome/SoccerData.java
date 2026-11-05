@@ -162,14 +162,14 @@ final class SoccerData {
                                 JSONObject o = all.optJSONObject(i);
                                 if (o == null) continue;
                                 Row r = new Row();
-                                r.rank = o.optInt("rank", i + 1);
+                                r.rank = o.optInt("idx", i + 1);
                                 r.name = o.optString("name", "");
                                 r.played = o.optInt("played", 0);
-                                r.won = o.optInt("won", 0);
-                                r.drawn = o.optInt("drawn", 0);
-                                r.lost = o.optInt("lost", 0);
+                                r.won = o.optInt("wins", 0);
+                                r.drawn = o.optInt("draws", 0);
+                                r.lost = o.optInt("losses", 0);
                                 r.scoresStr = o.optString("scoresStr", "");
-                                r.goalDiff = o.optInt("goalDiff", o.optInt("diff", 0));
+                                r.goalDiff = o.optInt("goalConDiff", o.optInt("goalDiff", 0));
                                 r.points = o.optInt("pts", o.optInt("points", 0));
                                 r.qualColor = o.optInt("qualColor", 0);
                                 d.table.add(r);
@@ -191,10 +191,21 @@ final class SoccerData {
                         JSONObject away = o.optJSONObject("away");
                         m.home = home != null ? home.optString("name", "") : o.optString("home", "");
                         m.away = away != null ? away.optString("name", "") : o.optString("away", "");
-                        m.utcTime = o.optLong("utcTime", 0L);
-                        String status = o.optString("status", "");
-                        if ("finished".equalsIgnoreCase(status)) m.finished = true;
-                        m.scoreStr = o.optString("scoreStr", o.optString("score", ""));
+                        JSONObject st = o.optJSONObject("status");
+                        if (st != null) {
+                            String utc = st.optString("utcTime", "");
+                            // parse ISO8601 UTC
+                            try {
+                                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US);
+                                sdf.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+                                m.utcTime = sdf.parse(utc).getTime();
+                            } catch (Exception ignore) { m.utcTime = 0L; }
+                            m.finished = st.optBoolean("finished", false);
+                            m.scoreStr = st.optString("scoreStr", "");
+                        } else {
+                            m.utcTime = o.optLong("utcTime", 0L);
+                            m.scoreStr = o.optString("scoreStr", o.optString("score", ""));
+                        }
                         d.matches.add(m);
                     }
                 }
