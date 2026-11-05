@@ -1,7 +1,7 @@
 {
-  "versionCode": 34,
-  "versionName": "3.5.0-id",
+  "versionCode": 35,
+  "versionName": "3.5.1-id",
   "apkUrl": "https://github.com/frhnkrnwn/SwadayaTV/releases/latest/download/SwadayaTV.apk",
-  "changelog": "SwadayaTV: 3 tema hijau-abu + bola FotMob + sholat Kemenag + doa + wallpaper HD + tutorial Indonesia (v3.5.0)",
+  "changelog": "README: rapihkan kredit, hapus kata rebrand; bump v3.5.1",
   "releaseDate": "2026-11-05"
 }
