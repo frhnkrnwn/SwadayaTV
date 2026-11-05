@@ -200,7 +200,11 @@ Buka **Pengaturan → Klasemen & Jadwal Bola** dari launcher.
 ## Waktu Sholat & Ayat Harian
 
 - **Waktu sholat Kemenag:** Dihitung langsung di TV pakai rumus Bimas Islam Kemenag (Subuh 20°, Isya 18°, Asr Syafi'i) — bukan dari web. Jalan offline, tampil langsung di layar utama.
-- **Ayat/Doa harian:** Rotasi ayat dan doa harian, tersimpan offline, tampil langsung di layar utama.
+- **Zona waktu otomatis:** WIB, WITA, atau WIT menyesuaikan kota yang dipilih (dari garis bujur), jadi jamnya tidak meleset antar-daerah.
+- **Syuruk (terbit matahari):** Ikut dihitung, bukan sekadar tanda "-".
+- **Sinkron online:** Saat internet tersedia, jadwal disegarkan dari server Aladhan (metode Kemenag) dan ditandai **SERVER**; kalau offline tetap pakai hitungan lokal dan ditandai **OFFLINE**.
+- **Ayat/Doa harian:** Rak kanan layar utama bergantian menampilkan ayat Al-Qur'an dan doa harian (Arab + terjemahan), tersimpan offline.
+- **Kumpulan Doa:** Buka **Pengaturan → 🤲 Doa Harian** untuk membaca semua doa (71 doa online, 15 doa cadangan saat offline).
 - Kotanya pilih di **Pengaturan → Lokasi**.
 
 ---

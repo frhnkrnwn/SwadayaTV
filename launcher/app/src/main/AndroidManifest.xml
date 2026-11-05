@@ -82,6 +82,12 @@
             android:screenOrientation="landscape"
             android:theme="@style/Theme.TvHome" />
         <activity
+            android:name=".DoaActivity"
+            android:label="Doa Harian"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.TvHome" />
+        <activity
             android:name=".CapacityStatsActivity"
             android:label="Kapasitas TV"
             android:exported="false"

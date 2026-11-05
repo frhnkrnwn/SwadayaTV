@@ -2718,14 +2718,21 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (timeAsar != null && t.length > 2) timeAsar.setText(fmt.format(new java.util.Date(t[2])));
         if (timeMaghrib != null && t.length > 3) timeMaghrib.setText(fmt.format(new java.util.Date(t[3])));
         if (timeIsyak != null && t.length > 4) timeIsyak.setText(fmt.format(new java.util.Date(t[4])));
-        // Syuruk = sunrise (approx sunrise angle). Pakai t[0]-offset sederhana: tampilkan "-"
-        if (timeSyuruk != null) timeSyuruk.setText("-");
+        // Syuruk = terbit matahari, dihitung dengan sudut yang sama seperti Maghrib.
+        if (timeSyuruk != null) {
+            long syuruk = KemenagPrayer.sunrise(lat, lon, now, 0);
+            timeSyuruk.setText(fmt.format(new java.util.Date(syuruk)));
+        }
+        // Zona waktu Indonesia mengikuti longitude, sama dengan perhitungan di atas.
+        int zonaJam = (int) Math.round(lon / 15.0);
+        final String zonaNama = zonaJam <= 7 ? "WIB" : (zonaJam == 8 ? "WITA" : "WIT");
         if (islamicShelf != null) {
             islamicShelf.setVisibility(View.VISIBLE);
             islamicShelf.setAlpha(1f);
         }
         if (prayerHeader != null) {
-            prayerHeader.setText("WAKTU SHOLAT • " + (kota != null ? kota.toUpperCase() : "KEMENAG") + " (OFFLINE)");
+            prayerHeader.setText("WAKTU SHOLAT • " + (kota != null ? kota.toUpperCase() : "KEMENAG")
+                    + " • " + zonaNama + " (OFFLINE)");
             prayerHeader.setVisibility(View.VISIBLE);
         }
         // Sinkron otomatis dari server (Aladhan, metode Kemenag 20) bila online; fallback offline tetap tampil.
@@ -2733,7 +2740,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         final String fkota = kota;
         new Thread(() -> {
             try {
-                java.text.SimpleDateFormat ddf = new java.text.SimpleDateFormat("dd-MM-yyyy", java.util.Locale.getDefault());
+                java.text.SimpleDateFormat ddf = new java.text.SimpleDateFormat("dd-MM-yyyy", java.util.Locale.US);
                 String tgl = ddf.format(new java.util.Date());
                 String url = "https://api.aladhan.com/v1/timings/" + tgl + "?latitude=" + flat + "&longitude=" + flon + "&method=20";
                 java.net.HttpURLConnection c = (java.net.HttpURLConnection) new java.net.URL(url).openConnection();
@@ -2747,17 +2754,20 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 org.json.JSONObject root = new org.json.JSONObject(sb.toString());
                 org.json.JSONObject timings = root.getJSONObject("data").getJSONObject("timings");
                 final String subuh = timings.optString("Fajr");
+                final String syuruk = timings.optString("Sunrise");
                 final String dzuhur = timings.optString("Dhuhr");
                 final String ashar = timings.optString("Asr");
                 final String maghrib = timings.optString("Maghrib");
                 final String isya = timings.optString("Isha");
                 runOnUiThread(() -> {
                     if (timeSubuh != null) timeSubuh.setText(subuh);
+                    if (timeSyuruk != null && !syuruk.isEmpty()) timeSyuruk.setText(syuruk);
                     if (timeZohor != null) timeZohor.setText(dzuhur);
                     if (timeAsar != null) timeAsar.setText(ashar);
                     if (timeMaghrib != null) timeMaghrib.setText(maghrib);
                     if (timeIsyak != null) timeIsyak.setText(isya);
-                    if (prayerHeader != null) prayerHeader.setText("WAKTU SHOLAT • " + (fkota != null ? fkota.toUpperCase() : "KEMENAG") + " (SERVER)");
+                    if (prayerHeader != null) prayerHeader.setText("WAKTU SHOLAT • "
+                            + (fkota != null ? fkota.toUpperCase() : "KEMENAG") + " • " + zonaNama + " (SERVER)");
                 });
             } catch (Exception ignore) {
                 // tetap pakai offline
@@ -2839,19 +2849,43 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     }
 
     private void updateIslamicShelf() {
-        if (islamicShelf != null) islamicShelf.setVisibility(View.GONE);
-        if (ayahBlock != null) ayahBlock.setVisibility(View.GONE);
+        // Rak sholat & ayat selalu tampil di layar utama SwadayaTV.
+        // (Dulu method ini menyembunyikannya, sehingga jadwal sholat tidak pernah kelihatan.)
+        if (islamicShelf != null) {
+            islamicShelf.setVisibility(View.VISIBLE);
+            islamicShelf.setAlpha(1f);
+        }
     }
 
     private void updateAyah() {
-        WeeklyAyah.Ayah a = WeeklyAyah.stored(this);
-        if (a == null) a = WeeklyAyah.last(this);
-        showAyah(a);
-        // refresh hari ini di background; kalau berhasil, tampilkan ayat terbaru
+        renderAyah();
+        // Segarkan ayat & doa di background; kalau berhasil, tampilkan yang terbaru.
         new Thread(() -> {
             WeeklyAyah.Ayah baru = WeeklyAyah.refresh(this);
-            if (baru != null) runOnUiThread(() -> showAyah(baru));
+            DailyDoa.Segarkan(this);
+            if (baru != null) runOnUiThread(this::renderAyah);
         }).start();
+    }
+
+    /** Pilih yang tampil di rak kanan: ayat Al-Qur'an atau doa harian, bergantian tiap hari. */
+    private void renderAyah() {
+        int hari = java.util.Calendar.getInstance().get(java.util.Calendar.DAY_OF_YEAR);
+        if (hari % 2 == 0) {
+            showDoa(DailyDoa.getTodayEntry(this));
+        } else {
+            WeeklyAyah.Ayah a = WeeklyAyah.stored(this);
+            if (a == null) a = WeeklyAyah.last(this);
+            showAyah(a);
+        }
+    }
+
+    private void showDoa(DailyDoa.Entry e) {
+        if (ayahBlock == null) return;
+        if (e == null) { ayahBlock.setVisibility(View.GONE); return; }
+        if (ayahLabel != null) ayahLabel.setText(e.title);
+        if (ayahArabic != null) ayahArabic.setText(e.arabic);
+        if (ayahText != null) ayahText.setText(e.translation);
+        ayahBlock.setVisibility(View.VISIBLE);
     }
 
     private void showAyah(WeeklyAyah.Ayah a) {
@@ -3059,6 +3093,13 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             SoundEffects.playSelect();
             closeMenu(true);
             startActivity(new Intent(MainActivity.this, CapacityStatsActivity.class));
+        });
+
+        // Row 2f: Kumpulan Doa Harian
+        addInputRow(rows, close, R.drawable.ic_theme, "🤲 Doa Harian", -1, () -> {
+            SoundEffects.playSelect();
+            closeMenu(true);
+            startActivity(new Intent(MainActivity.this, DoaActivity.class));
         });
 
         // Row 3: Lokasi Cuaca
@@ -4115,7 +4156,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                         if (weatherAirQualityView != null) {
                             weatherAirQualityView.setNextFocusDownId(View.NO_ID);
                         }
-                        showAyah(WeeklyAyah.stored(MainActivity.this) != null ? WeeklyAyah.stored(MainActivity.this) : WeeklyAyah.last(MainActivity.this));
+                        renderAyah();
                     })
                     .start();
         } else {
@@ -4124,7 +4165,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             if (weatherAirQualityView != null) {
                 weatherAirQualityView.setNextFocusDownId(View.NO_ID);
             }
-            showAyah(WeeklyAyah.stored(this) != null ? WeeklyAyah.stored(this) : WeeklyAyah.last(this));
+            renderAyah();
         }
     }
 

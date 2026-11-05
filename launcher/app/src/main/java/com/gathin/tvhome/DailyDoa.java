@@ -164,10 +164,18 @@ final class DailyDoa {
             for (int i = 0; i < arr.length(); i++) {
                 JSONObject o = arr.optJSONObject(i);
                 if (o == null) continue;
-                keluar.add(new Entry(
-                        o.optString("title", o.optString("judul", "DOA HARIAN")),
-                        o.optString("arabic", o.optString("arab", o.optString("ar", ""))),
-                        o.optString("translation", o.optString("terjemahan", o.optString("latin", "")))));
+                // Format quran-json: {no, name, text_ayah, transliteration, text_id}
+                // Format lain: {title/judul, arabic/arab, translation/terjemahan}
+                String judul = o.optString("title", o.optString("judul", o.optString("name", "")));
+                String arab = o.optString("arabic", o.optString("arab", o.optString("ar", o.optString("text_ayah", ""))));
+                String arti = o.optString("translation", o.optString("terjemahan",
+                        o.optString("text_id", o.optString("id", o.optString("latin", "")))));
+                String latin = o.optString("transliteration", "");
+                if (judul.isEmpty()) judul = "DOA HARIAN";
+                if (arab.isEmpty()) continue;
+                if (arti.isEmpty() && latin.isEmpty()) continue;
+                if (!latin.isEmpty()) arti = arti + "\n(" + latin + ")";
+                keluar.add(new Entry(judul, arab, arti));
             }
         } catch (Exception e) {
             Log.w(TAG, "uraikan doa gagal: " + e.getMessage());
