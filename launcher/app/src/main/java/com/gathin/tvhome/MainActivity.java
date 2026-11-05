@@ -2785,7 +2785,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         WeeklyAyah.Ayah a = WeeklyAyah.stored(this);
         if (a == null) a = WeeklyAyah.last(this);
         showAyah(a);
-        WeeklyAyah.syncIfDue(this, ayah -> showAyah(ayah));
+        // refresh hari ini di background; kalau berhasil, tampilkan ayat terbaru
+        new Thread(() -> {
+            WeeklyAyah.Ayah baru = WeeklyAyah.refresh(this);
+            if (baru != null) runOnUiThread(() -> showAyah(baru));
+        }).start();
     }
 
     private void showAyah(WeeklyAyah.Ayah a) {

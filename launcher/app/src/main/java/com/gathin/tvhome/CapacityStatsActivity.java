@@ -16,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.io.File;
+import java.util.Locale;
 
 /**
  * Statistik kapasitas TV: RAM, storage, info perangkat.
