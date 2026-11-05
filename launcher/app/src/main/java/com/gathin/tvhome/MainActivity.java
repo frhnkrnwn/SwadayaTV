@@ -255,6 +255,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private final java.util.concurrent.ExecutorService wallDecoder = java.util.concurrent.Executors.newSingleThreadExecutor();
     private long wallShownAt;
     private android.widget.ImageView wallView;
+    private OceanWallpaperView oceanView;
+    private StadiumWallpaperView stadiumView;
     private android.graphics.Bitmap wallBitmap;
     /** Settings kept for the places refresh, which runs after onCreate. */
     private Config config;
@@ -437,6 +439,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
         if (!wallpapers.isEmpty()) showNextWallpaper(false);
         else if (cfg.wallpaper != null && !placesMode) setWallpaper(decodeWallpaper(cfg.wallpaper), false);
+        // tampilkan latar hidup (Samudra/Stadion) kalau diaktifkan
+        applyLiveWallpapers();
         // The shelf grows and shrinks with the name and the description, so it hangs from its
         // bottom edge: every time it is measured, its top is worked out again. Positioning it by
         // the height it happened to have beforehand is what let a tall block run into the dock.
@@ -1015,6 +1019,62 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         } else {
             wallView.setColorFilter(0xFF6E6E6E, android.graphics.PorterDuff.Mode.MULTIPLY);
         }
+    }
+
+    /** Status latar Samudra Hidup (tersimpan). */
+    private static final String KEY_LIVE_OCEAN = "live_ocean";
+    private static final String KEY_LIVE_STADIUM = "live_stadium";
+
+    private boolean isLiveOceanOn() {
+        return getSharedPreferences("wallpaper_prefs", MODE_PRIVATE).getBoolean(KEY_LIVE_OCEAN, false);
+    }
+
+    private boolean isLiveStadiumOn() {
+        return getSharedPreferences("wallpaper_prefs", MODE_PRIVATE).getBoolean(KEY_LIVE_STADIUM, false);
+    }
+
+    /** Pasang/lepas latar Samudra Hidup (menutupi wallpaper statis). */
+    private void toggleLiveOcean(boolean on) {
+        getSharedPreferences("wallpaper_prefs", MODE_PRIVATE).edit().putBoolean(KEY_LIVE_OCEAN, on).apply();
+        applyLiveWallpapers();
+    }
+
+    /** Pasang/lepas latar Stadion Hidup (menutupi wallpaper statis). */
+    private void toggleLiveStadium(boolean on) {
+        getSharedPreferences("wallpaper_prefs", MODE_PRIVATE).edit().putBoolean(KEY_LIVE_STADIUM, on).apply();
+        applyLiveWallpapers();
+    }
+
+    /** Sinkronkan tampilan latar hidup (hanya satu yang aktif). */
+    private void applyLiveWallpapers() {
+        boolean ocean = isLiveOceanOn();
+        boolean stadium = isLiveStadiumOn();
+        // saat keduanya aktif, prioritaskan stadion
+        boolean showOcean = ocean && !stadium;
+        boolean showStadium = stadium;
+
+        if (showOcean) {
+            if (oceanView == null) {
+                oceanView = new OceanWallpaperView(this);
+                root.addView(oceanView, 0, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            }
+            oceanView.setVisibility(View.VISIBLE);
+        } else if (oceanView != null) {
+            oceanView.setVisibility(View.GONE);
+        }
+
+        if (showStadium) {
+            if (stadiumView == null) {
+                stadiumView = new StadiumWallpaperView(this);
+                root.addView(stadiumView, 0, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            }
+            stadiumView.setVisibility(View.VISIBLE);
+        } else if (stadiumView != null) {
+            stadiumView.setVisibility(View.GONE);
+        }
+
+        // sembunyikan wallpaper statis saat latar hidup aktif
+        if (wallView != null) wallView.setVisibility((showOcean || showStadium) ? View.GONE : View.VISIBLE);
     }
 
     private int getWallpaperDimColor() {
@@ -2945,6 +3005,22 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         addInputRow(rows, close, R.drawable.ic_wallpaper, "Wallpaper 4K", -1, () -> {
             SoundEffects.playSelect();
             showWallpaperDialog();
+        });
+
+        // Row 1b: Latar Samudra Hidup
+        boolean oceanOn = isLiveOceanOn();
+        addInputRow(rows, close, R.drawable.ic_wallpaper, oceanOn ? "🌊 Latar Samudra Hidup (Aktif)" : "🌊 Latar Samudra Hidup", -1, () -> {
+            SoundEffects.playSelect();
+            toggleLiveOcean(!oceanOn);
+            closeMenu(true);
+        });
+
+        // Row 1c: Latar Stadion Hidup
+        boolean stadiumOn = isLiveStadiumOn();
+        addInputRow(rows, close, R.drawable.ic_soccer, stadiumOn ? "🏟️ Latar Stadion Hidup (Aktif)" : "🏟️ Latar Stadion Hidup", -1, () -> {
+            SoundEffects.playSelect();
+            toggleLiveStadium(!stadiumOn);
+            closeMenu(true);
         });
 
         // Row 2: Gaya Tema
