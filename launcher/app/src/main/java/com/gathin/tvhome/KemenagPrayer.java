@@ -22,7 +22,13 @@ final class KemenagPrayer {
      * dayOffset 0 = hari ini, 1 = besok.
      */
     static long[] times(double lat, double lon, long now, int dayOffset) {
-        java.util.TimeZone zona = java.util.TimeZone.getDefault();
+        // Perkiraan zona waktu dari longitude (WIB=7, WITA=8, WIT=9) agar cocok per daerah.
+        double tz = Math.round(lon / 15.0);
+        return times(lat, lon, now, dayOffset, tz);
+    }
+
+    static long[] times(double lat, double lon, long now, int dayOffset, double tzOffsetHours) {
+        java.util.TimeZone zona = java.util.TimeZone.getTimeZone("GMT" + (tzOffsetHours >= 0 ? "+" : "") + (int) tzOffsetHours + ":00");
         java.util.Calendar kal = java.util.Calendar.getInstance(zona);
         kal.setTimeInMillis(now);
         kal.add(java.util.Calendar.DAY_OF_MONTH, dayOffset);
