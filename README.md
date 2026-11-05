@@ -55,13 +55,14 @@ SwadayaTV adalah **launcher (layar utama) pengganti** untuk Android TV / Google 
 |---|---|---|
 | 1 | **Ganti tema** | 3 tema minimal hijau-abu buatan Swadaya (Swadaya, Swadaya Malam, Swadaya Terang) |
 | 2 | **Ganti wallpaper HD** | 60+ foto 4K gratis dari Unsplash & Pexels, otomatis ganti tiap 6 jam |
-| 3 | **Cuaca + AQI** | Suhu, ramalan 3/6/9 jam, kualitas udara, kelembapan, angin — dari Open-Meteo (tanpa API key) |
-| 4 | **Bola: klasemen & jadwal** | Liga Inggris, Spanyol, Italia, Jerman, Prancis, Liga 1 Indonesia, UCL — dari FotMob |
-| 5 | **Waktu sholat (Kemenag)** | Hitung offline pakai rumus Kemenag (Subuh 20°, Isya 18°) — jalan tanpa internet |
-| 6 | **Ayat/Doa harian** | Rotasi ayat dan doa harian, tersimpan offline |
-| 7 | **Now Playing musik** | Judul + cover album dari Spotify / YouTube / VLC / Apple Music, muncul otomatis pas musik jalan |
-| 8 | **Addon kartu modul** | Install APK addon kecil (Jam Dunia, Kurs Koin, Capacity Stats, Photo Screensaver) |
-| 9 | **OTA update** | Tombol update di TV, langsung download & install dari GitHub |
+| 3 | **Latar hidup (live wallpaper)** | 🌊 Samudra & Pantai beranimasi dan 🏟️ Stadion Malam — aktif dari menu Wallpaper |
+| 4 | **Cuaca + AQI** | Suhu, ramalan 3/6/9 jam, kualitas udara, kelembapan, angin — dari Open-Meteo (tanpa API key) |
+| 5 | **Bola: klasemen & jadwal** | Liga Inggris, Spanyol, Italia, Jerman, Prancis, Liga 1 Indonesia, UCL — dari FotMob |
+| 6 | **Waktu sholat (Kemenag)** | Hitung offline pakai rumus Kemenag (Subuh 20°, Isya 18°) — jalan tanpa internet |
+| 7 | **Ayat/Doa harian** | Rotasi ayat dan doa harian, tersimpan offline |
+| 8 | **Now Playing musik** | Judul + cover album dari Spotify / YouTube / VLC / Apple Music, muncul otomatis pas musik jalan |
+| 9 | **Addon kartu modul** | Install APK addon kecil (Jam Dunia, Kurs Koin, Capacity Stats, Photo Screensaver) |
+| 10 | **OTA update** | Tombol update di TV, langsung download & install dari GitHub |
 
 ---
 
@@ -150,7 +151,7 @@ Buka **Pengaturan → Tema** di launcher, pilih salah satu:
 2. **🌙 Swadaya Malam** — hitam zamrud OLED, hemat mata untuk malam
 3. **☀️ Swadaya Terang** — porselen terang hijau-abu, nyaman untuk siang hari
 
-Tema langsung berubah tanpa restart.
+Tema langsung berubah tanpa restart. Nama tema lama (`Frosted Glass`, `Neumorphism`, `Dark Glow`) otomatis dipetakan jadi tema Swadaya versi baru.
 
 ---
 
@@ -164,6 +165,24 @@ SwadayaTV sudah bawa koleksi **60+ foto wallpaper 4K (3840×2160) gratis** dari:
 Kategorinya: Indonesia (Bromo, Bali, Lombok, dll), alam, kota, pantai, pegunungan. Diunduh sekali lalu **cache lokal**, diganti otomatis tiap 6 jam. Ada juga foto tempat wisata dengan nama tempat + cerita singkatnya (dari Bing).
 
 Di **Pengaturan → Wallpaper** kamu bisa: ganti manual, upload gambar sendiri dari HP (scan QR), atau matikan wallpaper online (`"places": false` di `config.json`).
+
+### Wallpaper Hidup (Beranimasi)
+
+Selain foto biasa, SwadayaTV punya dua latar hidup yang bergerak halus 60 FPS:
+
+| Latar | Suasananya | Cocok untuk |
+|---|---|---|
+| **🌊 Samudra & Pantai** | Langit berubah mengikuti jam (pagi, siang, senja, malam), matahari/bulan terbit dan terbenam, ombak tiga lapis, bukit pasir, pohon kelapa, dan kawanan ikan | Santai, suka pemandangan laut |
+| **🏟️ Stadion Malam** | Lapangan rumput hijau, lampu stadion berdenyut, sorotan lampu menyapu | Penggemar bola, dipadukan dengan klasemen |
+
+Cara mengaktifkan:
+
+1. Tekan tombol **Pengaturan** di launcher
+2. Pilih **🌊 Latar Samudra Hidup** atau **🏟️ Latar Stadion Hidup**
+3. Latar langsung berganti tanpa restart
+4. Untuk mematikan, pilih menu yang sama sekali lagi — wallpaper foto akan kembali
+
+Kalau keduanya aktif, Stadion yang dipakai. Animasi dibuat ringan supaya remote dan perpindahan menu tetap lancar di STB.
 
 ---
 
