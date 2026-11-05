@@ -2933,6 +2933,13 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             startActivity(new Intent(MainActivity.this, WorldClockActivity.class));
         });
 
+        // Row 2e: Kapasitas TV
+        addInputRow(rows, close, R.drawable.ic_theme, "📊 Kapasitas TV", -1, () -> {
+            SoundEffects.playSelect();
+            closeMenu(true);
+            startActivity(new Intent(MainActivity.this, CapacityStatsActivity.class));
+        });
+
         // Row 3: Lokasi Cuaca
         String locName = AppLocationManager.getLocationName(this) + " (" + AppLocationManager.getActiveRegion(this) + ")";
         addInputRow(rows, close, R.drawable.ic_location, "Lokasi: " + locName, -1, () -> {
