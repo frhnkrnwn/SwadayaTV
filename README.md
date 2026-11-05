@@ -229,15 +229,17 @@ Utama: **Bahasa Indonesia** (santai, gampang dimengerti orang awam). Tambahan: *
 
 ---
 
-## 📜 Kredit & Sumber
+## Kredit & Sumber
 
-- **Rebrand dari [Aura TV Home](https://github.com/luthpunk/aura-tv-home)** oleh luthpunk / Gathin — MIT License
-- **Basis launcher: [CleanYourTV](https://github.com/Gathin23/cleanyourtv)** oleh Gathin23 — terima kasih atas arsitekturnya
-- Data bola: **FotMob API**
-- Cuaca & AQI: **Open-Meteo**
-- Kurs koin: **Frankfurter**
-- Doa: **GitHub quran-json (iherbs)**
-- Wallpaper HD: **Unsplash** & **Pexels**
-- Font: [Outfit](https://fonts.google.com/specimen/Outfit) — SIL Open Font License 1.1
+SwadayaTV dibangun di atas arsitektur launcher Android TV dari [CleanYourTV](https://github.com/Gathin23/cleanyourtv) (Gathin23). Terima kasih kepada pengembang aslinya atas fondasi yang solid.
 
-Kalau ada pertanyaan atau nemu bug, langsung buka **Issues** di repo ini ya 🙌
+Pustaka dan layanan pihak ketiga yang dipakai:
+
+- Data bola: FotMob
+- Cuaca dan indeks kualitas udara: Open-Meteo
+- Kurs koin: Frankfurter
+- Doa harian: GitHub quran-json (iherbs)
+- Wallpaper HD: Unsplash dan Pexels
+- Font: Outfit — SIL Open Font License 1.1
+
+Pertanyaan atau laporan bug silakan buka di halaman Issues.
