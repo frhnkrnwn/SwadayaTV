@@ -63,6 +63,30 @@ final class KemenagPrayer {
         return keluar;
     }
 
+    /** Terbit matahari (Syuruk) untuk koordinat lat/lon, epoch ms. */
+    static long sunrise(double lat, double lon, long now, int dayOffset) {
+        double tzPerkiraan = Math.round(lon / 15.0);
+        java.util.TimeZone zona = java.util.TimeZone.getTimeZone(
+                "GMT" + (tzPerkiraan >= 0 ? "+" : "") + (int) tzPerkiraan + ":00");
+        java.util.Calendar kal = java.util.Calendar.getInstance(zona);
+        kal.setTimeInMillis(now);
+        kal.add(java.util.Calendar.DAY_OF_MONTH, dayOffset);
+        kal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+        kal.set(java.util.Calendar.MINUTE, 0);
+        kal.set(java.util.Calendar.SECOND, 0);
+        kal.set(java.util.Calendar.MILLISECOND, 0);
+        long tengahMalam = kal.getTimeInMillis();
+        double tz = zona.getOffset(tengahMalam + 12 * 3_600_000L) / 3_600_000.0;
+        double jd = hariJulian(kal.get(java.util.Calendar.YEAR),
+                kal.get(java.util.Calendar.MONTH) + 1, kal.get(java.util.Calendar.DAY_OF_MONTH)) - lon / 360.0;
+        double t = 6.0;
+        for (int i = 0; i < 2; i++) {
+            t = tengahHari(jd, t, tz, lon) - busurSudut(jd, t, lat, SUNSET_ANGLE);
+        }
+        double menit = Math.ceil(t * 60);
+        return tengahMalam + Math.round(menit) * 60_000L;
+    }
+
     /** {index, waktu} sholat berikutnya; setelah Isya = Subuh besok. */
     static long[] next(double lat, double lon) {
         return next(lat, lon, System.currentTimeMillis());

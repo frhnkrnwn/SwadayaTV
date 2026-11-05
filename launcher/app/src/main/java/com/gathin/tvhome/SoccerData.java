@@ -156,7 +156,16 @@ final class SoccerData {
                 if (tabel0 != null) {
                     JSONObject data = tabel0.optJSONObject("data");
                     if (data != null) {
-                        JSONArray all = data.optJSONArray("table");
+                        // FotMob mengirim "table" sebagai objek {"all":[...], "home":[...], ...}
+                        // pada API terbaru, dan sebagai array langsung pada versi lama.
+                        JSONArray all = null;
+                        Object tabel = data.opt("table");
+                        if (tabel instanceof JSONObject) {
+                            all = ((JSONObject) tabel).optJSONArray("all");
+                            if (all == null) all = ((JSONObject) tabel).optJSONArray("table");
+                        } else if (tabel instanceof JSONArray) {
+                            all = (JSONArray) tabel;
+                        }
                         if (all != null) {
                             for (int i = 0; i < all.length(); i++) {
                                 JSONObject o = all.optJSONObject(i);
@@ -171,7 +180,16 @@ final class SoccerData {
                                 r.scoresStr = o.optString("scoresStr", "");
                                 r.goalDiff = o.optInt("goalConDiff", o.optInt("goalDiff", 0));
                                 r.points = o.optInt("pts", o.optInt("points", 0));
-                                r.qualColor = o.optInt("qualColor", 0);
+                                Object warna = o.opt("qualColor");
+                                if (warna instanceof String) {
+                                    try {
+                                        r.qualColor = android.graphics.Color.parseColor((String) warna);
+                                    } catch (Exception ignore) {
+                                        r.qualColor = 0;
+                                    }
+                                } else {
+                                    r.qualColor = o.optInt("qualColor", 0);
+                                }
                                 d.table.add(r);
                             }
                         }
@@ -210,6 +228,15 @@ final class SoccerData {
                     }
                 }
             }
+            // Jadwal terdekat dulu: laga yang belum dimainkan (terdekat), lalu hasil terbaru.
+            final long sekarang = System.currentTimeMillis();
+            java.util.Collections.sort(d.matches, (a, b) -> {
+                boolean aDepan = a.utcTime >= sekarang;
+                boolean bDepan = b.utcTime >= sekarang;
+                if (aDepan != bDepan) return aDepan ? -1 : 1;
+                if (aDepan) return Long.compare(a.utcTime, b.utcTime);
+                return Long.compare(b.utcTime, a.utcTime);
+            });
         } catch (Exception e) {
             Log.w(TAG, "parse gagal: " + e.getMessage());
         }
