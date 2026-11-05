@@ -1,7 +1,7 @@
 {
-  "versionCode": 37,
-  "versionName": "3.5.3-id",
+  "versionCode": 45,
+  "versionName": "3.6.1-id",
   "apkUrl": "https://github.com/frhnkrnwn/SwadayaTV/releases/latest/download/SwadayaTV.apk",
-  "changelog": "Wire Kemenag prayer times into launcher (v3.5.3)",
+  "changelog": "Fix build: hapus artefak heredoc di CapacityStats/WorldClock; perbaiki workflow OTA; v3.6.1",
   "releaseDate": "2026-11-05"
 }
