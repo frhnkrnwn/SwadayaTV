@@ -81,6 +81,12 @@
             android:exported="false"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.TvHome" />
+        <activity
+            android:name=".CapacityStatsActivity"
+            android:label="Kapasitas TV"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.TvHome" />
 
         <activity
             android:name=".WeatherActivity"
