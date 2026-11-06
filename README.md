@@ -61,7 +61,7 @@ SwadayaTV adalah **launcher (layar utama) pengganti** untuk Android TV / Google 
 | 6 | **Waktu sholat (Kemenag)** | Hitung offline pakai rumus Kemenag (Subuh 20°, Isya 18°) — jalan tanpa internet |
 | 7 | **Ayat/Doa harian** | Rotasi ayat dan doa harian, tersimpan offline |
 | 8 | **Now Playing musik** | Judul + cover album dari Spotify / YouTube / VLC / Apple Music, muncul otomatis pas musik jalan |
-| 9 | **Addon kartu modul** | Install APK addon kecil (Jam Dunia, Kurs Koin, Capacity Stats, Photo Screensaver) |
+| 9 | **Addon kartu modul** | Fitur inti (Jam Dunia, Kurs Koin, Kapasitas TV, Cuaca, Sholat) sudah **bawaan**; addon APK lain opsional dan source-nya ada di `addons/` |
 | 10 | **OTA update** | Tombol update di TV, langsung download & install dari GitHub |
 
 ---
@@ -140,6 +140,8 @@ adb shell pm disable-user --user 0 com.fiberhome.myindihome              # Fiber
 ```
 
 Balikin lagi: ganti `disable-user` jadi `enable`.
+
+> 📖 Panduan debloat langkah demi langkah (dengan penjelasan tiap perintah) ada di [`docs/TUTORIAL_CLEANYOURTV_ID.md`](docs/TUTORIAL_CLEANYOURTV_ID.md).
 
 ---
 
@@ -250,14 +252,25 @@ https://raw.githubusercontent.com/frhnkrnwn/SwadayaTV/main/release/version.json
 
 ## Addon (Jam Dunia, Kurs Koin, dll)
 
-Addon = APK kecil terpisah yang nempel sebagai kartu di layar utama. Masing-masing addon jalan mandiri (auto on/off) jadi nggak bentrok sama launcher.
+Beberapa fitur addon CleanYourTV sudah **dibuat bawaan** di SwadayaTV supaya langsung jalan tanpa install APK tambahan:
 
-1. Unduh addon dari folder [`addons/`](addons/) di repo ini atau dari [CleanYourTV addons](https://cleanyour.tv/addons)
+| Fitur | Status di SwadayaTV |
+|---|---|
+| Jam Dunia | Bawaan — **Pengaturan → 🕒 Jam Dunia** |
+| Kurs Koin | Bawaan — **Pengaturan → 💱 Kurs Koin** (Frankfurter, tanpa API key) |
+| Kapasitas TV | Bawaan — **Pengaturan → 📊 Kapasitas TV** |
+| Cuaca + AQI | Bawaan — kartu cuaca di layar utama |
+| Waktu Sholat | Bawaan — rak kanan layar utama (Kemenag offline + sinkron online) |
+| Photo/News Screensaver, Sleep Timer, Quiet Hours, dll | Opsional — source lengkap ada di `addons/`, bisa dibuild sendiri |
+
+Addon lain tetap bisa dipasang sebagai APK terpisah:
+
+1. Unduh/build addon dari folder [`addons/`](addons/) di repo ini atau dari [CleanYourTV addons](https://cleanyour.tv/addons)
 2. Install APK addon ke TV seperti Cara 1/2
 3. Setujui **"Show card" / "Tampilkan kartu"** sekali aja pas pertama buka
 4. Kartu bakal muncul di layar utama
 
-> File lengkap addon ada di `addons/` dan `docs/ADDONS_RESEARCH.md`. Yang siap dipakai: Cuaca (Open-Meteo), Sholat (Kemenag offline), Koin (Frankfurter, tanpa API key), Jam Dunia, Capacity Stats, Photo Screensaver.
+> Repo ini menyimpan **semua** addon CleanYourTV (33 modul) di `addons/`, plus `cuaca/`, `koin/`, dan `sholat/` sebagai penanda fitur yang sudah dibawa ke dalam launcher. Riset lengkap ada di `docs/ADDONS_RESEARCH.md`.
 
 ---
 
@@ -269,12 +282,18 @@ SwadayaTV/
 │  └─ app/src/main/java/com/gathin/tvhome/
 │     ├─ MainActivity.java       Layar utama + semua pengaturan
 │     ├─ ThemeManager.java       3 tema Swadaya (default, malam, terang)
-│     ├─ SoccerData/FotMob       Klasemen & Jadwal Liga 1/EPL/dll
+│     ├─ SoccerData.java         Klasemen & Jadwal (FotMob)
 │     ├─ KemenagPrayer.java      Kalkulator sholat offline Kemenag
-│     ├─ DailyAyat.java          Ayat/Doa harian offline
+│     ├─ WeeklyAyah.java         Ayat pilihan (Qur'an)
+│     ├─ DailyDoa.java           Doa harian (quran-json + cadangan offline)
+│     ├─ DoaActivity.java        Layar daftar doa
 │     ├─ OnlineWallpapers.java   Wallpaper HD Unsplash/Pexels
-│     └─ ... (cuaca, Now Playing, dll)
-├─ addons/              Addon kartu modul (cuaca, sholat, koin, jam dunia, ...)
+│     ├─ OceanWallpaperView.java   Latar hidup Samudra & Pantai
+│     ├─ StadiumWallpaperView.java Latar hidup Stadion Malam
+│     └─ ... (cuaca, Now Playing, Koin, Jam Dunia, Kapasitas, dll)
+├─ addons/              Semua source addon CleanYourTV (33 modul) + penanda cuaca/koin/sholat
+├─ cleanyourtv/         Salinan lengkap source GitHub Gathin23/cleanyourtv
+├─ arsyan-tv-launcher/  Salinan lengkap source GitHub ssemyy-sds/arsyan-tv-launcher
 ├─ themes/              Config tema (swadaya, swadaya-malam, swadaya-terang)
 ├─ tools/               Script debloat/install/theme di terminal
 ├─ docs/                Riset addon & panduan (Bahasa Indonesia)
@@ -297,6 +316,23 @@ Kalau kamu pengen compile ulang sendiri:
    # APK ada di app/build/outputs/apk/release/app-release.apk
    ```
 4. Install via `adb install -r app-release.apk` atau upload ke Release GitHub
+
+---
+
+## Riwayat Versi
+
+### v3.6.2 (versionCode 46) — terbaru
+- **Klasemen bola diperbaiki:** format data FotMob terbaru (`table.all`) sekarang terbaca — semua liga tampil (EPL 20 tim, Liga 1 18 tim, UCL 36 tim).
+- **Jadwal bola:** laga terdekat tampil lebih dulu, hasil terbaru di bawahnya.
+- **Waktu sholat tampil di layar utama:** rak jadwal tidak lagi disembunyikan saat layar dibuka/diperbarui.
+- **Syuruk dihitung** (bukan tanda "-"), dan akurasi dicek ±2–4 menit dari Aladhan Kemenag.
+- **Zona WIB/WITA/WIT otomatis** dari kota yang dipilih + label `(OFFLINE)` / `(SERVER)`.
+- **Doa Harian baru:** menu **Pengaturan → 🤲 Doa Harian** (71 doa online, 15 cadangan offline) + rotasi ayat/doa di layar utama.
+- **Bahasa Inggris** dilengkapi untuk semua teks resource utama.
+- **Build & OTA:** workflow GitHub Actions hijau kembali; APK ditandatangani dengan sertifikat yang sama seperti v3.5.3, jadi update OTA bisa menimpa aplikasi lama.
+
+### v3.6.1 (versionCode 45)
+- Tema Swadaya (3 varian), wallpaper hidup Samudra & Stadion, integrasi FotMob/Kemenag/Doa.
 
 ---
 
