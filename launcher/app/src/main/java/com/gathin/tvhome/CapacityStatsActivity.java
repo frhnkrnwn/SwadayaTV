@@ -53,6 +53,16 @@ public class CapacityStatsActivity extends Activity {
         header.addView(kembali);
         root.addView(header);
 
+        // Isi dibuat bisa digulir supaya semua baris tetap terbaca di TV 720p.
+        android.widget.ScrollView gulir = new android.widget.ScrollView(this);
+        gulir.setVerticalScrollBarEnabled(false);
+        gulir.setFillViewport(true);
+        LinearLayout isi = new LinearLayout(this);
+        isi.setOrientation(LinearLayout.VERTICAL);
+        gulir.addView(isi);
+        root.addView(gulir, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 0, 1));
+
         // RAM
         android.app.ActivityManager am = (android.app.ActivityManager) getSystemService(ACTIVITY_SERVICE);
         android.app.ActivityManager.MemoryInfo mi = new android.app.ActivityManager.MemoryInfo();
@@ -60,9 +70,9 @@ public class CapacityStatsActivity extends Activity {
         long totalRam = mi.totalMem;
         long availRam = mi.availMem;
         long usedRam = totalRam - availRam;
-        tambahBaris(root, "RAM Total", formatBytes(totalRam));
-        tambahBaris(root, "RAM Terpakai", formatBytes(usedRam) + " (" + persen(usedRam, totalRam) + ")");
-        tambahBaris(root, "RAM Tersedia", formatBytes(availRam));
+        tambahBaris(isi, "RAM Total", formatBytes(totalRam));
+        tambahBaris(isi, "RAM Terpakai", formatBytes(usedRam) + " (" + persen(usedRam, totalRam) + ")");
+        tambahBaris(isi, "RAM Tersedia", formatBytes(availRam));
 
         // Storage internal
         StatFs stat = new StatFs(getFilesDir().getAbsolutePath());
@@ -72,23 +82,24 @@ public class CapacityStatsActivity extends Activity {
         long totalStorage = totalBlocks * blockSize;
         long availStorage = availBlocks * blockSize;
         long usedStorage = totalStorage - availStorage;
-        tambahBaris(root, "Storage Total", formatBytes(totalStorage));
-        tambahBaris(root, "Storage Terpakai", formatBytes(usedStorage) + " (" + persen(usedStorage, totalStorage) + ")");
-        tambahBaris(root, "Storage Tersedia", formatBytes(availStorage));
+        tambahBaris(isi, "Storage Total", formatBytes(totalStorage));
+        tambahBaris(isi, "Storage Terpakai", formatBytes(usedStorage) + " (" + persen(usedStorage, totalStorage) + ")");
+        tambahBaris(isi, "Storage Tersedia", formatBytes(availStorage));
 
         // Info perangkat
-        tambahBaris(root, "Model", android.os.Build.MODEL);
-        tambahBaris(root, "Android", android.os.Build.VERSION.RELEASE + " (SDK " + android.os.Build.VERSION.SDK_INT + ")");
-        tambahBaris(root, "Prosesor", android.os.Build.HARDWARE);
-        tambahBaris(root, "Brand", android.os.Build.BRAND);
+        tambahBaris(isi, "Model", android.os.Build.MODEL);
+        tambahBaris(isi, "Android", android.os.Build.VERSION.RELEASE + " (SDK " + android.os.Build.VERSION.SDK_INT + ")");
+        tambahBaris(isi, "Prosesor", android.os.Build.HARDWARE);
+        tambahBaris(isi, "Brand", android.os.Build.BRAND);
 
         TextView kaki = buatTeks("Data dibaca langsung dari sistem TV", 11, TEKS_REDUP, false);
         LinearLayout.LayoutParams kakiLp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         kakiLp.topMargin = dp(12);
-        root.addView(kaki, kakiLp);
+        isi.addView(kaki, kakiLp);
 
         setContentView(root);
+        kembali.post(kembali::requestFocus);
     }
 
     private void tambahBaris(LinearLayout root, String label, String nilai) {

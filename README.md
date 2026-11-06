@@ -321,7 +321,12 @@ Kalau kamu pengen compile ulang sendiri:
 
 ## Riwayat Versi
 
-### v3.6.2 (versionCode 46) — terbaru
+### v3.6.3 (versionCode 47) — terbaru
+- **Navigasi remote di layar baru:** Doa Harian, Jam Dunia, dan Kurs Koin langsung memberi fokus ke item pertama, jadi tombol arah remote langsung jalan.
+- **Kapasitas TV bisa digulir:** semua baris RAM/storage/perangkat tetap terbaca di TV 720p, tombol Kembali selalu di atas.
+- Penyesuaian kecil pada README (struktur repo, status addon, panduan debloat).
+
+### v3.6.2 (versionCode 46)
 - **Klasemen bola diperbaiki:** format data FotMob terbaru (`table.all`) sekarang terbaca — semua liga tampil (EPL 20 tim, Liga 1 18 tim, UCL 36 tim).
 - **Jadwal bola:** laga terdekat tampil lebih dulu, hasil terbaru di bawahnya.
 - **Waktu sholat tampil di layar utama:** rak jadwal tidak lagi disembunyikan saat layar dibuka/diperbarui.
