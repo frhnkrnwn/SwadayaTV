@@ -102,18 +102,26 @@ jobs:
           }
           EOF
 
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add release/version.json
-          if ! git diff --cached --quiet; then
-            git commit -m "chore(release): update OTA version.json to v${VNAME} (${VCODE})"
-            pushed=""
-            for i in 1 2 3; do
-              if git pull --rebase origin main && git push origin main; then
-                pushed="yes"
-                break
+          # Simpan metadata OTA lewat GitHub Contents API, bukan git lokal.
+          # Ini menghindari gagal "You have unstaged changes" akibat file hasil build.
+          content=$(base64 -w0 release/version.json)
+          updated=""
+          for i in 1 2 3 4 5; do
+            sha=$(gh api "repos/${GITHUB_REPOSITORY}/contents/release/version.json?ref=main" --jq .sha 2>/dev/null || true)
+            if [ -n "$sha" ]; then
+              if gh api -X PUT "repos/${GITHUB_REPOSITORY}/contents/release/version.json" \
+                -f message="chore(release): update OTA version.json to v${VNAME} (${VCODE})" \
+                -f content="$content" -f sha="$sha" -f branch=main >/dev/null 2>&1; then
+                updated="yes"; break
               fi
-              sleep 4
-            done
-            [ -n "$pushed" ] || { echo "::error::Gagal push version.json"; exit 1; }
-          fi
+            else
+              if gh api -X PUT "repos/${GITHUB_REPOSITORY}/contents/release/version.json" \
+                -f message="chore(release): update OTA version.json to v${VNAME} (${VCODE})" \
+                -f content="$content" -f branch=main >/dev/null 2>&1; then
+                updated="yes"; break
+              fi
+            fi
+            echo "Percobaan ${i} update version.json belum berhasil, coba lagi..."
+            sleep 4
+          done
+          [ -n "$updated" ] || { echo "::error::Gagal update version.json"; exit 1; }
