@@ -52,6 +52,7 @@ public class WorldClockActivity extends Activity {
         buatTampilan();
         isiData();
         adapter.notifyDataSetChanged();
+        daftar.post(this::fokusAwal);
         // refresh tiap 30 detik
         final android.os.Handler h = new android.os.Handler();
         Runnable r = new Runnable() {
@@ -194,6 +195,13 @@ public class WorldClockActivity extends Activity {
         sld.addState(new int[]{android.R.attr.state_focused}, fokus);
         sld.addState(new int[]{}, normal);
         return sld;
+    }
+
+    /** Fokus awal ke kartu pertama supaya remote langsung bisa dipakai. */
+    private void fokusAwal() {
+        if (daftar == null) return;
+        if (daftar.getChildCount() > 0) daftar.getChildAt(0).requestFocus();
+        else daftar.requestFocus();
     }
 
     private int dp(int v) {

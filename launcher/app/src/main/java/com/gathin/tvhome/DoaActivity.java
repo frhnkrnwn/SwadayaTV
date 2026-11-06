@@ -35,6 +35,7 @@ public class DoaActivity extends Activity {
     private final List<DailyDoa.Entry> data = new ArrayList<>();
     private DoaAdapter adapter;
     private TextView status;
+    private ListView daftar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +71,7 @@ public class DoaActivity extends Activity {
         stLp.topMargin = dp(8);
         root.addView(status, stLp);
 
-        ListView daftar = new ListView(this);
+        daftar = new ListView(this);
         daftar.setBackgroundColor(Color.TRANSPARENT);
         daftar.setDivider(null);
         daftar.setSelector(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));
@@ -91,6 +92,14 @@ public class DoaActivity extends Activity {
         if (status != null) {
             status.setText("Arab + terjemahan Indonesia • " + data.size() + " doa • bisa dibaca offline");
         }
+        if (daftar != null) daftar.post(this::fokusAwal);
+    }
+
+    /** Fokus awal ke doa pertama supaya remote langsung bisa dipakai. */
+    private void fokusAwal() {
+        if (daftar == null) return;
+        if (daftar.getChildCount() > 0) daftar.getChildAt(0).requestFocus();
+        else daftar.requestFocus();
     }
 
     private final class DoaAdapter extends BaseAdapter {

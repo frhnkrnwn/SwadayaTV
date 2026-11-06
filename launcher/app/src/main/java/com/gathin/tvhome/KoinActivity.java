@@ -103,6 +103,14 @@ public class KoinActivity extends Activity {
         root.addView(kaki, kakiLp);
 
         setContentView(root);
+        daftar.post(this::fokusAwal);
+    }
+
+    /** Fokus awal ke kartu pertama supaya remote langsung bisa dipakai. */
+    private void fokusAwal() {
+        if (daftar == null) return;
+        if (daftar.getChildCount() > 0) daftar.getChildAt(0).requestFocus();
+        else daftar.requestFocus();
     }
 
     private void muat() {
@@ -113,6 +121,7 @@ public class KoinActivity extends Activity {
                 if (ok) {
                     status.setText("Kurs terbaru • " + data.size() + " mata uang");
                     adapter.notifyDataSetChanged();
+                    daftar.post(this::fokusAwal);
                 } else {
                     status.setText("Gagal memuat, cek internet lalu Segarkan");
                 }
