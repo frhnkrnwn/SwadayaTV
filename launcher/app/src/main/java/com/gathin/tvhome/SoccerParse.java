@@ -415,6 +415,47 @@ final class SoccerParse {
         return d;
     }
 
+
+    // ---- pemilihan sumber ----
+
+    /** Ada laga dalam rentang +-45 hari dari sekarang? Dipakai untuk mendeteksi data musim lalu yang basi. */
+    static boolean adaMatchTerkini(Data d, long now) {
+        if (d == null) return false;
+        final long jendela = 45L * 24L * 3600L * 1000L;
+        for (Match m : d.matches) {
+            if (m.utcTime > 0 && Math.abs(m.utcTime - now) <= jendela) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Gabungkan data ESPN dan FotMob menjadi satu. Sumber yang punya laga terkini dipakai sebagai utama
+     * (Liga 1 Indonesia di ESPN sering tertinggal di musim lalu); bila keduanya setara, ikuti
+     * fotmobDulu. Bagian yang kosong di sumber utama diisi dari sumber lainnya.
+     * Mengembalikan null bila keduanya kosong.
+     */
+    static Data pilih(Data espn, Data fm, boolean fotmobDulu, long now) {
+        boolean e = espn != null && !espn.isEmpty();
+        boolean f = fm != null && !fm.isEmpty();
+        if (!e && !f) return null;
+        if (e && !f) { espn.source = "ESPN"; return espn; }
+        if (!e) { fm.source = "FotMob"; return fm; }
+
+        boolean eSegar = adaMatchTerkini(espn, now);
+        boolean fSegar = adaMatchTerkini(fm, now);
+        boolean pakaiFm = (eSegar != fSegar) ? fSegar : fotmobDulu;
+        Data utama = pakaiFm ? fm : espn;
+        Data cadang = pakaiFm ? espn : fm;
+        String namaU = pakaiFm ? "FotMob" : "ESPN";
+        String namaC = pakaiFm ? "ESPN" : "FotMob";
+        boolean isiDariCadang = false;
+        if (utama.table.isEmpty() && !cadang.table.isEmpty()) { utama.table = cadang.table; isiDariCadang = true; }
+        if (utama.matches.isEmpty() && !cadang.matches.isEmpty()) { utama.matches = cadang.matches; isiDariCadang = true; }
+        if (utama.season.isEmpty()) utama.season = cadang.season;
+        utama.source = isiDariCadang ? namaU + "+" + namaC : namaU;
+        return utama;
+    }
+
     // ---- serialisasi (cache) ----
 
     static String toJson(Data d) {
