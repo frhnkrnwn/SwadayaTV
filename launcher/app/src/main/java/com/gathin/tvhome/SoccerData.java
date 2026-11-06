@@ -37,12 +37,14 @@ final class SoccerData {
         final String name;
         final String code;
         final String espn;     // slug liga di ESPN, mis. "eng.1"
+        final boolean fotmobDulu; // true: FotMob lebih lengkap/terbaru dari ESPN untuk liga ini
 
-        League(int id, String name, String code, String espn) {
+        League(int id, String name, String code, String espn, boolean fotmobDulu) {
             this.id = id;
             this.name = name;
             this.code = code;
             this.espn = espn;
+            this.fotmobDulu = fotmobDulu;
         }
     }
 
@@ -56,13 +58,13 @@ final class SoccerData {
     }
 
     static final League[] LEAGUES = {
-        new League(47, "Premier League", "EPL", "eng.1"),
-        new League(87, "LaLiga", "LL", "esp.1"),
-        new League(55, "Serie A", "SA", "ita.1"),
-        new League(54, "Bundesliga", "BL", "ger.1"),
-        new League(53, "Ligue 1", "L1", "fra.1"),
-        new League(8983, "Liga 1 Indonesia", "IDN", "idn.1"),
-        new League(42, "Champions League", "UCL", "uefa.champions")
+        new League(47, "Premier League", "EPL", "eng.1", false),
+        new League(87, "LaLiga", "LL", "esp.1", false),
+        new League(55, "Serie A", "SA", "ita.1", false),
+        new League(54, "Bundesliga", "BL", "ger.1", false),
+        new League(53, "Ligue 1", "L1", "fra.1", false),
+        new League(8983, "Liga 1 Indonesia", "IDN", "idn.1", true),
+        new League(42, "Champions League", "UCL", "uefa.champions", false)
     };
 
     static League[] getLeagues() { return LEAGUES; }
@@ -183,26 +185,23 @@ final class SoccerData {
     static Result fetch(League l) {
         Result r = new Result();
         StringBuilder err = new StringBuilder();
-        SoccerParse.Data d = new SoccerParse.Data();
-        d.source = "ESPN";
-        ambilEspn(l, d, err);
+        long now = System.currentTimeMillis();
 
-        boolean lengkap = !d.table.isEmpty() && !d.matches.isEmpty();
-        if (!lengkap) {
-            SoccerParse.Data cadangan = ambilFotmob(l, err);
-            if (cadangan != null && !cadangan.isEmpty()) {
-                boolean pakaiEspn = !d.isEmpty();
-                if (d.table.isEmpty()) d.table = cadangan.table;
-                if (d.matches.isEmpty()) d.matches = cadangan.matches;
-                if (d.season.isEmpty()) d.season = cadangan.season;
-                d.source = pakaiEspn ? "ESPN+FotMob" : "FotMob";
-            }
-        }
-        if (d.isEmpty()) {
+        SoccerParse.Data espn = new SoccerParse.Data();
+        ambilEspn(l, espn, err);
+
+        // FotMob dipanggil bila ESPN belum lengkap, kelihatan basi (musim lalu), atau liga ini
+        // memang lebih baik dari FotMob (Liga 1 Indonesia).
+        boolean perluFotmob = l.fotmobDulu || espn.table.isEmpty() || espn.matches.isEmpty()
+                || !SoccerParse.adaMatchTerkini(espn, now);
+        SoccerParse.Data fm = perluFotmob ? ambilFotmob(l, err) : null;
+
+        SoccerParse.Data d = SoccerParse.pilih(espn, fm, l.fotmobDulu, now);
+        if (d == null) {
             r.error = err.length() > 0 ? err.toString() : "data kosong";
             return r;
         }
-        d.fetchedAt = System.currentTimeMillis();
+        d.fetchedAt = now;
         r.data = d;
         r.error = err.toString();
         return r;
