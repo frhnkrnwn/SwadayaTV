@@ -1,260 +1,246 @@
 package com.gathin.tvhome;
 
+import android.app.Activity;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.util.Log;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 /**
- * Data bola FotMob versi sederhana SwadayaTV.
- * Tanpa API key. Cache JSON mentah di SharedPreferences "soccer_cache".
+ * Data bola SwadayaTV: klasemen, hasil, dan jadwal (termasuk skor langsung).
+ * Sumber utama ESPN (tanpa API key), cadangan FotMob. Tiap sumber dicoba otomatis,
+ * dan hasil terakhir yang berhasil disimpan sebagai cache supaya tetap tampil saat luring.
  */
 final class SoccerData {
     private static final String TAG = "SoccerData";
-    private static final String API = "https://www.fotmob.com/api/data/leagues?id=";
     private static final String PREFS = "soccer_cache";
+    private static final String ESPN_BASE = "https://site.api.espn.com/apis";
+    private static final String FOTMOB_API = "https://www.fotmob.com/api/data/leagues?id=";
+    private static final String UA = "Mozilla/5.0 (Linux; Android TV) SwadayaTV/3.7";
+
+    /** Jendela jadwal yang diambil dari ESPN: hari ke belakang dan ke depan. */
+    private static final int HARI_LALU = 21;
+    private static final int HARI_DEPAN = 21;
 
     private SoccerData() {}
 
-    // ---- model ----
-
     static final class League {
-        final int id;
+        final int id;          // id FotMob (juga dipakai sebagai kunci pilihan tersimpan)
         final String name;
         final String code;
+        final String espn;     // slug liga di ESPN, mis. "eng.1"
 
-        League(int id, String name) { this(id, name, ""); }
-
-        League(int id, String name, String code) {
+        League(int id, String name, String code, String espn) {
             this.id = id;
             this.name = name;
             this.code = code;
+            this.espn = espn;
         }
     }
 
-    static final class Row {
-        String name = "";
-        int rank = 0;
-        int played = 0;
-        int won = 0;
-        int drawn = 0;
-        int lost = 0;
-        int goalDiff = 0;
-        int points = 0;
-        String scoresStr = "";
-        int qualColor = 0;
+    static final class Result {
+        SoccerParse.Data data;   // null bila semua sumber gagal
+        String error = "";       // ringkasan galat per sumber, untuk ditampilkan
     }
 
-    static final class Match {
-        String home = "";
-        String away = "";
-        long utcTime = 0L;
-        String scoreStr = "";
-        boolean finished = false;
+    interface Callback {
+        void onDone(League league, Result result);
     }
 
-    static final class Data {
-        List<Row> table = new ArrayList<>();
-        List<Match> matches = new ArrayList<>();
-        String season = "";
-    }
-
-    /** Daftar liga utama, id dari FotMob. */
     static final League[] LEAGUES = {
-        new League(47, "Premier League", "EPL"),
-        new League(87, "LaLiga", "LL"),
-        new League(55, "Serie A", "SA"),
-        new League(54, "Bundesliga", "BL"),
-        new League(53, "Ligue 1", "L1"),
-        new League(8983, "Liga 1 Indonesia", "IDN"),
-        new League(42, "Champions League", "UCL")
+        new League(47, "Premier League", "EPL", "eng.1"),
+        new League(87, "LaLiga", "LL", "esp.1"),
+        new League(55, "Serie A", "SA", "ita.1"),
+        new League(54, "Bundesliga", "BL", "ger.1"),
+        new League(53, "Ligue 1", "L1", "fra.1"),
+        new League(8983, "Liga 1 Indonesia", "IDN", "idn.1"),
+        new League(42, "Champions League", "UCL", "uefa.champions")
     };
 
     static League[] getLeagues() { return LEAGUES; }
 
     // ---- cache ----
 
-    static String loadCached(Context ctx, int leagueId) {
+    private static String kunci(League l) { return "v2_league_" + l.id; }
+
+    static SoccerParse.Data loadCached(Context ctx, League l) {
         if (ctx == null) return null;
-        return ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-                .getString("league_" + leagueId, null);
+        String json = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(kunci(l), null);
+        return SoccerParse.fromJson(json);
     }
 
-    static void saveCache(Context ctx, int leagueId, String json) {
-        if (ctx == null || json == null) return;
-        ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-                .edit().putString("league_" + leagueId, json).apply();
+    static void saveCache(Context ctx, League l, SoccerParse.Data d) {
+        if (ctx == null || d == null) return;
+        String json = SoccerParse.toJson(d);
+        if (json == null) return;
+        ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(kunci(l), json).apply();
     }
 
     // ---- jaringan ----
 
-    static String download(League league) {
+    /** GET sederhana. Mengembalikan isi, atau null dan mengisi err bila gagal. */
+    private static String get(String url, StringBuilder err, String label) {
         HttpURLConnection conn = null;
         try {
-            conn = (HttpURLConnection) new URL(API + league.id).openConnection();
-            conn.setConnectTimeout(10000);
-            conn.setReadTimeout(10000);
-            conn.setRequestProperty("User-Agent", "SwadayaTV/1.0");
+            conn = (HttpURLConnection) new URL(url).openConnection();
+            conn.setConnectTimeout(12000);
+            conn.setReadTimeout(15000);
+            conn.setRequestProperty("User-Agent", UA);
+            conn.setRequestProperty("Accept", "application/json");
+            int kode = conn.getResponseCode();
+            if (kode != 200) {
+                tambahGalat(err, label + " HTTP " + kode);
+                return null;
+            }
             BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
             StringBuilder sb = new StringBuilder();
-            String baris;
-            while ((baris = br.readLine()) != null) sb.append(baris);
+            char[] buf = new char[8192];
+            int n;
+            while ((n = br.read(buf)) > 0) {
+                sb.append(buf, 0, n);
+                if (sb.length() > 8_000_000) break; // pengaman memori
+            }
             br.close();
             return sb.toString();
         } catch (Exception e) {
-            Log.w(TAG, "download liga " + league.id + " gagal: " + e.getMessage());
+            Log.w(TAG, label + " gagal: " + e);
+            tambahGalat(err, label + " " + e.getClass().getSimpleName());
             return null;
         } finally {
             if (conn != null) conn.disconnect();
         }
     }
 
-    /** Unduh di background lalu kirim balik ke UI thread lewat handler. */
-    static void downloadAsync(Context ctx, final League league, final Callback cb) {
+    private static void tambahGalat(StringBuilder err, String s) {
+        if (err.length() > 0) err.append("; ");
+        err.append(s);
+    }
+
+    private static String tanggalUtc(int offsetHari) {
+        Calendar c = Calendar.getInstance(TimeZone.getTimeZone("UTC"), Locale.US);
+        c.add(Calendar.DAY_OF_YEAR, offsetHari);
+        SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd", Locale.US);
+        f.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return f.format(c.getTime());
+    }
+
+    private static void ambilEspn(League l, SoccerParse.Data d, StringBuilder err) {
+        String dasar = ESPN_BASE + "/v2/sports/soccer/" + l.espn + "/standings";
+        String klasemen = get(dasar, err, "ESPN klasemen");
+        if (klasemen != null) {
+            try {
+                SoccerParse.parseEspnStandings(klasemen, d);
+            } catch (Exception e) {
+                tambahGalat(err, "ESPN klasemen format");
+                Log.w(TAG, "parse klasemen ESPN: " + e);
+            }
+        }
+        String papan = ESPN_BASE + "/site/v2/sports/soccer/" + l.espn + "/scoreboard";
+        String jadwal = get(papan + "?limit=300&dates=" + tanggalUtc(-HARI_LALU) + "-" + tanggalUtc(HARI_DEPAN),
+                err, "ESPN jadwal");
+        if (jadwal != null) {
+            try {
+                SoccerParse.parseEspnScoreboard(jadwal, d);
+            } catch (Exception e) {
+                tambahGalat(err, "ESPN jadwal format");
+                Log.w(TAG, "parse jadwal ESPN: " + e);
+            }
+        }
+        if (d.matches.isEmpty()) {
+            // rentang tanggal tidak didukung / kosong: minta pertandingan terkini saja
+            String hariIni = get(papan + "?limit=100", err, "ESPN jadwal-hari-ini");
+            if (hariIni != null) {
+                try {
+                    SoccerParse.parseEspnScoreboard(hariIni, d);
+                } catch (Exception e) {
+                    Log.w(TAG, "parse jadwal hari ini ESPN: " + e);
+                }
+            }
+        }
+    }
+
+    private static SoccerParse.Data ambilFotmob(League l, StringBuilder err) {
+        String json = get(FOTMOB_API + l.id, err, "FotMob");
+        if (json == null) return null;
+        try {
+            return SoccerParse.parseFotmob(json);
+        } catch (Exception e) {
+            tambahGalat(err, "FotMob format");
+            Log.w(TAG, "parse FotMob: " + e);
+            return null;
+        }
+    }
+
+    /** Ambil data (blok; panggil dari thread latar). */
+    static Result fetch(League l) {
+        Result r = new Result();
+        StringBuilder err = new StringBuilder();
+        SoccerParse.Data d = new SoccerParse.Data();
+        d.source = "ESPN";
+        ambilEspn(l, d, err);
+
+        boolean lengkap = !d.table.isEmpty() && !d.matches.isEmpty();
+        if (!lengkap) {
+            SoccerParse.Data cadangan = ambilFotmob(l, err);
+            if (cadangan != null && !cadangan.isEmpty()) {
+                boolean pakaiEspn = !d.isEmpty();
+                if (d.table.isEmpty()) d.table = cadangan.table;
+                if (d.matches.isEmpty()) d.matches = cadangan.matches;
+                if (d.season.isEmpty()) d.season = cadangan.season;
+                d.source = pakaiEspn ? "ESPN+FotMob" : "FotMob";
+            }
+        }
+        if (d.isEmpty()) {
+            r.error = err.length() > 0 ? err.toString() : "data kosong";
+            return r;
+        }
+        d.fetchedAt = System.currentTimeMillis();
+        r.data = d;
+        r.error = err.toString();
+        return r;
+    }
+
+    /** Ambil di thread latar, hasil dikirim ke UI thread Activity. */
+    static void fetchAsync(final Activity act, final League l, final Callback cb) {
         new Thread(() -> {
-            String json = download(league);
-            Data data = json != null ? parse(json) : null;
-            if (json != null) saveCache(ctx, league.id, json);
-            final Data kirim = data;
-            if (ctx instanceof android.app.Activity) {
-                ((android.app.Activity) ctx).runOnUiThread(() -> cb.onDone(league, kirim, json));
-            } else if (cb != null) {
-                cb.onDone(league, kirim, json);
-            }
-        }).start();
-    }
-
-    // ---- parse ----
-
-    static Data parse(String json) {
-        Data d = new Data();
-        if (json == null) return d;
-        try {
-            JSONObject root = new JSONObject(json);
-            // musim aktif dari details.selectedSeason bila ada
-            JSONObject details = root.optJSONObject("details");
-            if (details != null) {
-                d.season = details.optString("selectedSeason", "");
-            }
-            // klasemen
-            JSONArray tableArr = root.optJSONArray("table");
-            if (tableArr != null && tableArr.length() > 0) {
-                JSONObject tabel0 = tableArr.optJSONObject(0);
-                if (tabel0 != null) {
-                    JSONObject data = tabel0.optJSONObject("data");
-                    if (data != null) {
-                        // FotMob mengirim "table" sebagai objek {"all":[...], "home":[...], ...}
-                        // pada API terbaru, dan sebagai array langsung pada versi lama.
-                        JSONArray all = null;
-                        Object tabel = data.opt("table");
-                        if (tabel instanceof JSONObject) {
-                            all = ((JSONObject) tabel).optJSONArray("all");
-                            if (all == null) all = ((JSONObject) tabel).optJSONArray("table");
-                        } else if (tabel instanceof JSONArray) {
-                            all = (JSONArray) tabel;
-                        }
-                        if (all != null) {
-                            for (int i = 0; i < all.length(); i++) {
-                                JSONObject o = all.optJSONObject(i);
-                                if (o == null) continue;
-                                Row r = new Row();
-                                r.rank = o.optInt("idx", i + 1);
-                                r.name = o.optString("name", "");
-                                r.played = o.optInt("played", 0);
-                                r.won = o.optInt("wins", 0);
-                                r.drawn = o.optInt("draws", 0);
-                                r.lost = o.optInt("losses", 0);
-                                r.scoresStr = o.optString("scoresStr", "");
-                                r.goalDiff = o.optInt("goalConDiff", o.optInt("goalDiff", 0));
-                                r.points = o.optInt("pts", o.optInt("points", 0));
-                                Object warna = o.opt("qualColor");
-                                if (warna instanceof String) {
-                                    try {
-                                        r.qualColor = android.graphics.Color.parseColor((String) warna);
-                                    } catch (Exception ignore) {
-                                        r.qualColor = 0;
-                                    }
-                                } else {
-                                    r.qualColor = o.optInt("qualColor", 0);
-                                }
-                                d.table.add(r);
-                            }
-                        }
-                    }
-                }
-            }
-            // jadwal
-            JSONObject fixtures = root.optJSONObject("fixtures");
-            if (fixtures != null) {
-                JSONArray all = fixtures.optJSONArray("allMatches");
-                if (all != null) {
-                    for (int i = 0; i < all.length(); i++) {
-                        JSONObject o = all.optJSONObject(i);
-                        if (o == null) continue;
-                        Match m = new Match();
-                        JSONObject home = o.optJSONObject("home");
-                        JSONObject away = o.optJSONObject("away");
-                        m.home = home != null ? home.optString("name", "") : o.optString("home", "");
-                        m.away = away != null ? away.optString("name", "") : o.optString("away", "");
-                        JSONObject st = o.optJSONObject("status");
-                        if (st != null) {
-                            String utc = st.optString("utcTime", "");
-                            // parse ISO8601 UTC
-                            try {
-                                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US);
-                                sdf.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
-                                m.utcTime = sdf.parse(utc).getTime();
-                            } catch (Exception ignore) { m.utcTime = 0L; }
-                            m.finished = st.optBoolean("finished", false);
-                            m.scoreStr = st.optString("scoreStr", "");
-                        } else {
-                            m.utcTime = o.optLong("utcTime", 0L);
-                            m.scoreStr = o.optString("scoreStr", o.optString("score", ""));
-                        }
-                        d.matches.add(m);
-                    }
-                }
-            }
-            // Jadwal terdekat dulu: laga yang belum dimainkan (terdekat), lalu hasil terbaru.
-            final long sekarang = System.currentTimeMillis();
-            java.util.Collections.sort(d.matches, (a, b) -> {
-                boolean aDepan = a.utcTime >= sekarang;
-                boolean bDepan = b.utcTime >= sekarang;
-                if (aDepan != bDepan) return aDepan ? -1 : 1;
-                if (aDepan) return Long.compare(a.utcTime, b.utcTime);
-                return Long.compare(b.utcTime, a.utcTime);
+            final Result r = fetch(l);
+            if (act == null || act.isFinishing()) return;
+            act.runOnUiThread(() -> {
+                if (!act.isFinishing()) cb.onDone(l, r);
             });
-        } catch (Exception e) {
-            Log.w(TAG, "parse gagal: " + e.getMessage());
-        }
-        return d;
+        }, "soccer-fetch").start();
     }
 
-    interface Callback {
-        void onDone(League league, Data data, String rawJson);
+    // ---- format tampilan ----
+
+    private static final Locale ID = new Locale("id", "ID");
+
+    static String jam(long utcMs) {
+        if (utcMs <= 0) return "--:--";
+        return new SimpleDateFormat("HH:mm", ID).format(new Date(utcMs));
     }
 
-    /** Format waktu laga singkat, mis. "Sab 14/02 21:00". */
-    static String formatWaktu(long utcMs) {
-        if (utcMs <= 0) return "-";
-        try {
-            SimpleDateFormat sdf = new SimpleDateFormat("EEE dd/MM HH:mm", Locale.getDefault());
-            return sdf.format(new Date(utcMs));
-        } catch (Exception e) {
-            return "-";
-        }
+    static String tanggalSingkat(long utcMs) {
+        if (utcMs <= 0) return "Tanggal belum pasti";
+        return new SimpleDateFormat("EEEE, d MMMM", ID).format(new Date(utcMs));
+    }
+
+    /** Kunci hari lokal untuk mengelompokkan laga per tanggal. */
+    static String kunciHari(long utcMs) {
+        if (utcMs <= 0) return "?";
+        return new SimpleDateFormat("yyyyMMdd", Locale.US).format(new Date(utcMs));
+    }
+
+    static String jamPerbarui(long ms) {
+        if (ms <= 0) return "-";
+        return new SimpleDateFormat("HH:mm", ID).format(new Date(ms));
     }
 }
