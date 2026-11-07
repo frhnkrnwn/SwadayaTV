@@ -2851,10 +2851,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private void updateIslamicShelf() {
         // Rak sholat & ayat selalu tampil di layar utama SwadayaTV.
         // (Dulu method ini menyembunyikannya, sehingga jadwal sholat tidak pernah kelihatan.)
-        if (islamicShelf != null) {
-            islamicShelf.setVisibility(View.VISIBLE);
-            islamicShelf.setAlpha(1f);
-        }
+        applyWidgetPrefs();
     }
 
     private void updateAyah() {
@@ -2915,6 +2912,95 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
         if (ampmView != null) ampmView.setText(period);
         if (dateView != null) dateView.setText(dateStr);
+        updateGreeting();
+    }
+
+    // ---- Widget depan: sapaan + on/off (Cuaca, Sholat & Doa) ----
+
+    private static final String WIDGET_PREFS = "home_widgets";
+
+    private boolean widgetOn(String key) {
+        return getSharedPreferences(WIDGET_PREFS, MODE_PRIVATE).getBoolean(key, true);
+    }
+
+    private String greetingName() {
+        return getSharedPreferences(WIDGET_PREFS, MODE_PRIVATE).getString("greeting_name", "").trim();
+    }
+
+    /** Teks sapaan sesuai jam: pagi (4-10), siang (11-14), sore (15-17), malam. */
+    private String greetingText() {
+        int h = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+        String w = h >= 4 && h < 11 ? "pagi" : h >= 11 && h < 15 ? "siang" : h >= 15 && h < 18 ? "sore" : "malam";
+        String n = greetingName();
+        return "Selamat " + w + (n.isEmpty() ? "" : ", " + n);
+    }
+
+    private void updateGreeting() {
+        TextView g = findViewById(R.id.greeting);
+        if (g == null) return;
+        if (!widgetOn("w_greeting")) { g.setVisibility(View.GONE); return; }
+        g.setText(greetingText());
+        g.setTextColor(ThemeManager.isNeumorphism(this) ? 0xFF383E47 : 0xFFFFFFFF);
+        g.setVisibility(View.VISIBLE);
+    }
+
+    /** Terapkan pilihan on/off. Tiap widget punya posisi sendiri, jadi menyembunyikan satu tidak menggeser yang lain. */
+    private void applyWidgetPrefs() {
+        updateGreeting();
+        if (weatherAirQualityView != null) {
+            weatherAirQualityView.setVisibility(widgetOn("w_weather") ? View.VISIBLE : View.GONE);
+            if (widgetOn("w_weather")) weatherAirQualityView.setAlpha(1f);
+        }
+        if (islamicShelf != null) {
+            islamicShelf.setVisibility(widgetOn("w_prayer") ? View.VISIBLE : View.GONE);
+            if (widgetOn("w_prayer")) islamicShelf.setAlpha(1f);
+        }
+    }
+
+    private void showWidgetDialog() {
+        final String[] keys = {"w_greeting", "w_weather", "w_prayer"};
+        final String[] names = {"Sapaan (Selamat pagi, nama)", "Cuaca & Kualitas Udara", "Jadwal Sholat & Doa/Ayat"};
+        final boolean[] on = new boolean[keys.length];
+        for (int i = 0; i < keys.length; i++) on[i] = widgetOn(keys[i]);
+        AlertDialog d = new AlertDialog.Builder(this, R.style.Theme_TvHome_GlassDialog)
+                .setTitle("Widget Layar Depan")
+                .setMultiChoiceItems(names, on, (dlg, which, checked) -> {
+                    getSharedPreferences(WIDGET_PREFS, MODE_PRIVATE).edit().putBoolean(keys[which], checked).apply();
+                    applyWidgetPrefs();
+                })
+                .setNeutralButton("Ubah nama sapaan", (dlg, w) -> showGreetingNameDialog())
+                .setPositiveButton("Selesai", null)
+                .create();
+        d.show();
+        styleGlassDialog(d);
+    }
+
+    private void showGreetingNameDialog() {
+        final android.widget.EditText et = new android.widget.EditText(this);
+        et.setSingleLine(true);
+        et.setHint("Nama kamu (kosongkan jika tidak mau)");
+        et.setText(greetingName());
+        et.setSelection(et.getText().length());
+        et.setTextColor(0xFFFFFFFF);
+        et.setHintTextColor(0x99FFFFFF);
+        int pad = (int) (20 * density);
+        FrameLayout box = new FrameLayout(this);
+        box.setPadding(pad, pad / 2, pad, 0);
+        box.addView(et);
+        AlertDialog d = new AlertDialog.Builder(this, R.style.Theme_TvHome_GlassDialog)
+                .setTitle("Nama untuk sapaan")
+                .setView(box)
+                .setPositiveButton("Simpan", (dlg, w) -> {
+                    String n = et.getText().toString().trim();
+                    if (n.length() > 24) n = n.substring(0, 24);
+                    getSharedPreferences(WIDGET_PREFS, MODE_PRIVATE).edit()
+                            .putString("greeting_name", n).putBoolean("w_greeting", true).apply();
+                    applyWidgetPrefs();
+                })
+                .setNegativeButton("Batal", null)
+                .create();
+        d.show();
+        styleGlassDialog(d);
     }
 
     /** Shows the Wi-Fi network name on the button when we can read it, otherwise the connection type. */
@@ -3072,6 +3158,13 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             SoundEffects.playSelect();
             closeMenu(true);
             startActivity(new Intent(MainActivity.this, SoccerActivity.class));
+        });
+
+        // Row 2b2: Widget layar depan (sapaan, cuaca, sholat)
+        addInputRow(rows, close, R.drawable.ic_theme, "🧩 Widget Layar Depan", -1, () -> {
+            SoundEffects.playSelect();
+            closeMenu(true);
+            showWidgetDialog();
         });
 
         // Row 2c: Kurs Koin
