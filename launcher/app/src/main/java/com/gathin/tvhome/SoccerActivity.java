@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.HorizontalScrollView;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -32,7 +33,7 @@ import java.util.Set;
 /**
  * Layar Klasemen, Hasil, dan Jadwal bola SwadayaTV.
  * Tampilan programatik bergaya hijau-abu gelap, bisa dipakai dengan D-pad remote.
- * Data: ESPN (utama) dengan FotMob sebagai cadangan, lihat {@link SoccerData}.
+ * Data: snapshot football-data.org dari repo (GitHub Action), lihat {@link SoccerData}.
  */
 public class SoccerActivity extends Activity {
 
@@ -218,7 +219,7 @@ public class SoccerActivity extends Activity {
         daftarLp.topMargin = dp(6);
         root.addView(daftar, daftarLp);
 
-        TextView kaki = buatTeks("Sumber: ESPN, cadangan FotMob • diperbarui otomatis (tiap 1 menit saat ada laga berlangsung) • cache tersimpan untuk mode luring",
+        TextView kaki = buatTeks("Sumber: football-data.org • diperbarui otomatis (tiap 1 menit saat ada laga berlangsung) • cache tersimpan untuk mode luring",
                 11, TEKS_REDUP, false);
         LinearLayout.LayoutParams kakiLp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -259,7 +260,6 @@ public class SoccerActivity extends Activity {
         String info = liga.name + " • " + data.source + (dariCache ? " (tersimpan) " : " • ")
                 + "diperbarui " + SoccerData.jamPerbarui(data.fetchedAt);
         if (data.hasLive()) info += " • 🔴 ada laga berlangsung";
-        if (data.source.contains("FotMob")) info += " • memakai sumber cadangan";
         return info;
     }
 
@@ -532,6 +532,7 @@ public class SoccerActivity extends Activity {
         LinearLayout.LayoutParams tLp = new LinearLayout.LayoutParams(dp(4), dp(judul ? 1 : 20));
         tLp.rightMargin = dp(8);
         baris.addView(tanda, tLp);
+        if (!judul) baris.addView(logoView(r.teamId, r.name, 24), logoLp(24, 8));
         TextView nama = buatTeks(judul ? "Tim" : r.name, judul ? 11 : 14, favorit ? AKSE : warnaTeks, favorit);
         nama.setSingleLine(true);
         nama.setEllipsize(TextUtils.TruncateAt.END);
@@ -617,13 +618,29 @@ public class SoccerActivity extends Activity {
         tengah.addView(tKet);
 
         baris.addView(kiri, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
-        LinearLayout.LayoutParams tLp = new LinearLayout.LayoutParams(dp(110), LinearLayout.LayoutParams.WRAP_CONTENT);
+        baris.addView(logoView(m.homeId, m.home, 26), logoLp(26, 10));
+        LinearLayout.LayoutParams tLp = new LinearLayout.LayoutParams(dp(90), LinearLayout.LayoutParams.WRAP_CONTENT);
         baris.addView(tengah, tLp);
+        baris.addView(logoView(m.awayId, m.away, 26), logoLp(26, 10));
         baris.addView(kanan, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
         return baris;
     }
 
     // ---- pembantu tampilan ----
+
+    /** Logo klub (FIT_CENTER, proporsi asli) dengan cadangan inisial; lihat {@link LogoCache}. */
+    private ImageView logoView(int teamId, String nama, int ukuranDp) {
+        ImageView iv = new ImageView(this);
+        LogoCache.load(this, teamId, nama, iv);
+        return iv;
+    }
+
+    private LinearLayout.LayoutParams logoLp(int ukuranDp, int jarakDp) {
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(dp(ukuranDp), dp(ukuranDp));
+        lp.leftMargin = dp(jarakDp);
+        lp.rightMargin = dp(jarakDp);
+        return lp;
+    }
 
     private TextView buatTeks(String s, int sp, int warna, boolean tebal) {
         TextView t = new TextView(this);
