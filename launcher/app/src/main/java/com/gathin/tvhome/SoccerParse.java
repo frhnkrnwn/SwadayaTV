@@ -41,6 +41,7 @@ final class SoccerParse {
         int goalDiff = 0;
         int points = 0;
         int qualColor = 0; // ARGB, 0 = tanpa warna
+        int teamId = 0;    // id klub football-data.org (untuk logo), 0 = tidak ada
     }
 
     static final class Match {
@@ -52,6 +53,8 @@ final class SoccerParse {
         String homeScore = "";
         String awayScore = "";
         String detail = ""; // menit berjalan, "FT", "Ditunda", dst.
+        int homeId = 0;     // id klub (untuk logo)
+        int awayId = 0;
 
         boolean hasScore() { return !homeScore.isEmpty() && !awayScore.isEmpty(); }
     }
@@ -470,7 +473,7 @@ final class SoccerParse {
                 JSONObject x = new JSONObject();
                 x.put("n", r.name); x.put("g", r.group); x.put("r", r.rank); x.put("p", r.played);
                 x.put("w", r.won); x.put("d", r.drawn); x.put("l", r.lost); x.put("gd", r.goalDiff);
-                x.put("pt", r.points); x.put("q", r.qualColor);
+                x.put("pt", r.points); x.put("q", r.qualColor); x.put("tid", r.teamId);
                 t.put(x);
             }
             o.put("table", t);
@@ -479,6 +482,7 @@ final class SoccerParse {
                 JSONObject x = new JSONObject();
                 x.put("id", m.id); x.put("h", m.home); x.put("a", m.away); x.put("t", m.utcTime);
                 x.put("s", m.state); x.put("hs", m.homeScore); x.put("as", m.awayScore); x.put("dt", m.detail);
+                x.put("hid", m.homeId); x.put("aid", m.awayId);
                 ms.put(x);
             }
             o.put("matches", ms);
@@ -505,7 +509,7 @@ final class SoccerParse {
                 r.name = s(x, "n"); r.group = s(x, "g"); r.rank = x.optInt("r", 0);
                 r.played = x.optInt("p", 0); r.won = x.optInt("w", 0); r.drawn = x.optInt("d", 0);
                 r.lost = x.optInt("l", 0); r.goalDiff = x.optInt("gd", 0); r.points = x.optInt("pt", 0);
-                r.qualColor = x.optInt("q", 0);
+                r.qualColor = x.optInt("q", 0); r.teamId = x.optInt("tid", 0);
                 d.table.add(r);
             }
             JSONArray ms = o.optJSONArray("matches");
@@ -517,6 +521,7 @@ final class SoccerParse {
                 m.utcTime = x.optLong("t", 0L); m.state = x.optInt("s", ST_SCHEDULED);
                 m.homeScore = s(x, "hs"); m.awayScore = s(x, "as");
                 m.detail = s(x, "dt");
+                m.homeId = x.optInt("hid", 0); m.awayId = x.optInt("aid", 0);
                 d.matches.add(m);
             }
             return d;
