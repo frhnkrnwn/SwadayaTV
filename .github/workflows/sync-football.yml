@@ -1,0 +1,35 @@
+name: Sync Data Bola
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-football
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Ambil data (kunci dibaca dari GitHub Secrets)
+        env:
+          FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
+        run: python tools/sync_football.py
+      - name: Simpan bila ada perubahan
+        run: |
+          git config user.name "swadaya-bot"
+          git config user.email "swadaya-bot@users.noreply.github.com"
+          git add data/football
+          if git diff --cached --quiet; then echo "tidak ada perubahan"; exit 0; fi
+          git commit -m "data(bola): perbarui klasemen & jadwal"
+          git pull --rebase origin main
+          git push origin HEAD:main
