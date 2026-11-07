@@ -459,6 +459,26 @@
                     android:layout_marginStart="10dp"
                     android:orientation="vertical">
 
+                    <!-- Sapaan: "Selamat pagi, <nama>" (bisa dimatikan di Pengaturan > Widget Depan) -->
+                    <TextView
+                        android:id="@+id/greeting"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="3dp"
+                        android:maxWidth="260dp"
+                        android:singleLine="true"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false"
+                        android:textColor="#FFFFFFFF"
+                        android:textSize="13sp"
+                        android:fontFamily="@font/outfit"
+                        android:fontVariationSettings="'wght' 700"
+                        android:shadowColor="#80000000"
+                        android:shadowDx="0"
+                        android:shadowDy="1"
+                        android:shadowRadius="3"
+                        android:visibility="gone" />
+
                     <!-- Atas: AM/PM (e.g. PG / PTG / MLM) -->
                     <TextView
                         android:id="@+id/ampm"
