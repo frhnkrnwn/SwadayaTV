@@ -1,7 +1,7 @@
 {
-  "versionCode": 48,
-  "versionName": "3.6.4-id",
+  "versionCode": 49,
+  "versionName": "3.6.5-id",
   "apkUrl": "https://github.com/frhnkrnwn/SwadayaTV/releases/latest/download/SwadayaTV.apk",
-  "changelog": "Add files via upload",
+  "changelog": "Update build.gradle",
   "releaseDate": "2026-11-07"
 }
