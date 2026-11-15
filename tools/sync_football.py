@@ -10,7 +10,8 @@ Kunci API TIDAK pernah ditulis ke file hasil. Bila satu liga gagal, file lamanya
 import json, os, sys, time, urllib.request, urllib.parse, urllib.error
 from datetime import datetime, timezone
 
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data", "football")
+BASE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data")
+OUT = os.path.join(BASE, "football")
 FD = "https://api.football-data.org/v4"
 TSDB = "https://www.thesportsdb.com/api/v1/json/123"
 
@@ -144,6 +145,11 @@ def main():
     token = os.environ.get("FOOTBALL_DATA_TOKEN", "").strip()
     if not token:
         print("FOOTBALL_DATA_TOKEN belum diisi di GitHub Secrets", file=sys.stderr); return 1
+    # Kalau dulu pernah ada berkas bernama "data" (bukan folder), hapus supaya
+    # data/football bisa dibuat. Ini penyebab GitHub Action selalu merah.
+    if os.path.isfile(BASE):
+        print(f"menghapus berkas '{BASE}' karena seharusnya folder", file=sys.stderr)
+        os.remove(BASE)
     os.makedirs(OUT, exist_ok=True)
     teams_path = os.path.join(OUT, "teams.json")
     teams = load(teams_path, {})
