@@ -65,7 +65,13 @@ def convert_table(code, js, teams):
     for st in js.get("standings", []):
         if st.get("type") != "TOTAL": continue
         grp = st.get("group") or ""
-        grp = grp.replace("_", " ").title() if grp and grp.upper() != "REGULAR_SEASON" else ""
+        # football-data.org mengisi "Matchday"/"League Phase" untuk liga dengan satu tabel.
+        # Itu bukan grup sungguhan: kalau ditampilkan, aplikasi memberi judul grup palsu
+        # dan warna zona (q) tidak pernah dihitung.
+        if grp.upper() in ("", "REGULAR_SEASON", "MATCHDAY", "LEAGUE PHASE"):
+            grp = ""
+        else:
+            grp = grp.replace("_", " ").title()
         rows = st.get("table", [])
         for r in rows:
             t = r.get("team", {})
