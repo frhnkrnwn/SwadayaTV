@@ -1,7 +1,7 @@
 {
-  "versionCode": 49,
-  "versionName": "3.6.5-id",
+  "versionCode": 50,
+  "versionName": "3.7.0",
   "apkUrl": "https://github.com/frhnkrnwn/SwadayaTV/releases/latest/download/SwadayaTV.apk",
-  "changelog": "fix: Liga 1 Indonesia, jam sholat, dan azan",
+  "changelog": "UI overhaul, new themes, widgets, dan OTA setup untuk v3.7.0",
   "releaseDate": "2026-11-18"
 }
