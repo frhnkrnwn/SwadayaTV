@@ -30,9 +30,7 @@ Tidak perlu repot download manual. SwadayaTV memiliki fitur **OTA (Over-The-Air)
 
 ## 📸 Tangkapan Layar
 
-![Tampilan Utama](link_gambar_disini)
-![Widget Bola](link_gambar_disini)
-![Remote Wallpaper](link_gambar_disini)
+*(Screenshot antarmuka akan segera diperbarui)*
 
 ## ⭐ Versi Terbaru: v3.7.0
 
@@ -56,7 +54,9 @@ adb install SwadayaTV.apk
 adb shell pm uninstall --user 0 <nama.package>
 ```
 
-Panduan lengkap debloat tersedia di folder `docs/` dan `cleanyourtv/` (jika tersedia).
+Panduan lengkap debloat tersedia di [docs/TUTORIAL_DEBLOAT.md](docs/TUTORIAL_DEBLOAT.md).
+
+Panduan addon tersedia di [docs/TUTORIAL_ADDONS.md](docs/TUTORIAL_ADDONS.md).
 </details>
 
 <details>
