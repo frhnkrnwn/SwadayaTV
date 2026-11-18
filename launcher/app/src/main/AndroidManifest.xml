@@ -64,6 +64,18 @@
         </activity>
 
         <activity
+            android:name=".BrightnessActivity"
+            android:label="Kontrol Kecerahan"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.TvHome" />
+        <activity
+            android:name=".SleepTimerActivity"
+            android:label="Sleep Timer"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.TvHome" />
+        <activity
             android:name=".RemoteWallpaperActivity"
             android:label="Remote Wallpaper"
             android:exported="false"

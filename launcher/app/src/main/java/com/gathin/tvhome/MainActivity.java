@@ -3174,6 +3174,20 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             startActivity(new Intent(MainActivity.this, RemoteWallpaperActivity.class));
         });
 
+        // Row 2b4: Kontrol Kecerahan
+        addInputRow(rows, close, R.drawable.ic_theme, "Kontrol Kecerahan", -1, () -> {
+            SoundEffects.playSelect();
+            closeMenu(true);
+            startActivity(new Intent(MainActivity.this, BrightnessActivity.class));
+        });
+
+        // Row 2b5: Sleep Timer
+        addInputRow(rows, close, R.drawable.ic_theme, "Sleep Timer", -1, () -> {
+            SoundEffects.playSelect();
+            closeMenu(true);
+            startActivity(new Intent(MainActivity.this, SleepTimerActivity.class));
+        });
+
         // Row 2b2: Widget layar depan (sapaan, cuaca, sholat)
         addInputRow(rows, close, R.drawable.ic_theme, "🧩 Widget Layar Depan", -1, () -> {
             SoundEffects.playSelect();
