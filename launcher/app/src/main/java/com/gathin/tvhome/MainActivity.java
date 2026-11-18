@@ -3144,6 +3144,14 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             closeMenu(true);
         });
 
+        // Row 1d: Wallpaper Dinamis (berdasarkan waktu)
+        boolean dynWall = getSharedPreferences("wallpaper_prefs", MODE_PRIVATE).getBoolean("dynamic_wallpaper", false);
+        addInputRow(rows, close, R.drawable.ic_wallpaper, dynWall ? "🕐 Wallpaper Dinamis (Aktif)" : "🕐 Wallpaper Dinamis", -1, () -> {
+            SoundEffects.playSelect();
+            getSharedPreferences("wallpaper_prefs", MODE_PRIVATE).edit().putBoolean("dynamic_wallpaper", !dynWall).apply();
+            closeMenu(true);
+        });
+
         // Row 1c: Latar Stadion Hidup
         boolean stadiumOn = isLiveStadiumOn();
         addInputRow(rows, close, R.drawable.ic_soccer, stadiumOn ? "🏟️ Latar Stadion Hidup (Aktif)" : "🏟️ Latar Stadion Hidup", -1, () -> {
