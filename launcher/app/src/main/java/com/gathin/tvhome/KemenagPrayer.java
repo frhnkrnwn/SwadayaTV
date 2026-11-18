@@ -11,6 +11,8 @@ final class KemenagPrayer {
     private static final double ISHA_ANGLE = 18.0;
     private static final double SUNSET_ANGLE = 0.833;
     private static final double[] IHTIYAT = {2, 3, 2, 3, 2};
+    /** Penyesuaian Muhammadiyah: Subuh +8 menit (Kemenag vs Muhammadiyah). */
+    static final int MUHAMMADIYAH_SUBUH_PLUS_MIN = 8;
 
     /** Nama sholat sesuai Kemenag: Subuh, Dzuhur, Ashar, Maghrib, Isya. */
     static String[] names() {
@@ -148,6 +150,28 @@ final class KemenagPrayer {
             if (hariIni[i] > now) return new long[]{i, hariIni[i]};
         }
         return new long[]{0, times(lat, lon, now, 1)[0]};
+    }
+
+    /** Waktu sholat versi Muhammadiyah: Subuh +8 menit dari hitungan Kemenag. */
+    static long[] timesMuhammadiyah(double lat, double lon, long now, int dayOffset) {
+        long[] result = times(lat, lon, now, dayOffset).clone();
+        result[0] += MUHAMMADIYAH_SUBUH_PLUS_MIN * 60_000L;
+        return result;
+    }
+
+    /** Enam waktu hari itu versi Muhammadiyah: Subuh, Syuruk, Dzuhur, Ashar, Maghrib, Isya. */
+    static long[] dayEpochsMuhammadiyah(double lat, double lon, long now, int dayOffset) {
+        long[] lima = timesMuhammadiyah(lat, lon, now, dayOffset);
+        return new long[]{lima[0], sunrise(lat, lon, now, dayOffset), lima[1], lima[2], lima[3], lima[4]};
+    }
+
+    /** {index, waktu} sholat berikutnya versi Muhammadiyah. */
+    static long[] nextMuhammadiyah(double lat, double lon, long now) {
+        long[] hariIni = timesMuhammadiyah(lat, lon, now, 0);
+        for (int i = 0; i < 5; i++) {
+            if (hariIni[i] > now) return new long[]{i, hariIni[i]};
+        }
+        return new long[]{0, timesMuhammadiyah(lat, lon, now, 1)[0]};
     }
 
     // ---- rumus posisi matahari (presisi rendah, cukup <1 menit) ----
