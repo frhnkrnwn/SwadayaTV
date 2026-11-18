@@ -44,9 +44,9 @@
     <string name="card_state_new_label">Nama baru</string>
     <string name="tile_move">Pindahkan</string>
     <string name="tile_app_info">Info aplikasi</string>
-    <string name="theme_swadaya">Swadaya</string>
-    <string name="theme_swadaya_malam">Swadaya Malam</string>
-    <string name="theme_swadaya_terang">Swadaya Terang</string>
+    <string name="theme_swadaya">Aurora</string>
+    <string name="theme_swadaya_malam">Midnight</string>
+    <string name="theme_swadaya_terang">Minimalist</string>
     <string name="theme_swadaya_name">🌿 Swadaya</string>
     <string name="theme_swadaya_desc">Kaca jernih hijau-abu, kartu mengambang tenang tanpa neon</string>
     <string name="theme_swadaya_malam_name">🌙 Swadaya Malam</string>

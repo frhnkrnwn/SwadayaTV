@@ -91,12 +91,12 @@ public final class ThemeManager {
         String key = migrate(theme);
         switch (key) {
             case THEME_SWADAYA_MALAM:
-                return "Swadaya Malam";
+                return "Midnight";
             case THEME_SWADAYA_TERANG:
-                return "Swadaya Terang";
+                return "Minimalist";
             case THEME_SWADAYA:
             default:
-                return "Swadaya";
+                return "Aurora";
         }
     }
 
