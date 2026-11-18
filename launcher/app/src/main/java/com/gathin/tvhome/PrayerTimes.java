@@ -38,11 +38,6 @@ final class PrayerTimes {
     private static final String KEY_JSON = "takwim_wly01";
     private static final String KEY_MONTH = "takwim_month";
 
-    // Coordinates for Putrajaya
-    private static final double LATITUDE = 2.9264;
-    private static final double LONGITUDE = 101.6964;
-    private static final double TIMEZONE = 8.0;
-
     static final String[] NAMES = {"Subuh", "Syuruk", "Zohor", "Asar", "Maghrib", "Isyak"};
     private static final String[] PRAYER_NAMES = NAMES;
     private static final String[] PRAYER_KEYS = {"fajr", "syuruk", "dhuhr", "asr", "maghrib", "isha"};
@@ -364,7 +359,8 @@ final class PrayerTimes {
         }
         if (nextIdx == -1) nextIdx = 0;
 
-        SimpleDateFormat timeFmt = new SimpleDateFormat("HH:mm", Locale.getDefault());
+        SimpleDateFormat timeFmt = new SimpleDateFormat("HH:mm", Locale.US);
+        timeFmt.setTimeZone(KemenagPrayer.zona(AppLocationManager.getLongitude(context)));
         PrayerItem[] items = new PrayerItem[6];
         for (int i = 0; i < 6; i++) {
             items[i] = new PrayerItem(
@@ -400,7 +396,8 @@ final class PrayerTimes {
         }
         if (nextIdx == -1) nextIdx = 0; // After Isyak -> Subuh next morning
 
-        SimpleDateFormat timeFmt = new SimpleDateFormat("HH:mm", Locale.getDefault());
+        SimpleDateFormat timeFmt = new SimpleDateFormat("HH:mm", Locale.US);
+        timeFmt.setTimeZone(KemenagPrayer.zona(AppLocationManager.getLongitude(context)));
 
         SpannableStringBuilder sb = new SpannableStringBuilder();
 
@@ -504,7 +501,8 @@ final class PrayerTimes {
         double alpha = Math.toDegrees(Math.atan2(Math.cos(Math.toRadians(epsilon)) * Math.sin(Math.toRadians(lambda)), Math.cos(Math.toRadians(lambda)))) / 15.0;
         double delta = Math.toDegrees(Math.asin(Math.sin(Math.toRadians(epsilon)) * Math.sin(Math.toRadians(lambda))));
 
-        double noon = 12.0 + TIMEZONE - (longitude / 15.0) - (L / 15.0 - alpha);
+        double tzHours = KemenagPrayer.zonaJam(longitude);
+        double noon = 12.0 + tzHours - (longitude / 15.0) - (L / 15.0 - alpha);
         if (noon < 0) noon += 24.0;
         if (noon >= 24) noon -= 24.0;
 
@@ -517,7 +515,10 @@ final class PrayerTimes {
         // Malaysia standard rounding & +2 min ihtiyat
         double[] hours = {fajrHour + 0.05, sunriseHour, noon + 0.04, asrHour + 0.04, sunsetHour + 0.05, ishaHour + 0.05};
         long[] res = new long[6];
-        Calendar base = (Calendar) cal.clone();
+        Calendar base = Calendar.getInstance(KemenagPrayer.zona(longitude));
+        base.set(Calendar.YEAR, year);
+        base.set(Calendar.MONTH, month - 1);
+        base.set(Calendar.DAY_OF_MONTH, day);
         base.set(Calendar.SECOND, 0);
         base.set(Calendar.MILLISECOND, 0);
 
@@ -559,69 +560,59 @@ final class PrayerTimes {
         }
     }
 
-    /** Returns full day prayer list for popup display. */
+    /** Jadwal popup: hitungan Kemenag kota yang dipilih, bukan zona JAKIM Putrajaya. */
     static java.util.List<ScheduleItem> getFullSchedule(Context context) {
         java.util.List<ScheduleItem> list = new java.util.ArrayList<>();
-        Calendar now = Calendar.getInstance();
-        long[] times = getTimesForToday(context, now.get(Calendar.DAY_OF_MONTH));
-        if (times == null || times.length < 6) times = calculateFallback(context, now);
+        double lat = AppLocationManager.getLatitude(context);
+        double lon = AppLocationManager.getLongitude(context);
+        long nowMs = System.currentTimeMillis();
+        long[] times = KemenagPrayer.dayEpochs(lat, lon, nowMs, 0);
 
-        long nowMs = now.getTimeInMillis();
-        int nextIdx = -1;
+        int nextIdx = 0;
+        boolean ada = false;
         for (int i = 0; i < times.length; i++) {
-            if (i == 1) continue; // Skip Syuruk (sunrise)
+            if (i == 1) continue;
             if (times[i] > nowMs) {
                 nextIdx = i;
+                ada = true;
                 break;
             }
         }
-        if (nextIdx == -1) nextIdx = 0;
+        if (!ada) nextIdx = 0;
 
-        SimpleDateFormat sdf = new SimpleDateFormat("h:mm a", Locale.getDefault());
         for (int i = 0; i < times.length; i++) {
-            boolean isNext = (i == nextIdx);
-            boolean isPast = (times[i] < nowMs);
-            list.add(new ScheduleItem(PRAYER_NAMES[i], sdf.format(new Date(times[i])), isNext, isPast));
+            list.add(new ScheduleItem(PRAYER_NAMES[i], KemenagPrayer.jam(times[i], lon), i == nextIdx, times[i] < nowMs));
         }
         return list;
     }
 
-    /** Returns short summary of next prayer (e.g. for screensaver). */
+    /** Ringkas sholat berikutnya, misalnya untuk screensaver. */
     static String getNextPrayerSummary(Context context) {
-        Calendar now = Calendar.getInstance();
-        long[] times = getTimesForToday(context, now.get(Calendar.DAY_OF_MONTH));
-        if (times == null || times.length < 6) times = calculateFallback(context, now);
+        double lat = AppLocationManager.getLatitude(context);
+        double lon = AppLocationManager.getLongitude(context);
+        long nowMs = System.currentTimeMillis();
+        long[] times = KemenagPrayer.dayEpochs(lat, lon, nowMs, 0);
 
-        long nowMs = now.getTimeInMillis();
         int nextIdx = -1;
         for (int i = 0; i < times.length; i++) {
-            if (i == 1) continue; // Skip Syuruk (sunrise)
+            if (i == 1) continue;
             if (times[i] > nowMs) {
                 nextIdx = i;
                 break;
             }
         }
 
-        long nextTimeMs;
         String prayerName;
+        long nextTimeMs;
         if (nextIdx != -1) {
             prayerName = PRAYER_NAMES[nextIdx];
             nextTimeMs = times[nextIdx];
         } else {
-            // All prayers today have passed (after Isyak) -> Next is tomorrow's Subuh
             prayerName = PRAYER_NAMES[0];
-            Calendar tomorrow = (Calendar) now.clone();
-            tomorrow.add(Calendar.DAY_OF_MONTH, 1);
-            long[] tomTimes = getTimesForToday(context, tomorrow.get(Calendar.DAY_OF_MONTH));
-            if (tomTimes == null || tomTimes.length < 6) {
-                tomTimes = calculateFallback(context, tomorrow);
-            }
-            nextTimeMs = (tomTimes != null && tomTimes.length > 0) ? tomTimes[0] : (times[0] + 86400000L);
+            nextTimeMs = KemenagPrayer.dayEpochs(lat, lon, nowMs, 1)[0];
         }
-
-        SimpleDateFormat sdf = new SimpleDateFormat("h:mm a", Locale.getDefault());
-        String zone = getShortZoneName(context);
-        return prayerName + " • " + sdf.format(new Date(nextTimeMs)) + " (" + zone + ")";
+        String kota = AppLocationManager.getLocationName(context);
+        return prayerName + " • " + KemenagPrayer.jam(nextTimeMs, lon) + " (" + kota + " " + KemenagPrayer.zonaNama(lon) + ")";
     }
 
     /** Returns Islamic Hijrah date (e.g. "11 Jamadilawal 1448H"). */
