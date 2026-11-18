@@ -2,6 +2,6 @@
   "versionCode": 54,
   "versionName": "3.9.0",
   "apkUrl": "https://github.com/frhnkrnwn/SwadayaTV/releases/latest/download/SwadayaTV.apk",
-  "changelog": "feat: add Private DNS AdBlock, UI cleanup, and system card",
+  "changelog": "fix: OTA update signature and UI layout overlap",
   "releaseDate": "2026-11-18"
 }
