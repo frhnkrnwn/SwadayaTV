@@ -3167,6 +3167,13 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             startActivity(new Intent(MainActivity.this, SoccerActivity.class));
         });
 
+        // Row 2b3: Remote Wallpaper via HP
+        addInputRow(rows, close, R.drawable.ic_wallpaper, "Remote Wallpaper (HP)", -1, () -> {
+            SoundEffects.playSelect();
+            closeMenu(true);
+            startActivity(new Intent(MainActivity.this, RemoteWallpaperActivity.class));
+        });
+
         // Row 2b2: Widget layar depan (sapaan, cuaca, sholat)
         addInputRow(rows, close, R.drawable.ic_theme, "🧩 Widget Layar Depan", -1, () -> {
             SoundEffects.playSelect();

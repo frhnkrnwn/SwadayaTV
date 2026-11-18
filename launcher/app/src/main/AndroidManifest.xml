@@ -64,6 +64,12 @@
         </activity>
 
         <activity
+            android:name=".RemoteWallpaperActivity"
+            android:label="Remote Wallpaper"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.TvHome" />
+        <activity
             android:name=".SoccerActivity"
             android:label="Klasemen &amp; Jadwal Bola"
             android:exported="false"
