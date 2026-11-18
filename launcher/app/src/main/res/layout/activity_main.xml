@@ -1003,6 +1003,13 @@
                 android:visibility="gone" />
     </RelativeLayout>
 
+    <!-- Soccer widget (Klasemen & Jadwal Bola) -->
+    <TextView
+        android:id="@+id/soccerWidget"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone" />
+
     <!-- The single floating glass highlight that springs between tiles. -->
     <com.gathin.tvhome.GlassView
         android:id="@+id/glass"
