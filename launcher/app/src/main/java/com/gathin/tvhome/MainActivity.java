@@ -202,6 +202,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private String lastPlayedTrackKey = "";
     private NowPlayingManager.Listener nowPlayingListener;
     private View islamicShelf;
+    private View soccerWidget;
     private View ayahBlock;
     private TextView ayahLabel, ayahArabic, ayahText, prayerHeader;
     private boolean ayahRunning;
@@ -599,6 +600,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         NowPlayingManager.registerListener(nowPlayingListener);
 
         islamicShelf = findViewById(R.id.islamicShelf);
+        soccerWidget = findViewById(R.id.soccerWidget);
         if (islamicShelf != null) {
             ayahBlock = findViewById(R.id.ayahBlock);
             ayahLabel = findViewById(R.id.ayahLabel);
@@ -2957,11 +2959,14 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             islamicShelf.setVisibility(widgetOn("w_prayer") ? View.VISIBLE : View.GONE);
             if (widgetOn("w_prayer")) islamicShelf.setAlpha(1f);
         }
+        if (soccerWidget != null) {
+            soccerWidget.setVisibility(widgetOn("w_soccer") ? View.VISIBLE : View.GONE);
+        }
     }
 
     private void showWidgetDialog() {
-        final String[] keys = {"w_greeting", "w_weather", "w_prayer"};
-        final String[] names = {"Sapaan (Selamat pagi, nama)", "Cuaca & Kualitas Udara", "Jadwal Sholat & Doa/Ayat"};
+        final String[] keys = {"w_greeting", "w_weather", "w_prayer", "w_soccer"};
+        final String[] names = {"Sapaan (Selamat pagi, nama)", "Cuaca & Kualitas Udara", "Jadwal Sholat & Doa/Ayat", "Klasemen & Jadwal Bola"};
         final boolean[] on = new boolean[keys.length];
         for (int i = 0; i < keys.length; i++) on[i] = widgetOn(keys[i]);
         AlertDialog d = new AlertDialog.Builder(this, R.style.Theme_TvHome_GlassDialog)
