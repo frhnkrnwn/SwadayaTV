@@ -17,6 +17,9 @@ TSDB = "https://www.thesportsdb.com/api/v1/json/123"
 
 # kode aplikasi -> kode football-data.org (id liga FotMob dipakai app sebagai kunci pilihan)
 COMPETITIONS = {"EPL": "PL", "LL": "PD", "SA": "SA", "BL": "BL1", "L1": "FL1", "UCL": "CL"}
+# Liga 1 Indonesia tidak ada di football-data.org. FotMob (id 8983) publik, tanpa kunci.
+FOTMOB_IDN = "https://www.fotmob.com/api/data/leagues?id=8983"
+FOTMOB_UA = {"User-Agent": "Mozilla/5.0 (Linux; Android TV) SwadayaTV-sync/1.0", "Accept": "application/json"}
 
 def s32(argb):
     argb &= 0xFFFFFFFF
@@ -147,10 +150,103 @@ def fill_badges(teams, overrides, limit=40):
         time.sleep(2.2)
     return done
 
+def hex_color(h):
+    if not h or not isinstance(h, str) or not h.startswith("#") or len(h) < 7:
+        return 0
+    try:
+        return s32(0xFF000000 | int(h[1:7], 16))
+    except Exception:
+        return 0
+
+def pecah_skor(s):
+    if not s or not isinstance(s, str) or "-" not in s:
+        return "", ""
+    a, b = s.split("-", 1)
+    return a.strip(), b.strip()
+
+def fotmob_laga(status):
+    """state, hs, as, detail dari objek status FotMob."""
+    if not isinstance(status, dict):
+        return 0, "", "", ""
+    reason = status.get("reason") or {}
+    short = (reason.get("short") or "").strip()
+    kunci = (reason.get("shortKey") or "").lower()
+    if status.get("cancelled") or kunci in ("cancelled", "canceled", "abandoned"):
+        return 3, "", "", "Dibatalkan"
+    if kunci in ("postponed", "suspended") or short.upper() in ("PP", "POSTPONED"):
+        return 3, "", "", "Dihentikan" if "susp" in kunci else "Ditunda"
+    selesai = bool(status.get("finished")) or short.upper() == "FT" or kunci in ("fulltime_short", "finished")
+    hs, aws = pecah_skor(status.get("scoreStr") or "")
+    if selesai:
+        return 2, hs, aws, short or "FT"
+    if status.get("started"):
+        live = status.get("liveTime") or {}
+        det = (live.get("short") if isinstance(live, dict) else None) or short or "LIVE"
+        return 1, hs, aws, det
+    return 0, "", "", ""
+
+def sync_indonesia(teams):
+    """Klasemen + jadwal Liga 1 Indonesia (kode berkas IDN) dari FotMob."""
+    print("IDN (FotMob 8983)")
+    js = http_json(FOTMOB_IDN, FOTMOB_UA)
+    if not js:
+        print("  Liga 1 Indonesia gagal diunduh, file lama dibiarkan", file=sys.stderr)
+        return False
+    details = js.get("details") or {}
+    table_src = (((js.get("table") or [{}])[0].get("data") or {}).get("table") or {}).get("all") or []
+    if not table_src:
+        print("  klasemen FotMob kosong", file=sys.stderr)
+        return False
+    total = len(table_src)
+    table = []
+    for r in table_src:
+        tid = int(r.get("id") or 0)
+        nama_tim = (r.get("shortName") or r.get("name") or "").strip()
+        rank = int(r.get("idx") or 0)
+        q = hex_color(r.get("qualColor"))
+        if not q:
+            if rank <= 2: q = HIJAU
+            elif rank == 3: q = BIRU
+            elif rank > total - 3: q = MERAH
+        table.append({"n": nama_tim, "g": "", "r": rank, "p": int(r.get("played") or 0),
+                      "w": int(r.get("wins") or 0), "d": int(r.get("draws") or 0), "l": int(r.get("losses") or 0),
+                      "gd": int(r.get("goalConDiff") or 0), "pt": int(r.get("pts") or 0), "q": q, "tid": tid})
+        if tid:
+            e = teams.setdefault(str(tid), {})
+            e["name"] = nama_tim
+            e.setdefault("badge", f"https://images.fotmob.com/image_resources/logo/teamlogo/{tid}.png")
+    matches = []
+    for m in (js.get("fixtures") or {}).get("allMatches") or []:
+        home, away = m.get("home") or {}, m.get("away") or {}
+        try:
+            hid, aid = int(home.get("id") or 0), int(away.get("id") or 0)
+        except Exception:
+            continue
+        if not hid or not aid:
+            continue
+        state, hs, aws, det = fotmob_laga(m.get("status") or {})
+        utc = ((m.get("status") or {}).get("utcTime")) or ""
+        matches.append({"id": str(m.get("id") or ""), "h": (home.get("shortName") or home.get("name") or "").strip(),
+                        "a": (away.get("shortName") or away.get("name") or "").strip(),
+                        "t": parse_time(utc), "s": state, "hs": hs, "as": aws, "dt": det, "hid": hid, "aid": aid})
+        for tid, tm in ((hid, home), (aid, away)):
+            e = teams.setdefault(str(tid), {})
+            e["name"] = (tm.get("shortName") or tm.get("name") or e.get("name") or "").strip()
+            e.setdefault("badge", f"https://images.fotmob.com/image_resources/logo/teamlogo/{tid}.png")
+    matches.sort(key=lambda x: x["t"])
+    path = os.path.join(OUT, "IDN.json")
+    old = load(path, {})
+    season = details.get("selectedSeason") or old.get("season") or ""
+    baru = {"v": 2, "season": season, "source": "fotmob", "fetchedAt": int(time.time() * 1000),
+            "table": table, "matches": matches}
+    if old.get("table") == table and old.get("matches") == matches:
+        baru["fetchedAt"] = old.get("fetchedAt", baru["fetchedAt"])
+    save(path, baru)
+    print(f"  klasemen {len(table)} tim, laga {len(matches)}, musim {season}")
+    return True
+
 def main():
     token = os.environ.get("FOOTBALL_DATA_TOKEN", "").strip()
-    if not token:
-        print("FOOTBALL_DATA_TOKEN belum diisi di GitHub Secrets", file=sys.stderr); return 1
     # Kalau dulu pernah ada berkas bernama "data" (bukan folder), hapus supaya
     # data/football bisa dibuat. Ini penyebab GitHub Action selalu merah.
     if os.path.isfile(BASE):
@@ -160,27 +256,32 @@ def main():
     teams_path = os.path.join(OUT, "teams.json")
     teams = load(teams_path, {})
     overrides = load(os.path.join(OUT, "team_overrides.json"), {})
-    hdr = {"X-Auth-Token": token}
     ok = 0
-    for code, fd in COMPETITIONS.items():
-        print(f"{code} ({fd})")
-        st = http_json(f"{FD}/competitions/{fd}/standings", hdr); time.sleep(7)
-        ms = http_json(f"{FD}/competitions/{fd}/matches", hdr);  time.sleep(7)
-        if not st and not ms:
-            continue
-        path = os.path.join(OUT, f"{code}.json")
-        old = load(path, {})
-        table = convert_table(code, st, teams) if st else old.get("table", [])
-        matches = convert_matches(ms, teams) if ms else old.get("matches", [])
-        season = ""
-        sj = st or ms or {}
-        sea = sj.get("season") or {}
-        if sea.get("startDate"): season = f'{sea["startDate"][:4]}/{sea.get("endDate", "")[:4]}'
-        baru = {"v": 2, "season": season or old.get("season", ""), "source": "football-data.org",
-                "fetchedAt": int(time.time() * 1000), "table": table, "matches": matches}
-        if old.get("table") == table and old.get("matches") == matches:
-            baru["fetchedAt"] = old.get("fetchedAt", baru["fetchedAt"])   # tidak berubah: jangan bikin commit baru
-        save(path, baru)
+    if not token:
+        print("FOOTBALL_DATA_TOKEN belum diisi — liga Eropa dilewati, Liga 1 Indonesia tetap diambil", file=sys.stderr)
+    else:
+        hdr = {"X-Auth-Token": token}
+        for code, fd in COMPETITIONS.items():
+            print(f"{code} ({fd})")
+            st = http_json(f"{FD}/competitions/{fd}/standings", hdr); time.sleep(7)
+            ms = http_json(f"{FD}/competitions/{fd}/matches", hdr);  time.sleep(7)
+            if not st and not ms:
+                continue
+            path = os.path.join(OUT, f"{code}.json")
+            old = load(path, {})
+            table = convert_table(code, st, teams) if st else old.get("table", [])
+            matches = convert_matches(ms, teams) if ms else old.get("matches", [])
+            season = ""
+            sj = st or ms or {}
+            sea = sj.get("season") or {}
+            if sea.get("startDate"): season = f'{sea["startDate"][:4]}/{sea.get("endDate", "")[:4]}'
+            baru = {"v": 2, "season": season or old.get("season", ""), "source": "football-data.org",
+                    "fetchedAt": int(time.time() * 1000), "table": table, "matches": matches}
+            if old.get("table") == table and old.get("matches") == matches:
+                baru["fetchedAt"] = old.get("fetchedAt", baru["fetchedAt"])
+            save(path, baru)
+            ok += 1
+    if sync_indonesia(teams):
         ok += 1
     n = fill_badges(teams, overrides)
     print(f"logo baru dicari: {n}")

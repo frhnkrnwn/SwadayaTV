@@ -87,6 +87,55 @@ final class KemenagPrayer {
         return tengahMalam + Math.round(menit) * 60_000L;
     }
 
+    /**
+     * Enam waktu hari itu: Subuh, Syuruk, Dzuhur, Ashar, Maghrib, Isya.
+     * Indeks sama dengan {@code PrayerTimes.NAMES} supaya azan dan rak sholat sepakat.
+     */
+    static long[] dayEpochs(double lat, double lon, long now, int dayOffset) {
+        long[] lima = times(lat, lon, now, dayOffset);
+        return new long[]{lima[0], sunrise(lat, lon, now, dayOffset), lima[1], lima[2], lima[3], lima[4]};
+    }
+
+    /** Offset jam dari bujur (WIB 7, WITA 8, WIT 9, atau zona lain). */
+    static int zonaJam(double lon) {
+        int z = (int) Math.round(lon / 15.0);
+        if (z < -12) z = -12;
+        if (z > 14) z = 14;
+        return z;
+    }
+
+    static java.util.TimeZone zona(double lon) {
+        int z = zonaJam(lon);
+        return java.util.TimeZone.getTimeZone("GMT" + (z >= 0 ? "+" : "") + z);
+    }
+
+    /** Nama zona Indonesia, atau UTC±N kalau kotanya di luar WIB/WITA/WIT. */
+    static String zonaNama(double lon) {
+        int z = zonaJam(lon);
+        if (z == 7) return "WIB";
+        if (z == 8) return "WITA";
+        if (z == 9) return "WIT";
+        return z >= 0 ? "UTC+" + z : "UTC" + z;
+    }
+
+    /** Jam HH:mm di zona kota, bukan zona perangkat. STB yang jam sistemnya salah tetap cocok. */
+    static String jam(long epochMs, double lon) {
+        java.text.SimpleDateFormat fmt = new java.text.SimpleDateFormat("HH:mm", java.util.Locale.US);
+        fmt.setTimeZone(zona(lon));
+        return fmt.format(new java.util.Date(epochMs));
+    }
+
+    /** "04:35 (WIB)" atau "04:35 (GMT+7)" jadi "04:35". */
+    static String jamBersih(String raw) {
+        if (raw == null) return "";
+        raw = raw.trim();
+        int sp = raw.indexOf(' ');
+        if (sp > 0) raw = raw.substring(0, sp);
+        int p = raw.indexOf('(');
+        if (p > 0) raw = raw.substring(0, p).trim();
+        return raw;
+    }
+
     /** {index, waktu} sholat berikutnya; setelah Isya = Subuh besok. */
     static long[] next(double lat, double lon) {
         return next(lat, lon, System.currentTimeMillis());

@@ -208,6 +208,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private boolean homeWeatherRunning;
     private TextView lblSubuh, lblSyuruk, lblZohor, lblAsar, lblMaghrib, lblIsyak;
     private TextView timeSubuh, timeSyuruk, timeZohor, timeAsar, timeMaghrib, timeIsyak;
+    /** Supaya jawaban Aladhan yang terlambat tidak menimpa kota yang baru dipilih. */
+    private int prayerFetchGen;
     private boolean shamsi;
     private String vpnApp;
     private SpringAnimation springX, springY;
@@ -1321,9 +1323,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         updateIslamicShelf();
         updateInputsButton();
         applyHomeScreenTheme();
-        Location.Zone chosenPlace = Location.chosen(this);
-        String zoneCode = (chosenPlace != null) ? chosenPlace.code : "WLY01";
-        Azan.setMasterEnabled(this, false);
+        // Jangan matikan azan setiap kali Home dibuka — itu membuat pengaturan user selalu reset.
+        Azan.schedule(this, AppLocationManager.getLocationName(this));
         NowPlayingManager.updateCurrentMedia(this);
         startWallpaperRotation();
         handler.postDelayed(minuteTick, MINUTE_MS);
@@ -2712,20 +2713,17 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         long now = System.currentTimeMillis();
         long[] t = KemenagPrayer.times(lat, lon, now, 0);
         // t: [Subuh, Dzuhur, Ashar, Maghrib, Isya] (epoch ms)
-        java.text.SimpleDateFormat fmt = new java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault());
-        if (timeSubuh != null && t.length > 0) timeSubuh.setText(fmt.format(new java.util.Date(t[0])));
-        if (timeZohor != null && t.length > 1) timeZohor.setText(fmt.format(new java.util.Date(t[1])));
-        if (timeAsar != null && t.length > 2) timeAsar.setText(fmt.format(new java.util.Date(t[2])));
-        if (timeMaghrib != null && t.length > 3) timeMaghrib.setText(fmt.format(new java.util.Date(t[3])));
-        if (timeIsyak != null && t.length > 4) timeIsyak.setText(fmt.format(new java.util.Date(t[4])));
-        // Syuruk = terbit matahari, dihitung dengan sudut yang sama seperti Maghrib.
+        // Jam ditampilkan di zona kota (bujur), bukan zona STB yang sering masih UTC.
+        if (timeSubuh != null && t.length > 0) timeSubuh.setText(KemenagPrayer.jam(t[0], lon));
+        if (timeZohor != null && t.length > 1) timeZohor.setText(KemenagPrayer.jam(t[1], lon));
+        if (timeAsar != null && t.length > 2) timeAsar.setText(KemenagPrayer.jam(t[2], lon));
+        if (timeMaghrib != null && t.length > 3) timeMaghrib.setText(KemenagPrayer.jam(t[3], lon));
+        if (timeIsyak != null && t.length > 4) timeIsyak.setText(KemenagPrayer.jam(t[4], lon));
         if (timeSyuruk != null) {
             long syuruk = KemenagPrayer.sunrise(lat, lon, now, 0);
-            timeSyuruk.setText(fmt.format(new java.util.Date(syuruk)));
+            timeSyuruk.setText(KemenagPrayer.jam(syuruk, lon));
         }
-        // Zona waktu Indonesia mengikuti longitude, sama dengan perhitungan di atas.
-        int zonaJam = (int) Math.round(lon / 15.0);
-        final String zonaNama = zonaJam <= 7 ? "WIB" : (zonaJam == 8 ? "WITA" : "WIT");
+        final String zonaNama = KemenagPrayer.zonaNama(lon);
         if (islamicShelf != null) {
             islamicShelf.setVisibility(View.VISIBLE);
             islamicShelf.setAlpha(1f);
@@ -2738,10 +2736,13 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         // Sinkron otomatis dari server (Aladhan, metode Kemenag 20) bila online; fallback offline tetap tampil.
         final double flat = lat, flon = lon;
         final String fkota = kota;
+        final int req = ++prayerFetchGen;
         new Thread(() -> {
             try {
+                java.util.Calendar kal = java.util.Calendar.getInstance(KemenagPrayer.zona(flon));
                 java.text.SimpleDateFormat ddf = new java.text.SimpleDateFormat("dd-MM-yyyy", java.util.Locale.US);
-                String tgl = ddf.format(new java.util.Date());
+                ddf.setTimeZone(kal.getTimeZone());
+                String tgl = ddf.format(kal.getTime());
                 String url = "https://api.aladhan.com/v1/timings/" + tgl + "?latitude=" + flat + "&longitude=" + flon + "&method=20";
                 java.net.HttpURLConnection c = (java.net.HttpURLConnection) new java.net.URL(url).openConnection();
                 c.setConnectTimeout(8000);
@@ -2753,19 +2754,20 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 br.close();
                 org.json.JSONObject root = new org.json.JSONObject(sb.toString());
                 org.json.JSONObject timings = root.getJSONObject("data").getJSONObject("timings");
-                final String subuh = timings.optString("Fajr");
-                final String syuruk = timings.optString("Sunrise");
-                final String dzuhur = timings.optString("Dhuhr");
-                final String ashar = timings.optString("Asr");
-                final String maghrib = timings.optString("Maghrib");
-                final String isya = timings.optString("Isha");
+                final String subuh = KemenagPrayer.jamBersih(timings.optString("Fajr"));
+                final String syuruk = KemenagPrayer.jamBersih(timings.optString("Sunrise"));
+                final String dzuhur = KemenagPrayer.jamBersih(timings.optString("Dhuhr"));
+                final String ashar = KemenagPrayer.jamBersih(timings.optString("Asr"));
+                final String maghrib = KemenagPrayer.jamBersih(timings.optString("Maghrib"));
+                final String isya = KemenagPrayer.jamBersih(timings.optString("Isha"));
                 runOnUiThread(() -> {
-                    if (timeSubuh != null) timeSubuh.setText(subuh);
+                    if (req != prayerFetchGen || isFinishing()) return;
+                    if (timeSubuh != null && !subuh.isEmpty()) timeSubuh.setText(subuh);
                     if (timeSyuruk != null && !syuruk.isEmpty()) timeSyuruk.setText(syuruk);
-                    if (timeZohor != null) timeZohor.setText(dzuhur);
-                    if (timeAsar != null) timeAsar.setText(ashar);
-                    if (timeMaghrib != null) timeMaghrib.setText(maghrib);
-                    if (timeIsyak != null) timeIsyak.setText(isya);
+                    if (timeZohor != null && !dzuhur.isEmpty()) timeZohor.setText(dzuhur);
+                    if (timeAsar != null && !ashar.isEmpty()) timeAsar.setText(ashar);
+                    if (timeMaghrib != null && !maghrib.isEmpty()) timeMaghrib.setText(maghrib);
+                    if (timeIsyak != null && !isya.isEmpty()) timeIsyak.setText(isya);
                     if (prayerHeader != null) prayerHeader.setText("WAKTU SHOLAT • "
                             + (fkota != null ? fkota.toUpperCase() : "KEMENAG") + " • " + zonaNama + " (SERVER)");
                 });
@@ -3573,10 +3575,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
     private void showAzanSettingsDialog() {
         SoundEffects.playSelect();
-        Location.Zone chosenPlace = Location.chosen(this);
-        String zoneCode = (chosenPlace != null) ? chosenPlace.code : "WLY01";
-        java.util.Calendar cal = java.util.Calendar.getInstance();
-        PrayerTimes.Day todayTimes = PrayerTimes.day(this, zoneCode, cal);
+        double azanLat = AppLocationManager.getLatitude(this);
+        double azanLon = AppLocationManager.getLongitude(this);
+        long[] azanEpochs = KemenagPrayer.dayEpochs(azanLat, azanLon, System.currentTimeMillis(), 0);
+        String zoneCode = AppLocationManager.getLocationName(this);
         boolean isNeu = ThemeManager.isNeumorphism(this);
         boolean isDark = ThemeManager.isDarkGlow(this);
 
@@ -3671,9 +3673,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             final int pIdx = prayers[i];
             String pName = prayerLabels[i];
             String pTimeStr = "";
-            if (todayTimes != null && pIdx < todayTimes.minutes.length) {
-                int min = todayTimes.minutes[pIdx];
-                pTimeStr = String.format(Locale.ROOT, " • %02d:%02d", min / 60, min % 60);
+            if (azanEpochs != null && pIdx < azanEpochs.length) {
+                pTimeStr = " • " + KemenagPrayer.jam(azanEpochs[pIdx], azanLon);
             }
 
             final TextView prayerTag = new TextView(this);
@@ -3777,7 +3778,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
 
         TextView infoText = new TextView(this);
-        infoText.setText("💡 Waktu solat diselaraskan secara automatik mengikut zon JAKIM. Kad azan tetap muncul di atas Netflix, YouTube & Perfect TV.");
+        infoText.setText("💡 Azan mengikuti waktu sholat Kemenag untuk " + zoneCode
+                + " (" + KemenagPrayer.zonaNama(azanLon) + "). Kad tetap muncul di atas Netflix, YouTube, dan aplikasi lain.");
         infoText.setTextSize(11f);
         infoText.setTextColor(isNeu ? 0xFF4A5568 : 0xB3FFFFFF);
         infoText.setTypeface(getResources().getFont(R.font.outfit), Typeface.NORMAL);
@@ -5371,10 +5373,12 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         Runnable close = () -> closeMenu(false);
 
         // Header: Active Prayer Zone
-        addInputRow(rows, close, R.drawable.ic_settings, "Waktu Solat " + PrayerTimes.getShortZoneName(this) + " (Tukar Zon ▶)", TvInputManager.INPUT_STATE_CONNECTED, () -> {
+        String kotaSholat = AppLocationManager.getLocationName(this);
+        String zonaSholat = KemenagPrayer.zonaNama(AppLocationManager.getLongitude(this));
+        addInputRow(rows, close, R.drawable.ic_settings, "Waktu Sholat " + kotaSholat + " • " + zonaSholat + " (Ganti kota ▶)", TvInputManager.INPUT_STATE_CONNECTED, () -> {
             SoundEffects.playSelect();
             closeMenu(false);
-            startActivity(new Intent(MainActivity.this, LocationActivity.class));
+            showAsiaCountryDialog();
         });
 
         // Date row: Islamic Hijri

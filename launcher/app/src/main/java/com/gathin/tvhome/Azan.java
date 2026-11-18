@@ -88,8 +88,7 @@ final class Azan {
             note(ctx, "azan disabled (master off)");
             return;
         }
-        if (zone == null || zone.isEmpty()) return;
-        prefs(ctx).edit().putString("zone", zone).apply();
+        if (zone != null && !zone.isEmpty()) prefs(ctx).edit().putString("zone", zone).apply();
         long now = System.currentTimeMillis();
         // An "azan-test" file next to the theme sets a Maghrib azan one minute from now, to try it from the
         // computer while another app is in front: tools/tv.py 'touch …/files/azan-test', then press Home.
@@ -104,25 +103,20 @@ final class Azan {
             }
             return;
         }
+        double lat = AppLocationManager.getLatitude(ctx);
+        double lon = AppLocationManager.getLongitude(ctx);
+        // Indeks sama dengan PrayerTimes.NAMES: 0 Subuh, 1 Syuruk, 2 Dzuhur, 3 Ashar, 4 Maghrib, 5 Isya.
         for (int d = 0; d < 2; d++) {
-            Calendar day = Calendar.getInstance();
-            day.add(Calendar.DAY_OF_MONTH, d);
-            PrayerTimes.Day times = PrayerTimes.day(ctx, zone, day);
-            if (times == null) continue;
+            long[] times = KemenagPrayer.dayEpochs(lat, lon, now, d);
             for (int p : PRAYERS) {
-                if (!on(ctx, p)) continue;
-                Calendar at = (Calendar) day.clone();
-                at.set(Calendar.HOUR_OF_DAY, times.minutes[p] / 60);
-                at.set(Calendar.MINUTE, times.minutes[p] % 60);
-                at.set(Calendar.SECOND, 0);
-                at.set(Calendar.MILLISECOND, 0);
-                long when = at.getTimeInMillis();
+                if (!on(ctx, p) || p >= times.length) continue;
+                long when = times[p];
                 if (when <= now + 5000) continue;
                 try {
                     // RTC, not RTC_WAKEUP: a TV in standby stays asleep; the receiver drops a late alarm.
                     am.setExact(AlarmManager.RTC, when, pending(ctx, p, when, PendingIntent.FLAG_UPDATE_CURRENT));
-                    note(ctx, "next azan: " + PrayerTimes.NAMES[p] + " at " + String.format(java.util.Locale.ROOT, "%02d:%02d",
-                            times.minutes[p] / 60, times.minutes[p] % 60) + (d == 1 ? " tomorrow" : ""));
+                    note(ctx, "next azan: " + PrayerTimes.NAMES[p] + " at " + KemenagPrayer.jam(when, lon)
+                            + (d == 1 ? " tomorrow" : ""));
                 } catch (SecurityException e) {
                     note(ctx, "exact alarms not allowed: " + e.getMessage());
                 }
