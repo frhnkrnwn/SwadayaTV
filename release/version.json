@@ -2,6 +2,6 @@
   "versionCode": 51,
   "versionName": "3.8.0",
   "apkUrl": "https://github.com/frhnkrnwn/SwadayaTV/releases/latest/download/SwadayaTV.apk",
-  "changelog": "v3.8.0 - dynamic greeting, time-based wallpaper with scrim, and prayer audit",
+  "changelog": "feat: v3.8.0 - dynamic greeting, time-based wallpaper with scrim, and prayer audit",
   "releaseDate": "2026-11-18"
 }
