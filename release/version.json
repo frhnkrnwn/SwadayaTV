@@ -1,7 +1,7 @@
 {
-  "versionCode": 52,
-  "versionName": "3.8.1",
+  "versionCode": 53,
+  "versionName": "3.9.0",
   "apkUrl": "https://github.com/frhnkrnwn/SwadayaTV/releases/latest/download/SwadayaTV.apk",
-  "changelog": "fix: UI overlap, theme strings, and missing soccer widget",
+  "changelog": "feat: add Private DNS AdBlock, UI cleanup, and system card",
   "releaseDate": "2026-11-18"
 }
