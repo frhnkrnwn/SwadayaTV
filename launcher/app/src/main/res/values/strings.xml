@@ -47,11 +47,11 @@
     <string name="theme_swadaya">Aurora</string>
     <string name="theme_swadaya_malam">Midnight</string>
     <string name="theme_swadaya_terang">Minimalist</string>
-    <string name="theme_swadaya_name">🌿 Swadaya</string>
+    <string name="theme_swadaya_name">🌿 Aurora</string>
     <string name="theme_swadaya_desc">Kaca jernih hijau-abu, kartu mengambang tenang tanpa neon</string>
-    <string name="theme_swadaya_malam_name">🌙 Swadaya Malam</string>
+    <string name="theme_swadaya_malam_name">🌙 Midnight</string>
     <string name="theme_swadaya_malam_desc">Hitam zamrud OLED, aksen hijau lembut, hemat mata untuk malam</string>
-    <string name="theme_swadaya_terang_name">☀️ Swadaya Terang</string>
+    <string name="theme_swadaya_terang_name">☀️ Minimalist</string>
     <string name="theme_swadaya_terang_desc">Porselen terang hijau-abu, bersih dan nyaman untuk siang hari</string>
     <string name="menu_soccer_title">⚽ Klasemen &amp; Jadwal Bola</string>
     <string name="soccer_title">Klasemen &amp; Jadwal Bola</string>

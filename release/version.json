@@ -1,7 +1,7 @@
 {
-  "versionCode": 51,
-  "versionName": "3.8.0",
+  "versionCode": 52,
+  "versionName": "3.8.1",
   "apkUrl": "https://github.com/frhnkrnwn/SwadayaTV/releases/latest/download/SwadayaTV.apk",
-  "changelog": "feat: v3.8.0 - dynamic greeting, time-based wallpaper with scrim, and prayer audit",
+  "changelog": "fix: UI overlap, theme strings, and missing soccer widget",
   "releaseDate": "2026-11-18"
 }
