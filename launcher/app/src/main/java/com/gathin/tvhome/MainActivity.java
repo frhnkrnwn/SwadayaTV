@@ -3189,6 +3189,13 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             startActivity(new Intent(MainActivity.this, BrightnessActivity.class));
         });
 
+        // Row 2b6: AdBlock / Private DNS
+        addInputRow(rows, close, R.drawable.ic_theme, "AdBlock / Private DNS", -1, () -> {
+            SoundEffects.playSelect();
+            closeMenu(true);
+            startActivity(new Intent(MainActivity.this, AdBlockActivity.class));
+        });
+
         // Row 2b5: Sleep Timer
         addInputRow(rows, close, R.drawable.ic_theme, "Sleep Timer", -1, () -> {
             SoundEffects.playSelect();

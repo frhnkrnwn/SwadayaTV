@@ -64,6 +64,12 @@
         </activity>
 
         <activity
+            android:name=".AdBlockActivity"
+            android:label="AdBlock / Private DNS"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.TvHome" />
+        <activity
             android:name=".BrightnessActivity"
             android:label="Kontrol Kecerahan"
             android:exported="false"
