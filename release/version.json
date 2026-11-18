@@ -2,6 +2,6 @@
   "versionCode": 50,
   "versionName": "3.7.0",
   "apkUrl": "https://github.com/frhnkrnwn/SwadayaTV/releases/latest/download/SwadayaTV.apk",
-  "changelog": "UI overhaul, new themes, widgets, dan OTA setup untuk v3.7.0",
+  "changelog": "feat: UI overhaul, new themes, widgets, and OTA setup for v3.7.0",
   "releaseDate": "2026-11-18"
 }
