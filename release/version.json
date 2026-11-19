@@ -1,7 +1,7 @@
 {
-  "versionCode": 55,
-  "versionName": "4.1.0",
+  "versionCode": 56,
+  "versionName": "4.1.1",
   "apkUrl": "https://github.com/frhnkrnwn/SwadayaTV/releases/latest/download/SwadayaTV.apk",
-  "changelog": "fix: resolve layout overlaps, theme names, soccer widget, and OTA signature",
+  "changelog": "style: replace app icon with new emerald theme icon",
   "releaseDate": "2026-11-19"
 }
