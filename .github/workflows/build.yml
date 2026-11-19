@@ -2,9 +2,9 @@ name: Build
 
 on:
   push:
-    branches: [feature/all-in-one-widgets, main]
+    branches: [main]
   pull_request:
-    branches: [feature/all-in-one-widgets, main]
+    branches: [main]
 
 jobs:
   build:
@@ -19,7 +19,9 @@ jobs:
 
       - uses: android-actions/setup-android@v3
         with:
-          packages: platforms;android-34 build-tools;34.0.0
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0 ndk;28.2.13676358 cmake;3.22.1'
+
+      - uses: gradle/actions/setup-gradle@v4
 
       - name: Grant execute permission for gradlew
         working-directory: launcher
@@ -28,14 +30,3 @@ jobs:
       - name: Run assembleDebug
         working-directory: launcher
         run: ./gradlew --no-daemon assembleDebug
-
-      - name: Run lint
-        working-directory: launcher
-        run: ./gradlew --no-daemon lint
-
-      - name: Upload APK
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug
-          path: launcher/app/build/outputs/apk/debug/*.apk

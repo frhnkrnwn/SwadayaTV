@@ -1,4 +1,6 @@
-# Shrink and optimise, but keep class and method names: the size win comes from dropping unused
-# AndroidX code, not from renaming, and readable stack traces matter more in a sideloaded app
-# where crash reports arrive as screenshots.
--dontobfuscate
+# Started by class name from the shell (app_process -cp <apk> ... MediaHelper), never referenced.
+-keep class com.swadaya.tv.MediaHelper {
+    public static void main(java.lang.String[]);
+}
+# JNI callbacks invoked by the local traffic monitor.
+-keep class com.swadaya.tv.TrafficVpnService { *; }
