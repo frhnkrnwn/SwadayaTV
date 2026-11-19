@@ -6,8 +6,7 @@ use std::collections::{BTreeMap, BTreeSet};
 /// The launcher this project installs.
 pub const PKG: &str = "com.swadaya.tv";
 pub const HOME_ACTIVITY: &str = "com.swadaya.tv/.MainActivity";
-pub const A11Y_SERVICE: &str =
-    "com.swadaya.tv/com.swadaya.tv.RemoteAccessibilityService";
+pub const A11Y_SERVICE: &str = "com.swadaya.tv/com.swadaya.tv.RemoteAccessibilityService";
 /// Google TV's setup app and launcher: both answer Home (see the Google TV handover).
 pub const GTV_SETUP: &str = "com.google.android.tungsten.setupwraith";
 pub const GTV_LAUNCHER: &str = "com.google.android.apps.tv.launcherx";
@@ -621,9 +620,7 @@ mod tests {
         let c = parse_resolved_component(out).unwrap();
         assert_eq!(c, "com.google.android.apps.tv.launcherx/.home.HomeActivity");
         assert!(is_recordable_stock_home(&c));
-        assert!(!is_recordable_stock_home(
-            "com.swadaya.tv/.MainActivity"
-        ));
+        assert!(!is_recordable_stock_home("com.swadaya.tv/.MainActivity"));
         assert!(!is_recordable_stock_home(
             "android/com.android.internal.app.ResolverActivity"
         ));
