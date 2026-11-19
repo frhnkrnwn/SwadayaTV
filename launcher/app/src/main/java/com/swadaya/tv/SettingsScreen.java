@@ -849,6 +849,7 @@ final class SettingsScreen {
         r.action = this::openZonePicker;
         out.add(r);
         out.add(toggle(LauncherSettings.AZAN, "Azan", "Plays the azan and shows a banner at each prayer time, while the TV is on"));
+        out.add(toggle(LauncherSettings.PRAYER_SUBUH_OFFSET, "Muhammadiyah Subuh (+8 min)", "Adds 8 minutes to Subuh prayer time"));
         out.add(choice(LauncherSettings.PRAYER_REMINDER, "Reminder before prayer",
                 "A banner over any app, without sound, while the TV is on",
                 new int[] {0, 5, 10, 15, 30}, new String[] {"Off", "5 min", "10 min", "15 min", "30 min"}));
@@ -901,6 +902,13 @@ final class SettingsScreen {
                 new int[] {5, 6, 7}, new String[] {"5", "6", "7"}));
         out.add(toggle(LauncherSettings.SHOW_SYSTEM, "System card", "CPU, RAM, storage, network and USB debugging"));
         out.add(toggle(LauncherSettings.SHOW_NOW, "Now Playing card", "Cover, title and controls while something plays"));
+        out.add(toggle(LauncherSettings.SHOW_SOCCER, "Soccer card", "Standings for your league"));
+        {
+            int[] ids = new int[SoccerData.LEAGUES.length];
+            String[] names = new String[SoccerData.LEAGUES.length];
+            for (int i = 0; i < SoccerData.LEAGUES.length; i++) { ids[i] = SoccerData.LEAGUES[i].id; names[i] = SoccerData.LEAGUES[i].name; }
+            out.add(choice(LauncherSettings.SOCCER_LEAGUE, "Soccer league", "Which league's standings to show", ids, names));
+        }
         out.add(choice(LauncherSettings.WALL_DIM, "Wallpaper dim", "How dark the wallpaper is behind the cards",
                 new int[] {0, 1, 2, 3}, new String[] {"Off", "Low", "Medium", "High"}));
         Row w = new Row(PICKER, "Wallpaper");
@@ -910,6 +918,11 @@ final class SettingsScreen {
         w.action = this::openWallpaperPicker;
         out.add(w);
         out.add(toggle(LauncherSettings.WEATHER_FX, "Weather effects", "Rain, lightning and haze, as it is outside"));
+        Row rw = new Row(ACTION, "Remote Wallpaper");
+        rw.sub = "Upload a wallpaper from your phone via QR code / IP";
+        rw.action = () -> ctx.startActivity(new android.content.Intent(ctx, RemoteWallpaperActivity.class)
+                .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK));
+        out.add(rw);
     }
 
     /** The name the wallpaper row shows (also the phone remote's). */

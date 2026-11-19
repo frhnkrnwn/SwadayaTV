@@ -1812,6 +1812,7 @@ public class MainActivity extends Activity {
             case LauncherSettings.SHOW_PRAYER:
             case LauncherSettings.AZAN:
             case LauncherSettings.PRAYER_REMINDER:
+            case LauncherSettings.PRAYER_SUBUH_OFFSET:
                 LauncherSettings.detectZone(this);
                 prayer.refresh();
                 applyCardSettings();
@@ -1819,7 +1820,11 @@ public class MainActivity extends Activity {
             case LauncherSettings.SHOW_USAGE:
             case LauncherSettings.SHOW_SYSTEM:
             case LauncherSettings.SHOW_NOW:
+            case LauncherSettings.SHOW_SOCCER:
                 applyCardSettings();
+                break;
+            case LauncherSettings.SOCCER_LEAGUE:
+                if (soccer != null) soccer.load();
                 break;
             case LauncherSettings.SHOW_WEATHER:
                 LauncherSettings.detectZone(this);
@@ -1853,10 +1858,12 @@ public class MainActivity extends Activity {
      * something plays) move up when the System card is off.
      */
     private void applyCardSettings() {
-        View prayerCard = findViewById(R.id.prayerPanel), weatherCard = findViewById(R.id.weatherPanel);
+        View prayerCard = findViewById(R.id.prayerPanel), weatherCard = findViewById(R.id.weatherPanel),
+                soccerCard = findViewById(R.id.soccerPanel);
         boolean showPrayer = LauncherSettings.flag(this, LauncherSettings.SHOW_PRAYER);
         prayerCard.setVisibility(showPrayer ? View.VISIBLE : View.GONE);
         weatherCard.setVisibility(LauncherSettings.flag(this, LauncherSettings.SHOW_WEATHER) ? View.VISIBLE : View.GONE);
+        soccerCard.setVisibility(LauncherSettings.flag(this, LauncherSettings.SHOW_SOCCER) ? View.VISIBLE : View.GONE);
         ViewGroup.MarginLayoutParams wlp = (ViewGroup.MarginLayoutParams) weatherCard.getLayoutParams();
         wlp.topMargin = showPrayer ? px(10) : 0;
         weatherCard.setLayoutParams(wlp);

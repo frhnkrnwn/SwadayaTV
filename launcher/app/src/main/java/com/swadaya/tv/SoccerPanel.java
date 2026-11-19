@@ -13,14 +13,23 @@ import java.util.List;
  */
 final class SoccerPanel {
     private final Context ctx;
-    private final TextView body;
-    private final SoccerData.League league;
+    private final LinearLayout root;
+    private TextView title, body;
+    private SoccerData.League league;
 
     SoccerPanel(Context ctx, LinearLayout root) {
         this.ctx = ctx;
-        this.league = SoccerData.LEAGUES[0]; // Premier League by default
+        this.root = root;
+        load();
+    }
 
-        TextView title = new TextView(ctx);
+    void load() {
+        root.removeAllViews();
+        int id = LauncherSettings.choice(ctx, LauncherSettings.SOCCER_LEAGUE);
+        league = SoccerData.LEAGUES[0];
+        for (SoccerData.League l : SoccerData.LEAGUES) if (l.id == id) { league = l; break; }
+
+        title = new TextView(ctx);
         title.setText("Soccer \u00b7 " + league.name);
         title.setTextSize(12);
         title.setTextColor(0x8CFFFFFF);
@@ -45,6 +54,12 @@ final class SoccerPanel {
                 SoccerParse.Row row = r.data.table.get(i);
                 sb.append(row.rank).append(". ").append(row.name)
                         .append("  ").append(row.points).append(" pts\n");
+            }
+            if (r.error != null && !r.error.isEmpty()) {
+                sb.append("\n").append(r.error);
+                if (r.data.fetchedAt > 0) {
+                    sb.append(" \u00b7 ").append(SoccerData.jamPerbarui(r.data.fetchedAt));
+                }
             }
             body.setText(sb.toString().trim());
         });

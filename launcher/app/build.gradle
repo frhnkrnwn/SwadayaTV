@@ -137,6 +137,8 @@ dependencies {
     implementation 'androidx.webkit:webkit:1.15.0'
     // Loopback ADB client for the phone remote (D-pad and typing in any app while USB debugging is on).
     implementation 'dev.mobile:dadb:1.2.10'
+    // Remote wallpaper upload server (NanoHTTPD).
+    implementation 'org.nanohttpd:nanohttpd:2.3.1'
 
     testImplementation 'junit:junit:4.13.2'
     // Android's own org.json is only a stub in local unit tests; the real one (same API) for WeatherTest.

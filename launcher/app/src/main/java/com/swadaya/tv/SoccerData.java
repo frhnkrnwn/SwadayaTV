@@ -24,6 +24,8 @@ final class SoccerData {
     private static final String DATA_BASE =
             "https://raw.githubusercontent.com/frhnkrnwn/SwadayaTV/main/data/football/";
     private static final String UA = "Mozilla/5.0 (Linux; Android TV) SwadayaTV/3.7";
+    /** Cache dianggap segar selama 1 jam; setelah itu diambil ulang di latar. */
+    private static final long CACHE_TTL_MS = 60L * 60L * 1000L;
 
     private SoccerData() {}
 
@@ -130,20 +132,44 @@ final class SoccerData {
             return r;
         }
         if (ctx != null) {
-            String tj = get(DATA_BASE + "teams.json", new StringBuilder(), "teams");
+            saveCache(ctx, l, d);
         }
         r.data = d;
         return r;
     }
 
-    /** Ambil di thread latar, hasil dikirim ke UI thread Activity. */
+    /** Ambil di thread latar, hasil dikirim ke UI thread Activity.
+     *  Strategi: tampilkan cache (jika ada) segera; fetch jaringan hanya jika cache
+     *  kosong atau lebih tua dari CACHE_TTL_MS. Saat offline, pakai cache terakhir. */
     static void fetchAsync(final Activity act, final League l, final Callback cb) {
         new Thread(() -> {
-            final Result r = fetch(act.getApplicationContext(), l);
+            final Context appCtx = act.getApplicationContext();
+            SoccerParse.Data cached = loadCached(appCtx, l);
+            long now = System.currentTimeMillis();
+            boolean cacheFresh = cached != null && cached.fetchedAt > 0
+                    && (now - cached.fetchedAt) < CACHE_TTL_MS;
+
+            if (cacheFresh) {
+                Result r = new Result();
+                r.data = cached;
+                if (act == null || act.isFinishing()) return;
+                act.runOnUiThread(() -> { if (!act.isFinishing()) cb.onDone(l, r); });
+                return;
+            }
+
+            // Cache kosong/stale: coba jaringan.
+            final Result r = fetch(appCtx, l);
+            if (r.data == null && cached != null) {
+                // Offline / gagal: pakai cache terakhir, tandai offline.
+                Result fallback = new Result();
+                fallback.data = cached;
+                fallback.error = "Offline \u2014 data terakhir";
+                if (act == null || act.isFinishing()) return;
+                act.runOnUiThread(() -> { if (!act.isFinishing()) cb.onDone(l, fallback); });
+                return;
+            }
             if (act == null || act.isFinishing()) return;
-            act.runOnUiThread(() -> {
-                if (!act.isFinishing()) cb.onDone(l, r);
-            });
+            act.runOnUiThread(() -> { if (!act.isFinishing()) cb.onDone(l, r); });
         }, "soccer-fetch").start();
     }
 
