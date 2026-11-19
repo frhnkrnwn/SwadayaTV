@@ -146,6 +146,15 @@ final class LauncherSettings {
         changed(key);
     }
 
+    static String soccerTeam(Context ctx) {
+        return prefs(ctx).getString(SOCCER_TEAM, "");
+    }
+
+    static void setSoccerTeam(Context ctx, String team) {
+        prefs(ctx).edit().putString(SOCCER_TEAM, team == null ? "" : team.trim()).apply();
+        changed(SOCCER_TEAM);
+    }
+
     private static int defaultChoice(String key) {
         switch (key) {
             case WALL_DIM: return 2;      // Medium: the old fixed scrim

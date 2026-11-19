@@ -1824,6 +1824,7 @@ public class MainActivity extends Activity {
                 applyCardSettings();
                 break;
             case LauncherSettings.SOCCER_LEAGUE:
+            case LauncherSettings.SOCCER_TEAM:
                 if (soccer != null) soccer.load();
                 break;
             case LauncherSettings.SHOW_WEATHER:

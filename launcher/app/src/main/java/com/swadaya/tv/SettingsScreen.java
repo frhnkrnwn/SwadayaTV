@@ -909,6 +909,25 @@ final class SettingsScreen {
             for (int i = 0; i < SoccerData.LEAGUES.length; i++) { ids[i] = SoccerData.LEAGUES[i].id; names[i] = SoccerData.LEAGUES[i].name; }
             out.add(choice(LauncherSettings.SOCCER_LEAGUE, "Soccer league", "Which league's standings to show", ids, names));
         }
+        Row ft = new Row(ACTION, "Favorite team");
+        ft.sub = "Highlight this team in the standings (e.g. AS Roma)";
+        ft.value = () -> {
+            String t = LauncherSettings.soccerTeam(ctx);
+            return t.isEmpty() ? "None" : t;
+        };
+        ft.action = () -> {
+            android.widget.EditText input = new android.widget.EditText(ctx);
+            input.setText(LauncherSettings.soccerTeam(ctx));
+            new android.app.AlertDialog.Builder(ctx)
+                    .setTitle("Favorite team")
+                    .setView(input)
+                    .setPositiveButton("Save", (d, w) -> {
+                        LauncherSettings.setSoccerTeam(ctx, input.getText().toString());
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+        };
+        out.add(ft);
         out.add(choice(LauncherSettings.WALL_DIM, "Wallpaper dim", "How dark the wallpaper is behind the cards",
                 new int[] {0, 1, 2, 3}, new String[] {"Off", "Low", "Medium", "High"}));
         Row w = new Row(PICKER, "Wallpaper");
