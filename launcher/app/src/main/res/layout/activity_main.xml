@@ -61,6 +61,13 @@
                 android:orientation="vertical">
 
                 <TextView
+                    android:id="@+id/greeting"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="18sp" />
+
+                <TextView
                     android:id="@+id/date"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -74,6 +81,14 @@
                     android:layout_marginTop="1dp"
                     android:textColor="#8CFFFFFF"
                     android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/holidayCountdown"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    android:textColor="#FFC857"
+                    android:textSize="13sp" />
             </LinearLayout>
         </LinearLayout>
 

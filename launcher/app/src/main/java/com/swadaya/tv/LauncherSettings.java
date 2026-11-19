@@ -33,7 +33,8 @@ final class LauncherSettings {
             STATUS_RIGHT = "status_right", STATUS_POS = "status_position", STATUS_SIZE = "status_size",
             STATUS_BG = "status_background", APPS_PER_ROW = "apps_per_row",
             SHOW_SOCCER = "show_soccer", SOCCER_LEAGUE = "soccer_league", SOCCER_TEAM = "soccer_team",
-            PRAYER_SUBUH_OFFSET = "prayer_subuh_offset";
+            PRAYER_SUBUH_OFFSET = "prayer_subuh_offset",
+            USER_NAME = "user_name";
     // Live TV (Settings → Live TV): the screen above Running apps, and each station in it
     // (stationKey); all on by default.
     static final String LIVE_TV = "live_tv";
@@ -153,6 +154,15 @@ final class LauncherSettings {
     static void setSoccerTeam(Context ctx, String team) {
         prefs(ctx).edit().putString(SOCCER_TEAM, team == null ? "" : team.trim()).apply();
         changed(SOCCER_TEAM);
+    }
+
+    static String userName(Context ctx) {
+        return prefs(ctx).getString(USER_NAME, "");
+    }
+
+    static void setUserName(Context ctx, String name) {
+        prefs(ctx).edit().putString(USER_NAME, name == null ? "" : name.trim()).apply();
+        changed(USER_NAME);
     }
 
     private static int defaultChoice(String key) {

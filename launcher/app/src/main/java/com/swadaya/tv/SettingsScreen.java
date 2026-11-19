@@ -898,6 +898,23 @@ final class SettingsScreen {
         out.add(choice(LauncherSettings.CLOCK, "Clock", "Auto follows the TV's own setting",
                 new int[] {LauncherSettings.CLOCK_AUTO, LauncherSettings.CLOCK_12, LauncherSettings.CLOCK_24},
                 new String[] {"Auto", "12-hour", "24-hour"}));
+        Row un = new Row(ACTION, "User name");
+        un.sub = "Shown in the greeting on the home screen";
+        un.value = () -> {
+            String n = LauncherSettings.userName(ctx);
+            return n.isEmpty() ? "None" : n;
+        };
+        un.action = () -> {
+            android.widget.EditText input = new android.widget.EditText(ctx);
+            input.setText(LauncherSettings.userName(ctx));
+            new android.app.AlertDialog.Builder(ctx)
+                    .setTitle("User name")
+                    .setView(input)
+                    .setPositiveButton("Save", (d, w) -> LauncherSettings.setUserName(ctx, input.getText().toString()))
+                    .setNegativeButton("Cancel", null)
+                    .show();
+        };
+        out.add(un);
         out.add(choice(LauncherSettings.APPS_PER_ROW, "Apps per row", "The dock and the app list. More apps, smaller tiles",
                 new int[] {5, 6, 7}, new String[] {"5", "6", "7"}));
         out.add(toggle(LauncherSettings.SHOW_SYSTEM, "System card", "CPU, RAM, storage, network and USB debugging"));

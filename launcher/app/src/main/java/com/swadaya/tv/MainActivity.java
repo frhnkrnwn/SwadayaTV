@@ -147,6 +147,7 @@ public class MainActivity extends Activity {
     private UsagePanel usage;
     private WeatherPanel weather;
     private SoccerPanel soccer;
+    private TextView greeting, holidayCountdown;
     private WeatherEffects weatherFx;
     /** This week (the Most used card) and all time (the grid order). */
     private UsageScores.Scores usageScores = UsageScores.Scores.NONE;
@@ -306,6 +307,8 @@ public class MainActivity extends Activity {
         highlight = findViewById(R.id.highlight);
         hijri = findViewById(R.id.hijri);
         clock = findViewById(R.id.clock);
+        greeting = findViewById(R.id.greeting);
+        holidayCountdown = findViewById(R.id.holidayCountdown);
         date = findViewById(R.id.date);
         hero = findViewById(R.id.hero);
         glow = findViewById(R.id.glow);
@@ -1809,6 +1812,9 @@ public class MainActivity extends Activity {
             case LauncherSettings.CLOCK:
                 updateClock(); // also re-renders the prayer times
                 break;
+            case LauncherSettings.USER_NAME:
+                updateGreeting(Calendar.getInstance());
+                break;
             case LauncherSettings.SHOW_PRAYER:
             case LauncherSettings.AZAN:
             case LauncherSettings.PRAYER_REMINDER:
@@ -1982,6 +1988,8 @@ public class MainActivity extends Activity {
         Calendar c = Calendar.getInstance();
         clock.setText(DateFormat.format(LauncherSettings.use24h(this) ? "HH:mm" : "h:mm", c));
         date.setText(DateFormat.format("EEEE, d MMMM yyyy", c));
+        updateGreeting(c);
+        updateHolidayCountdown(c);
         prayer.refresh();
         weather.refresh();
         // After midnight, pick up the new Bing photo of the day even if left on the home screen.
@@ -1990,6 +1998,43 @@ public class MainActivity extends Activity {
             lastWallpaperDay = day;
             loadWallpaper();
         }
+    }
+
+    /** Greeting near the clock, based on the time of day. */
+    private void updateGreeting(Calendar c) {
+        if (greeting == null) return;
+        int h = c.get(Calendar.HOUR_OF_DAY);
+        String waktu;
+        if (h >= 4 && h <= 10) waktu = "Selamat Pagi";
+        else if (h >= 11 && h <= 14) waktu = "Selamat Siang";
+        else if (h >= 15 && h <= 17) waktu = "Selamat Sore";
+        else waktu = "Selamat Malam";
+        String name = LauncherSettings.userName(this);
+        greeting.setText(name.isEmpty() ? waktu : waktu + ", " + name);
+    }
+
+    /** Countdown to the next major Islamic holiday. */
+    private void updateHolidayCountdown(Calendar c) {
+        if (holidayCountdown == null) return;
+        // Hardcoded major Islamic holidays (local date). Add more as needed.
+        String[][] holidays = {
+            {"Idul Fitri", "2025-03-31"}, {"Idul Adha", "2025-06-07"},
+            {"Idul Fitri", "2026-03-20"}, {"Idul Adha", "2026-05-27"},
+            {"Idul Fitri", "2027-03-10"}, {"Idul Adha", "2027-05-17"}
+        };
+        java.time.LocalDate today = java.time.LocalDate.now();
+        java.time.LocalDate next = null;
+        String name = null;
+        for (String[] h : holidays) {
+            java.time.LocalDate d = java.time.LocalDate.parse(h[1]);
+            if (!d.isBefore(today)) {
+                if (next == null || d.isBefore(next)) { next = d; name = h[0]; }
+            }
+        }
+        if (next == null) { holidayCountdown.setText(""); return; }
+        long days = java.time.temporal.ChronoUnit.DAYS.between(today, next);
+        if (days == 0) holidayCountdown.setText(name + " hari ini");
+        else holidayCountdown.setText(days + " hari menuju " + name);
     }
 
     private int netShown = -1;
