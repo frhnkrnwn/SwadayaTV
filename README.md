@@ -2,7 +2,7 @@
 
 SwadayaTV is a fast, minimal home screen for **Android TV and Google TV** (Android 8.0 or newer), with prayer times, a live system card, Now Playing, a running-apps screen, a phone remote and a live globe screen saver. It was built on a Xiaomi Mi TV, which was also [debloated](docs/xiaomi-debloat.md).
 
-**Explore the launcher:** [Landing page](https://frhnkrnwn.github.io/SwadayaTV-TV-Launcher/) · [Bahasa Melayu](https://frhnkrnwn.github.io/SwadayaTV-TV-Launcher/ms.html) · [All features](docs/features.md)
+**Explore the launcher:** [Landing page](https://frhnkrnwn.github.io/SwadayaTV/) · [Bahasa Melayu](https://frhnkrnwn.github.io/SwadayaTV/ms.html) · [All features](docs/features.md)
 
 **Install it on your TV:** [Windows](docs/install-windows.md) · [macOS](docs/install-macos.md) · [Linux](docs/install-linux.md) · [with an AI agent](docs/install-with-ai-agent.md)
 
