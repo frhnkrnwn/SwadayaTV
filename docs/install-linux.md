@@ -62,7 +62,7 @@ adb version && java -version && echo "$ANDROID_HOME"
 
 ```bash
 git clone https://github.com/frhnkrnwn/SwadayaTV.git
-cd SwadayaTV
+cd SwadayaTV-TV-Launcher
 ```
 
 ## 4. Connect to the TV

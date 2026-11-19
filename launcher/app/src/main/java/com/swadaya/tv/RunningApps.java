@@ -36,7 +36,7 @@ final class RunningApps {
         }
     }
 
-    // Android 10: "#30: prcp FGS 27297:my.rafhan.app.radiostream/u0a274 activity=recents"
+    // Android 10: "#30: prcp FGS 27297:my.swadaya.app.radiostream/u0a274 activity=recents"
     // Allwinner 11 also pads single-digit indices and adds a capability column:
     // "# 7: prcp FGS --- 4493:com.softmedia.receiver/u0a69".
     private static final Pattern LINE = Pattern.compile(

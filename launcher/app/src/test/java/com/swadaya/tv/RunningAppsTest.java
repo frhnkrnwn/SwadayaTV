@@ -10,10 +10,10 @@ public class RunningAppsTest {
     @Test
     public void originalAndroidTvFormat() {
         RunningApps.ProcessRow row = RunningApps.parseLine(
-                "  #30: prcp   FGS  27297:my.rafhan.app.radiostream/u0a274  activity=recents");
+                "  #30: prcp   FGS  27297:my.swadaya.app.radiostream/u0a274  activity=recents");
         assertNotNull(row);
         assertEquals(27297, row.pid);
-        assertEquals("my.rafhan.app.radiostream", row.pkg);
+        assertEquals("my.swadaya.app.radiostream", row.pkg);
         assertEquals("FGS", row.proc);
     }
 

@@ -13,7 +13,7 @@ Its forwarding library is pinned in `launcher/app/src/main/cpp/zdtun/`, built se
 ## Folder structure
 
 ```
-SwadayaTV/
+SwadayaTV-TV-Launcher/
 ├── README.md
 ├── PROMPT.md                    paste into an AI coding agent to repeat the whole setup (debloat + launcher) on another TV
 ├── docs/                        install guides (install-*.md), features.md, xiaomi-debloat.md, development.md, screenshots

@@ -68,7 +68,7 @@ In Git Bash:
 ```bash
 cd ~
 git clone https://github.com/frhnkrnwn/SwadayaTV.git
-cd SwadayaTV
+cd SwadayaTV-TV-Launcher
 ```
 
 ## 4. Connect to the TV

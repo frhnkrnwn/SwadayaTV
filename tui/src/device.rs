@@ -805,7 +805,7 @@ mod tests {
             "YouTube"
         );
         assert_eq!(
-            friendly_app_name("my.rafhan.app.radiostream"),
+            friendly_app_name("my.swadaya.app.radiostream"),
             "Radiostream"
         );
         assert_eq!(friendly_app_name("com.mxtech.videoplayer.pro"), "Pro");

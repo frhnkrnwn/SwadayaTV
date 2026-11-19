@@ -11,7 +11,7 @@ public class RemoteDevicesTest {
 
     @Test
     public void theNameTypedOnThePhoneWins() {
-        assertEquals("Rafhan's Pixel", RemoteDevices.name(CHROME, "Rafhan's Pixel"));
+        assertEquals("Swadaya's Pixel", RemoteDevices.name(CHROME, "Swadaya's Pixel"));
         assertEquals("Kitchen tablet", RemoteDevices.name(CHROME, " Kitchen tablet "));
     }
 
