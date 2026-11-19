@@ -144,7 +144,7 @@ public final class TrafficVpnService extends VpnService {
 
     /** The tunnel on this network: its DNS servers, and IPv6 only if it has global IPv6. Null if revoked. */
     private ParcelFileDescriptor establish(LinkProperties link) {
-        Builder builder = new Builder().setSession("RFHN · local internet monitor")
+        Builder builder = new Builder().setSession("SwadayaTV · local internet monitor")
                 .setMtu(1500).addAddress("10.111.0.1", 32);
         for (String route : TrafficRoutes.ipv4()) {
             String[] parts = route.split("/"); builder.addRoute(parts[0], Integer.parseInt(parts[1]));

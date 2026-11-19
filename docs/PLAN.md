@@ -21,7 +21,7 @@ Repo referensi: ~/ref/ (lihat CREDITS.md untuk atribusi)
 | arsyan-tv-launcher | MIT | Azan overlay + service + audio focus, screensaver DreamView dengan jam sholat, PrayerTimes Kemenag |
 | cleanyourtv | MIT | Addon ecosystem, cuaca, koin, kapasitas |
 | weatherglass-tv | MIT | Cuaca glass UI, wallpaper hidup |
-| RFHN-TV-Launcher | MIT | DrmInfo, app grid reorder |
+| SwadayaTV-TV-Launcher | MIT | DrmInfo, app grid reorder |
 
 ### 1.3 Kesimpulan
 - Semua referensi **MIT license** → boleh salin dengan atribusi.

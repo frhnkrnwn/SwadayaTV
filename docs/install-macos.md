@@ -6,7 +6,7 @@ Other guides: [Windows](install-windows.md) · [Linux](install-linux.md) · [wit
 
 **Prefer an app that guides you?** The [setup app](tui.md) finds the TV, installs TV Home, cleans up the TV and can undo everything. One download, nothing else to install.
 
-To run the Mac TUI, unpack the build from [Releases](https://github.com/nullifye/RFHN-TV-Launcher/releases/latest), open Terminal in the folder containing `tvhome-tui`, and run `./tvhome-tui`. If macOS blocks a download you trust, remove the quarantine attribute from **that executable only**, then try again:
+To run the Mac TUI, unpack the build from [Releases](https://github.com/nullifye/SwadayaTV-TV-Launcher/releases/latest), open Terminal in the folder containing `tvhome-tui`, and run `./tvhome-tui`. If macOS blocks a download you trust, remove the quarantine attribute from **that executable only**, then try again:
 
 ```bash
 xattr -d com.apple.quarantine ./tvhome-tui
@@ -53,8 +53,8 @@ adb version && java -version && echo "$ANDROID_HOME"
 ## 3. Get the code
 
 ```bash
-git clone https://github.com/nullifye/RFHN-TV-Launcher.git
-cd RFHN-TV-Launcher
+git clone https://github.com/nullifye/SwadayaTV-TV-Launcher.git
+cd SwadayaTV-TV-Launcher
 ```
 
 ## 4. Connect to the TV
@@ -112,7 +112,7 @@ adb version
 
 ### Step 2. Download the APK
 
-1. Open [github.com/nullifye/RFHN-TV-Launcher/releases/latest](https://github.com/nullifye/RFHN-TV-Launcher/releases/latest). No GitHub account needed.
+1. Open [github.com/nullifye/SwadayaTV-TV-Launcher/releases/latest](https://github.com/nullifye/SwadayaTV-TV-Launcher/releases/latest). No GitHub account needed.
 2. Under **Assets**, click **`tvhome-<version>.apk`** (for example `tvhome-2.0.2.apk`). It downloads to your **Downloads** folder.
 
 ### Step 3. Go to the APK
