@@ -7,7 +7,7 @@ import android.os.Looper;
 
 /**
  * Sleep timer set from the phone remote or the home screen's quick actions: a banner a minute
- * before, then the TV goes to standby (Power.sleep: TV Home's accessibility service, else ADB).
+ * before, then the TV goes to standby (Power.sleep: SwadayaTV's accessibility service, else ADB).
  * Kept in memory by RemoteService; a restart of the launcher cancels it.
  */
 final class SleepTimer {
@@ -74,7 +74,7 @@ final class SleepTimer {
         new Thread(() -> {
             if (!Power.sleep(ctx)) {
                 banner.showMessage(R.drawable.ic_uptime, 0xFFFF6B6B,
-                        "Sleep timer couldn't turn the TV off: turn on TV Home's accessibility service or USB debugging", 8000);
+                        "Sleep timer couldn't turn the TV off: turn on SwadayaTV's accessibility service or USB debugging", 8000);
             }
         }, "sleep-timer").start();
     }

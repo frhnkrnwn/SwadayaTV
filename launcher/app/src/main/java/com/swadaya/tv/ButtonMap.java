@@ -32,7 +32,7 @@ final class ButtonMap {
             POWER_MENU, ASSISTANT, INPUTS, SCREENSAVER, SLEEP, QUICK_MENU, SCREENSHOT, MUTE, VOLUME_UP, VOLUME_DOWN,
             PLAY_PAUSE, NEXT, PREVIOUS, OVERLAY, NET_TRAFFIC};
     private static final String[] ACTION_NAMES = {"Normal", "Nothing", "Home", "Back", "Recent apps",
-            "Android settings", "Wi-Fi settings", "Sound settings", "App settings", "TV Home settings",
+            "Android settings", "Wi-Fi settings", "Sound settings", "App settings", "SwadayaTV settings",
             "Power menu", "Assistant", "Inputs (HDMI, antenna)", "Start the screen saver", "Sleep", "Quick menu",
             "Take a screenshot", "Mute", "Volume up", "Volume down", "Play / pause", "Next track", "Previous track", "Info overlay on or off", "Net traffic on or off"};
 
@@ -65,9 +65,9 @@ final class ButtonMap {
     }
 
     /**
-     * Keys whose own press TV Home can play back without USB debugging (ButtonActions.normal):
+     * Keys whose own press SwadayaTV can play back without USB debugging (ButtonActions.normal):
      * Back, Home and Recents (accessibility actions), volume and media keys (Android's audio
-     * service), Input (TV Home's picker), Settings and Notifications.
+     * service), Input (SwadayaTV's picker), Settings and Notifications.
      */
     static boolean normalWithoutAdb(int code) {
         switch (code) {

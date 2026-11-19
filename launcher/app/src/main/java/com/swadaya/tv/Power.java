@@ -8,7 +8,7 @@ import android.util.Log;
 /**
  * Sleep, restart and shut down, for the quick actions, the sleep timer and the phone remote.
  *
- * An app can't do these itself. Sleep goes through TV Home's accessibility service first: its
+ * An app can't do these itself. Sleep goes through SwadayaTV's accessibility service first: its
  * "lock screen" action (Android 9+) turns the screen off the way the power button does, and it
  * needs no USB debugging. Restart and shut down need the shell (the loopback ADB connection, so
  * USB debugging on); without it the accessibility service can still open the TV's own power menu,

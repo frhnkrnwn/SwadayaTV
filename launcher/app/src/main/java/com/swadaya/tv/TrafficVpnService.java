@@ -277,9 +277,9 @@ public final class TrafficVpnService extends VpnService {
         return TrafficMonitor.HISTORY.open(ip, port, protocol, uid, app, SystemClock.elapsedRealtime());
     }
 
-    /** What the list calls the app with this uid: "TV Home" for this one, its label, else the system or unknown. */
+    /** What the list calls the app with this uid: "SwadayaTV" for this one, its label, else the system or unknown. */
     private String label(int uid) {
-        if (uid == android.os.Process.myUid()) return "TV Home";
+        if (uid == android.os.Process.myUid()) return "SwadayaTV";
         String[] names = uid < 0 ? null : getPackageManager().getPackagesForUid(uid);
         boolean system = uid >= 0 && uid < android.os.Process.FIRST_APPLICATION_UID;
         if (names == null || names.length == 0) return system ? "Android system" : "Unknown app";

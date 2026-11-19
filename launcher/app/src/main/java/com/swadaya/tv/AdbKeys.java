@@ -354,14 +354,14 @@ final class AdbKeys {
             if (state != State.READY || adb == null) return false;
             try {
                 if (!toKeyboard) {
-                    if (pad == null) pad = openHid(adb, "TV Home remote keypad", PAD_DESCRIPTOR);
+                    if (pad == null) pad = openHid(adb, "SwadayaTV remote keypad", PAD_DESCRIPTOR);
                     padUsed = SystemClock.elapsedRealtime();
                     main.removeCallbacks(padIdle);
                     main.postDelayed(padIdle, PAD_IDLE_MS);
                 }
                 Hid s = pad;
                 if (toKeyboard) {
-                    if (keyboard == null) keyboard = openHid(adb, "TV Home remote keyboard", KEYBOARD_DESCRIPTOR);
+                    if (keyboard == null) keyboard = openHid(adb, "SwadayaTV remote keyboard", KEYBOARD_DESCRIPTOR);
                     keyboardUsed = SystemClock.elapsedRealtime();
                     main.removeCallbacks(keyboardIdle);
                     main.postDelayed(keyboardIdle, KEYBOARD_IDLE_MS);

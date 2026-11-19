@@ -110,7 +110,7 @@ public class MainActivity extends Activity {
     static final String ACTION_NET_TRAFFIC = "com.swadaya.tv.action.NET_TRAFFIC";
     /** A remote button set to "Quick menu" (Settings → Button Mapper): home, with the quick menu open. */
     static final String ACTION_QUICK_MENU = "com.swadaya.tv.action.QUICK_MENU";
-    /** A remote button set to "TV Home settings": home, with Settings open. */
+    /** A remote button set to "SwadayaTV settings": home, with Settings open. */
     static final String ACTION_SETTINGS = "com.swadaya.tv.action.SETTINGS";
     /**
      * A remote button mapped to Home, pressed while the launcher is already in front: return to the
@@ -1673,7 +1673,7 @@ public class MainActivity extends Activity {
                 if (wasOff) previewStartedAt = SystemClock.uptimeMillis();
                 return;
             }
-            // Google TV has no such screen: TV Home shows its own screen savers itself.
+            // Google TV has no such screen: SwadayaTV shows its own screen savers itself.
             if (wasOff) ScreenSaver.setEnabled(ctx, false);
         }
         Intent own = SaverActivity.intent(ctx, chosen);
@@ -1743,7 +1743,7 @@ public class MainActivity extends Activity {
         new Thread(() -> {
             SystemClock.sleep(300);
             if (!Power.sleep(this)) main.post(() -> Toast.makeText(this,
-                    "Can't: turn on TV Home's accessibility service or USB debugging", Toast.LENGTH_LONG).show());
+                    "Can't: turn on SwadayaTV's accessibility service or USB debugging", Toast.LENGTH_LONG).show());
         }, "power").start();
     }
 
@@ -1752,7 +1752,7 @@ public class MainActivity extends Activity {
         new Thread(() -> {
             SystemClock.sleep(300);
             if (Power.restart(this, shutDown) == Power.FAILED) main.post(() -> Toast.makeText(this,
-                    "Can't: turn on USB debugging or TV Home's accessibility service", Toast.LENGTH_LONG).show());
+                    "Can't: turn on USB debugging or SwadayaTV's accessibility service", Toast.LENGTH_LONG).show());
         }, "power").start();
     }
 

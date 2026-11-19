@@ -24,7 +24,7 @@ import java.util.Locale;
 final class Wallpapers {
     static final String NONE = "none", CUSTOM = "custom", FILE = "file:", BING = "bing",
             DEFAULT = "perseids"; // Stargazer, the first in the list
-    static final String UA = "TvHome/1.0 (Android TV home launcher)";
+    static final String UA = "SwadayaTV/1.0 (Android TV home launcher)";
     private static final String COMMONS = "https://thumb.wikimedia.org/wikipedia/commons/thumb/";
 
     static final class Photo {

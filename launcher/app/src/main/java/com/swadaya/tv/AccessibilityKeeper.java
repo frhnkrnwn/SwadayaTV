@@ -121,7 +121,7 @@ final class AccessibilityKeeper {
                             AccessibilityServiceList.add(latest, component));
                 }
                 if (!flag) Settings.Secure.putInt(ctx.getContentResolver(), Settings.Secure.ACCESSIBILITY_ENABLED, 1);
-                Log.i("TvHome", "Accessibility keeper restored TV Home (missing=" + !listed + ", disabled=" + !flag + ")");
+                Log.i("TvHome", "Accessibility keeper restored SwadayaTV (missing=" + !listed + ", disabled=" + !flag + ")");
             } catch (RuntimeException e) {
                 Log.w("TvHome", "Accessibility keeper could not restore the service", e);
             }

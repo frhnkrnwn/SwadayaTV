@@ -154,7 +154,7 @@ final class ButtonActions implements PressDetector.Buttons {
             case KeyEvent.KEYCODE_HOME: goHome(); return;
             case KeyEvent.KEYCODE_APP_SWITCH: RemoteAccessibilityService.global(AccessibilityService.GLOBAL_ACTION_RECENTS); return;
             case KeyEvent.KEYCODE_NOTIFICATION: RemoteAccessibilityService.global(AccessibilityService.GLOBAL_ACTION_NOTIFICATIONS); return;
-            case KeyEvent.KEYCODE_TV_INPUT: start(new Intent(ctx, InputsActivity.class)); return; // what TV Home does with it
+            case KeyEvent.KEYCODE_TV_INPUT: start(new Intent(ctx, InputsActivity.class)); return; // what SwadayaTV does with it
             case KeyEvent.KEYCODE_SETTINGS: start(new Intent(android.provider.Settings.ACTION_SETTINGS)); return;
             case KeyEvent.KEYCODE_VOLUME_UP: volume(AudioManager.ADJUST_RAISE); return;
             case KeyEvent.KEYCODE_VOLUME_DOWN: volume(AudioManager.ADJUST_LOWER); return;
@@ -196,7 +196,7 @@ final class ButtonActions implements PressDetector.Buttons {
         else start(i);
     }
 
-    /** The chosen screen saver: the TV's way, or TV Home's own preview where the TV has none. */
+    /** The chosen screen saver: the TV's way, or SwadayaTV's own preview where the TV has none. */
     private void screenSaver() {
         if (ScreenSaver.enabled(ctx) && ScreenSaver.startSystem(ctx)) return;
         Intent own = SaverActivity.intent(ctx, ScreenSaver.current(ctx));
@@ -217,7 +217,7 @@ final class ButtonActions implements PressDetector.Buttons {
         boolean on = !LauncherSettings.flag(ctx, LauncherSettings.STATUS_BAR);
         LauncherSettings.setFlag(ctx, LauncherSettings.STATUS_BAR, on);
         toast(!on ? "Info overlay off" : android.provider.Settings.canDrawOverlays(ctx) ? "Info overlay on"
-                : "Info overlay on: it needs TV Home allowed to draw over apps");
+                : "Info overlay on: it needs SwadayaTV allowed to draw over apps");
     }
 
     private void netTraffic() {
@@ -227,7 +227,7 @@ final class ButtonActions implements PressDetector.Buttons {
         } else if (android.net.VpnService.prepare(ctx) == null) {
             TrafficMonitor.start(ctx);
             toast("Net traffic: starting");
-        } else { // Android's VPN approval first: TV Home's Net traffic page asks for it
+        } else { // Android's VPN approval first: SwadayaTV's Net traffic page asks for it
             start(new Intent(ctx, MainActivity.class).setAction(MainActivity.ACTION_NET_TRAFFIC));
         }
     }

@@ -11,7 +11,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * The bell's notifications, in memory (like Matinee's): TV Home and Play Store updates, new
+ * The bell's notifications, in memory (like Matinee's): SwadayaTV and Play Store updates, new
  * HDMI/Bluetooth devices and low memory, fed by AlertSources in RemoteService and shown by MainActivity.
  */
 final class Alerts {

@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
 /**
  * Feeds the bell (Alerts), modelled on Matinee's, from RemoteService so it runs while any app is
  * on screen:
- *  - TV Home updates: a newer release on GitHub (UpdateCheck), a minute after the launcher starts,
+ *  - SwadayaTV updates: a newer release on GitHub (UpdateCheck), a minute after the launcher starts,
  *    then once a day (an hour later after a failed check); opening it
  *    downloads and installs it (UpdateActivity). A banner shows once per version;
  *  - Play Store updates: one alert per app with an update waiting, from the Play Store's log
@@ -122,7 +122,7 @@ final class AlertSources {
         }
     }
 
-    // ---------------------------------------------------------------- TV Home updates
+    // ---------------------------------------------------------------- SwadayaTV updates
 
     private volatile boolean updateAsked;
 
@@ -140,13 +140,13 @@ final class AlertSources {
                 List<Alerts.Alert> now = new ArrayList<>();
                 if (r != null) {
                     now.add(new Alerts.Alert("update:" + r.version, Alerts.UPDATE,
-                            "TV Home " + r.version + " is available", "Open to update (your settings are kept)",
+                            "SwadayaTV " + r.version + " is available", "Open to update (your settings are kept)",
                             System.currentTimeMillis(), UpdateActivity.intent(ctx, r)));
                     SharedPreferences p = ctx.getSharedPreferences("alerts", Context.MODE_PRIVATE);
                     if (!r.version.equals(p.getString("update_banner", null))) {
                         p.edit().putString("update_banner", r.version).apply();
                         main.post(() -> banner.showMessage(R.drawable.ic_update, NetState.GREEN,
-                                "TV Home " + r.version + " is available · open the bell to update", 6000));
+                                "SwadayaTV " + r.version + " is available · open the bell to update", 6000));
                     }
                 }
                 alerts.sync(Alerts.UPDATE, now);

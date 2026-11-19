@@ -775,7 +775,7 @@ final class SettingsScreen {
     /**
      * The TV's screen saver (ScreenSaver): on/off, which one (OK cycles Prayer time → Live log →
      * Globe → the TV's others), a preview, and with Globe chosen, a switch for each of its layers. Some TVs can't open their screen-saver page from another
-     * app, so with WRITE_SECURE_SETTINGS TV Home sets it itself; without, it opens the TV's Settings.
+     * app, so with WRITE_SECURE_SETTINGS SwadayaTV sets it itself; without, it opens the TV's Settings.
      */
     private void saverRows(List<Row> out) {
         android.content.ComponentName current = ScreenSaver.current(ctx);
@@ -922,7 +922,7 @@ final class SettingsScreen {
     }
 
     private void alertRows(List<Row> out) {
-        out.add(toggle(LauncherSettings.ALERT_UPDATE, "TV Home updates", "Checked once a day"));
+        out.add(toggle(LauncherSettings.ALERT_UPDATE, "SwadayaTV updates", "Checked once a day"));
         out.add(toggle(LauncherSettings.ALERT_PLAY, "Play Store updates", "Apps with an update waiting, checked every hour"));
         out.add(toggle(LauncherSettings.ALERT_HDMI, "New HDMI devices", "A device that appears over HDMI-CEC"));
         out.add(toggle(LauncherSettings.ALERT_BT, "Bluetooth devices", "Connecting or disconnecting (not the TV remote)"));
@@ -1010,8 +1010,8 @@ final class SettingsScreen {
     private void buttonRows(List<Row> out) {
         boolean on = RemoteAccessibilityService.isOn();
         if (!on) {
-            Row r = new Row(ACTION, "Turn on TV Home's accessibility service");
-            r.sub = "Button Mapper needs \"TV Home phone remote\" switched on in the TV's Settings → Accessibility";
+            Row r = new Row(ACTION, "Turn on SwadayaTV's accessibility service");
+            r.sub = "Button Mapper needs \"SwadayaTV phone remote\" switched on in the TV's Settings → Accessibility";
             r.action = this::openAccessibilitySettings;
             out.add(r);
         }
@@ -1100,7 +1100,7 @@ final class SettingsScreen {
     /** Explicit opt-in; switch this off here before disabling the service in Android Settings. */
     private void miscRows(List<Row> out) {
         Row keep = new Row(TOGGLE, "Keep accessibility enabled");
-        keep.sub = "Restore TV Home if the TV turns it off. Turn this off first to disable accessibility manually";
+        keep.sub = "Restore SwadayaTV if the TV turns it off. Turn this off first to disable accessibility manually";
         keep.on = () -> AccessibilityKeeper.enabled(ctx);
         keep.action = () -> {
             if (!AccessibilityKeeper.setEnabled(ctx, !AccessibilityKeeper.enabled(ctx))) {
@@ -1158,7 +1158,7 @@ final class SettingsScreen {
             int press = p;
             if (p != ButtonMap.SINGLE && !ButtonMap.extraPressAllowed(code, single)) {
                 Row r = new Row(INFO, ButtonMap.PRESS_NAMES[p]);
-                r.sub = "Give the single press an action first: TV Home can't play this button's own press back";
+                r.sub = "Give the single press an action first: SwadayaTV can't play this button's own press back";
                 r.value = () -> "Normal";
                 items.add(r);
                 continue;

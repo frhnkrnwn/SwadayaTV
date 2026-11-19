@@ -22,7 +22,7 @@ public class ButtonMapTest {
         assertTrue(ButtonMap.remappable(KeyEvent.KEYCODE_PROG_RED));
     }
 
-    /** Works with USB debugging off: a press TV Home can't play back is never left on Normal. */
+    /** Works with USB debugging off: a press SwadayaTV can't play back is never left on Normal. */
     @Test public void doubleAndLongNeedTheSinglePressPlayedBackOrSet() {
         int red = KeyEvent.KEYCODE_PROG_RED, menu = KeyEvent.KEYCODE_MENU;
         assertFalse(ButtonMap.normalWithoutAdb(red));

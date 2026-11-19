@@ -13,9 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The TV's screen saver, picked in TV Home's Settings → Screen saver: OK cycles Prayer time →
+ * The TV's screen saver, picked in SwadayaTV's Settings → Screen saver: OK cycles Prayer time →
  * Live log → Globe → every other screen saver on the TV (A–Z), like the TV's own list.
- * Some TVs (this Mi TV) can't open their screen-saver page from another app, so TV Home writes
+ * Some TVs (this Mi TV) can't open their screen-saver page from another app, so SwadayaTV writes
  * the choice itself. That needs WRITE_SECURE_SETTINGS, a development permission granted over ADB
  * by the setup app and build-and-install.sh; without it the row opens the TV's Settings instead.
  */
