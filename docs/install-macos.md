@@ -54,7 +54,7 @@ adb version && java -version && echo "$ANDROID_HOME"
 
 ```bash
 git clone https://github.com/frhnkrnwn/SwadayaTV.git
-cd SwadayaTV-TV-Launcher
+cd SwadayaTV
 ```
 
 ## 4. Connect to the TV
@@ -163,7 +163,7 @@ Wait for `Success`.
 - **It seems stuck?** Look at the TV: some ask you to confirm the install on screen.
 - **`INSTALL_FAILED_UPDATE_INCOMPATIBLE`?** A copy you built yourself is installed (a different signing key). Remove it first (its settings are lost), then install again:
   ```bash
-  adb uninstall com.swadaya.tv
+  adb uninstall my.rafhan.app.tvhome
   adb install tvhome-2.0.2.apk
   ```
 
@@ -172,18 +172,18 @@ Wait for `Success`.
 Run these one by one, **right after installing and before pressing Home** (Android 10 only applies storage access when the app starts). A command that prints an error just means that TV refuses it: carry on, only that feature is limited.
 
 ```bash
-adb shell pm grant com.swadaya.tv android.permission.READ_EXTERNAL_STORAGE
-adb shell pm grant com.swadaya.tv android.permission.WRITE_EXTERNAL_STORAGE
-adb shell appops set com.swadaya.tv MANAGE_EXTERNAL_STORAGE allow
-adb shell pm grant com.swadaya.tv android.permission.ACCESS_FINE_LOCATION
-adb shell appops set com.swadaya.tv GET_USAGE_STATS allow
-adb shell appops set com.swadaya.tv SYSTEM_ALERT_WINDOW allow
-adb shell pm grant com.swadaya.tv android.permission.DUMP
-adb shell pm grant com.swadaya.tv android.permission.PACKAGE_USAGE_STATS
-adb shell pm grant com.swadaya.tv android.permission.BLUETOOTH_CONNECT
-adb shell pm grant com.swadaya.tv android.permission.WRITE_SECURE_SETTINGS
-adb shell pm grant com.swadaya.tv android.permission.READ_LOGS
-adb shell appops set com.swadaya.tv REQUEST_INSTALL_PACKAGES allow
+adb shell pm grant my.rafhan.app.tvhome android.permission.READ_EXTERNAL_STORAGE
+adb shell pm grant my.rafhan.app.tvhome android.permission.WRITE_EXTERNAL_STORAGE
+adb shell appops set my.rafhan.app.tvhome MANAGE_EXTERNAL_STORAGE allow
+adb shell pm grant my.rafhan.app.tvhome android.permission.ACCESS_FINE_LOCATION
+adb shell appops set my.rafhan.app.tvhome GET_USAGE_STATS allow
+adb shell appops set my.rafhan.app.tvhome SYSTEM_ALERT_WINDOW allow
+adb shell pm grant my.rafhan.app.tvhome android.permission.DUMP
+adb shell pm grant my.rafhan.app.tvhome android.permission.PACKAGE_USAGE_STATS
+adb shell pm grant my.rafhan.app.tvhome android.permission.BLUETOOTH_CONNECT
+adb shell pm grant my.rafhan.app.tvhome android.permission.WRITE_SECURE_SETTINGS
+adb shell pm grant my.rafhan.app.tvhome android.permission.READ_LOGS
+adb shell appops set my.rafhan.app.tvhome REQUEST_INSTALL_PACKAGES allow
 ```
 
 | Command | What it's for |
@@ -210,11 +210,11 @@ adb shell settings get secure enabled_accessibility_services
 
 - It prints **`null`** (or nothing): run
   ```bash
-  adb shell settings put secure enabled_accessibility_services com.swadaya.tv/com.swadaya.tv.RemoteAccessibilityService
+  adb shell settings put secure enabled_accessibility_services my.rafhan.app.tvhome/my.rafhan.app.tvhome.RemoteAccessibilityService
   ```
 - It prints something else, e.g. `flar2.homebutton/flar2.homebutton.a.MyService`: **copy that text, keep it in your note**, and put it in front, joined with a `:`:
   ```bash
-  adb shell settings put secure enabled_accessibility_services "flar2.homebutton/flar2.homebutton.a.MyService:com.swadaya.tv/com.swadaya.tv.RemoteAccessibilityService"
+  adb shell settings put secure enabled_accessibility_services "flar2.homebutton/flar2.homebutton.a.MyService:my.rafhan.app.tvhome/my.rafhan.app.tvhome.RemoteAccessibilityService"
   ```
 
 Then switch accessibility on:
@@ -226,7 +226,7 @@ adb shell settings put secure accessibility_enabled 1
 ### Step 9. Make it the home screen
 
 ```bash
-adb shell cmd package set-home-activity com.swadaya.tv/.MainActivity
+adb shell cmd package set-home-activity my.rafhan.app.tvhome/.MainActivity
 ```
 
 Now press **Home** on the TV remote. You should see the new launcher. Done!
@@ -237,7 +237,7 @@ Now press **Home** on the TV remote. You should see the new launcher. Done!
    ```bash
    adb shell pm disable-user --user 0 com.google.android.tungsten.setupwraith
    adb shell pm disable-user --user 0 com.google.android.apps.tv.launcherx
-   adb shell cmd package set-home-activity com.swadaya.tv/.MainActivity
+   adb shell cmd package set-home-activity my.rafhan.app.tvhome/.MainActivity
    ```
 2. Press **Home**.
 
@@ -267,7 +267,7 @@ Using what you wrote down in Steps 5 and 8:
 adb shell pm enable --user 0 com.google.android.tungsten.setupwraith
 adb shell pm enable --user 0 com.google.android.apps.tv.launcherx
 adb shell cmd package set-home-activity com.google.android.apps.tv.launcherx/.home.HomeActivity
-adb uninstall com.swadaya.tv
+adb uninstall my.rafhan.app.tvhome
 ```
 
 - Use **your** launcher from Step 5 in the `pm enable` and `set-home-activity` lines. The first line is only for Google TV; elsewhere it prints an error, which is fine.

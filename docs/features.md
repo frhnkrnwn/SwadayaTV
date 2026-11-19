@@ -320,7 +320,7 @@ The band word sits beside the number; a long one that doesn't fit ends in "…".
   - **Background playback (e.g. RadioStream audio)**, but only on days the app was also on screen. On this TV a group of always-on services, such as an overlay app, MiLink and Live TV's service, log identical whole-day service times that aren't real use.
   - **On Android 8 and 9** (e.g. an older Mi Box), Android only reports foreground time, so that's what counts. Background playback isn't counted there.
 - **Excluded apps:** Live TV (`com.mediatek.wwtv.tvcenter`) is left out of the ranking. It's only the screen for HDMI, AV and the antenna, so its time is input-watching time, not app use. It isn't on the card or in its total. Leaving an app out only affects the card: the grid still ranks it by its use. To leave out more apps, tick them in **Settings → Most used → Leave out** (`usage_excluded` in apps.xml is only the default).
-- **Usage access:** granted by `scripts/build-and-install.sh` with `adb shell appops set com.swadaya.tv GET_USAGE_STATS allow`. Without it the card shows that command and the grid stays A–Z.
+- **Usage access:** granted by `scripts/build-and-install.sh` with `adb shell appops set my.rafhan.app.tvhome GET_USAGE_STATS allow`. Without it the card shows that command and the grid stays A–Z.
 - **History:** the launcher keeps its own copy of each day's times for the last 7 days (`files/usage-history.json`), which always includes the week's first day whichever day it starts, because this TV has no clock battery: after a power cut it boots thinking it's 1974 until internet time fixes the clock, and that jump pushes Android's own usage history out of the week. The copy is only saved while the clock is right, and each day counts whichever is larger, the copy or Android's figure. Standby doesn't affect any of this; only a real power-off does.
 - **All-time total (grid order):** when a day leaves the 7-day copy, its times are added to `files/usage-alltime.json`. The grid ranks by that total plus the days still in the copy, so it survives reboots and power cuts. It starts from zero: only use the launcher itself counted.
 
@@ -337,7 +337,7 @@ The card sits under the pills, starting at the Inputs pill. It shows:
 - **USB debugging:** shows amber **ON :5555** while network ADB is open, and green **OFF** once you switch it off. It updates the moment the setting changes.
 - **CPU:** this firmware blocks apps from reading true CPU load, and the TV has no temperature sensor service. `/proc/stat`, `/proc/loadavg` and the thermal zone are all denied by SELinux, and the thermal HAL is absent. So the card shows the cores' current clock instead. The `ondemand` governor raises it under load. For real CPU % use `adb shell dumpsys cpuinfo`.
 - **Refresh:** CPU, RAM and uptime refresh every 2 s, only while the home screen is on screen; the card stops sampling when the app grid or another app is open. Storage refreshes every 30 s. Network and USB values only change on events.
-- **Code:** the card lives in `launcher/app/src/main/java/com/swadaya/tv/SystemPanel.java`.
+- **Code:** the card lives in `launcher/app/src/main/java/my/rafhan/app/tvhome/SystemPanel.java`.
 
 ## Phone remote
 
@@ -426,7 +426,7 @@ Open **http://\<TV IP\>:8486** on your phone, on the same Wi-Fi (Settings → Ph
 **App manager (USB debugging on):**
 - **Disable** runs `pm disable-user --user 0`, so the app is hidden and can't run, but nothing is uninstalled and its data stays. **Enable** reverses it.
 - **Never disabled:** this launcher and any other home-screen app, the TV's keyboard, Settings, the system UI, Play Store and Play Services, and the TV-input packages. Only apps with a launcher icon are offered.
-- **Logged** in TV Home's private storage, with a copy in `Android/data/com.swadaya.tv/files/disabled-by-remote.txt` that `scripts/restore.sh` and the setup app read to re-enable those apps too. The copy is written again at start and every hour, in case a junk cleaner removed it, and apps that are back on drop off the log by themselves.
+- **Logged** in TV Home's private storage, with a copy in `Android/data/my.rafhan.app.tvhome/files/disabled-by-remote.txt` that `scripts/restore.sh` and the setup app read to re-enable those apps too. The copy is written again at start and every hour, in case a junk cleaner removed it, and apps that are back on drop off the log by themselves.
 - **Free up cache** runs `pm trim-caches`, which empties every app's cache (Android 10 doesn't let the shell clear one app's). No "clear data": that would sign you out of apps.
 
 **Settings tab:**
@@ -475,7 +475,7 @@ The dock holds **one row of apps** (5 by default; **Settings → Home screen →
 
 **Missing apps:** if a dock app isn't installed, or is disabled, it's skipped and the dock shows the others. It comes back by itself once the app is installed or enabled again. The next time you edit the dock it's dropped, so it doesn't hold a hidden slot.
 
-**Where it's stored:** in TV Home's private storage, so updates and junk cleaners can't touch it. Xiaomi's TV Manager deletes files in apps' shared folders when the TV wakes, which used to reset the dock to the built-in default (`res/values/dock.xml`). A copy is kept in `/sdcard/Android/data/com.swadaya.tv/files/dock.txt`, one package per line, left to right, and written again if a cleaner removes it. Push your own `dock.txt` there over ADB to replace the dock; TV Home takes it in the next time the home screen opens.
+**Where it's stored:** in TV Home's private storage, so updates and junk cleaners can't touch it. Xiaomi's TV Manager deletes files in apps' shared folders when the TV wakes, which used to reset the dock to the built-in default (`res/values/dock.xml`). A copy is kept in `/sdcard/Android/data/my.rafhan.app.tvhome/files/dock.txt`, one package per line, left to right, and written again if a cleaner removes it. Push your own `dock.txt` there over ADB to replace the dock; TV Home takes it in the next time the home screen opens.
 
 ## Change the wallpaper
 
@@ -503,7 +503,7 @@ Moving the focus through the list previews each one behind Settings; **OK** sets
 - **Phone remote:** Settings tab → Wallpaper → **Your photo** uploads a photo and sets it in one go. Or Files tab → **Wallpapers** (the shortcut under the storage list) → Upload, then pick it on the TV.
 - **ADB:** `adb push mypicture.jpg /sdcard/Wallpapers/`
 
-Deleting a picture that's in use switches back to the default. The folder survives a launcher uninstall; the downloaded built-in photos don't. (An older picture pushed to `Android/data/com.swadaya.tv/files/wallpaper.jpg` still appears as **Your picture**.)
+Deleting a picture that's in use switches back to the default. The folder survives a launcher uninstall; the downloaded built-in photos don't. (An older picture pushed to `Android/data/my.rafhan.app.tvhome/files/wallpaper.jpg` still appears as **Your picture**.)
 
 ## Hidden system apps
 
