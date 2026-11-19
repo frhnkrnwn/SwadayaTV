@@ -1,0 +1,1378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TV Remote">
+<link rel="apple-touch-icon" href="/icon.png">
+<link rel="icon" href="/icon.png">
+<link rel="manifest" href="/manifest.json">
+<title>TV Remote</title>
+<style>
+  @font-face { font-family: Outfit; src: url(/font) format("truetype"); font-weight: 100 900; }
+  :root {
+    --bg: #000; --glass: rgba(255,255,255,.07); --glass-hi: rgba(255,255,255,.14);
+    --edge: rgba(255,255,255,.12); --text: #fff; --dim: rgba(255,255,255,.55); --accent: #ffc857;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+    font-family: Outfit, system-ui, -apple-system, sans-serif; -webkit-user-select: none; user-select: none; }
+  body { display: flex; flex-direction: column; padding: max(16px, env(safe-area-inset-top)) 16px max(12px, env(safe-area-inset-bottom)); }
+  h1 { font-weight: 300; font-size: 28px; margin: 4px 0 2px; }
+  .sub { color: var(--dim); font-size: 14px; }
+  .card { background: var(--glass); border: 1px solid var(--edge); border-radius: 22px; }
+  button { font: inherit; color: var(--text); background: var(--glass); border: 1px solid var(--edge);
+    border-radius: 18px; padding: 14px; cursor: pointer; touch-action: manipulation; }
+  button:active { background: var(--glass-hi); transform: scale(.97); }
+  .hidden { display: none !important; }
+  .status { min-height: 20px; font-size: 13px; color: var(--accent); margin: 8px 2px; }
+
+  /* pairing */
+  #pair { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 18px; max-width: 420px; margin: 0 auto; width: 100%; }
+  #pin { font: inherit; font-size: 44px; font-weight: 300; letter-spacing: .4em; text-align: center; width: 100%;
+    color: var(--text); background: var(--glass); border: 1px solid var(--edge); border-radius: 22px; padding: 14px 0 14px .4em; outline: none; }
+  #pin:focus { border-color: rgba(255,255,255,.35); }
+  #phoneName { font: inherit; font-size: 16px; text-align: center; width: 100%; color: var(--text); background: var(--glass);
+    border: 1px solid var(--edge); border-radius: 16px; padding: 12px; outline: none; }
+  #phoneName:focus { border-color: rgba(255,255,255,.35); }
+
+  /* main */
+  #main { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .title { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .title h1 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .icon-btn { flex: none; width: 34px; height: 34px; padding: 0; border-radius: 50%; display: grid; place-items: center; }
+  .icon-btn svg { width: 18px; height: 18px; fill: var(--dim); }
+  .where { font-size: 13px; color: var(--dim); }
+  .where b { color: var(--text); font-weight: 500; }
+  .tab { flex: 1; display: flex; flex-direction: column; min-height: 0; margin-top: 14px; }
+  /* messages float above the tab bar instead of taking space under the title */
+  #status { position: fixed; left: 16px; right: 16px; bottom: calc(78px + env(safe-area-inset-bottom)); z-index: 5; margin: 0;
+    min-height: 0; padding: 10px 14px; border-radius: 14px; background: #2a2a2d; border: 1px solid var(--edge); color: var(--accent);
+    box-shadow: 0 6px 24px rgba(0,0,0,.5); }
+  #status:empty { display: none; }
+
+  #pad { flex: 1; min-height: 240px; position: relative; touch-action: none; display: flex; align-items: center; justify-content: center;
+    color: var(--dim); font-size: 14px; text-align: center; padding: 20px; transition: opacity .2s; }
+  #pad.off { opacity: .45; }
+  #pad .dot { position: absolute; width: 56px; height: 56px; border-radius: 50%; background: rgba(255,255,255,.18);
+    transform: translate(-50%, -50%); pointer-events: none; opacity: 0; transition: opacity .15s; }
+  .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+  .row button { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; color: var(--dim); padding: 12px 6px; }
+  .row svg { width: 24px; height: 24px; fill: #fff; }
+  .row.four { grid-template-columns: repeat(4, 1fr); }
+  #shot { position: fixed; inset: 0; background: rgba(0,0,0,.92); display: flex; flex-direction: column; gap: 12px; z-index: 11;
+          padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); }
+  #shot .view { flex: 1; min-height: 0; display: grid; place-items: center; }
+  #shot img { max-width: 100%; max-height: 100%; border-radius: 10px; }
+  #shot .msg { color: var(--dim); font-size: 14px; text-align: center; padding: 0 12px; }
+  #shot .actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  #shot .actions button { font-size: 16px; padding: 14px; }
+  #kb { width: 100%; margin-top: 10px; font: inherit; font-size: 17px; color: var(--text); background: var(--glass);
+    border: 1px solid rgba(255,255,255,.35); border-radius: 16px; padding: 14px 16px; outline: none; -webkit-user-select: text; user-select: text; }
+
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: max-content;
+    align-content: start; gap: 14px 12px; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 8px; flex: 1; min-height: 0; }
+  .app { display: block; width: 100%; padding: 6px; border-radius: 18px; text-align: left; }
+  .app .art { position: relative; width: 100%; padding-top: 56.25%; border-radius: 13px; overflow: hidden; background: #1c1c1e; }
+  .app img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: cover; }
+  .app span { display: block; padding: 7px 4px 2px; font-size: 13px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .section { font-size: 11px; letter-spacing: .12em; color: var(--dim); margin: 4px 2px 8px; grid-column: 1 / -1;
+    display: flex; align-items: center; justify-content: space-between; min-height: 30px; }
+  .section button { font-size: 13px; letter-spacing: 0; padding: 6px 14px; border-radius: 12px; color: var(--text); }
+  .section button.done { background: #fff; color: #000; }
+  .app { position: relative; }
+  .app .tools { position: absolute; top: 10px; right: 10px; display: flex; gap: 6px; }
+  .app .tools i { font-style: normal; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; padding: 0; line-height: 0; background: rgba(0,0,0,.72); border: 1px solid rgba(255,255,255,.25); color: #fff; }
+  .app .tools i svg { width: 22px; height: 22px; fill: currentColor; display: block; }
+  .app .tools i.off { opacity: .3; }
+  .app .pos { position: absolute; top: 10px; left: 10px; width: 24px; height: 24px; border-radius: 50%; display: grid;
+    place-items: center; background: rgba(0,0,0,.72); font-size: 12px; color: #fff; }
+  .note { grid-column: 1 / -1; color: var(--dim); font-size: 13px; padding: 4px 2px 10px; }
+
+  .list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+  .list button { text-align: left; font-size: 18px; padding: 18px; }
+
+  /* TV tab */
+  .tab.scroll { overflow-y: auto; display: block; padding-bottom: 8px; }
+  .tab.scroll > .card { padding: 14px 16px; margin-bottom: 12px; }
+  .card-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 11px;
+    letter-spacing: .12em; color: var(--dim); margin-bottom: 10px; text-transform: uppercase; }
+  .card-h b { color: var(--accent); font-weight: 500; letter-spacing: .04em; text-transform: none; font-size: 13px; }
+  .card-h button { font-size: 12px; letter-spacing: 0; padding: 5px 12px; border-radius: 12px; text-transform: none; }
+  #np { display: flex; gap: 12px; align-items: center; }
+  #npArt { width: 88px; height: 50px; border-radius: 10px; object-fit: cover; background: #222; flex: none; }
+  #np .t { flex: 1; min-width: 0; }
+  #np .t div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #npApp { font-size: 11px; letter-spacing: .1em; color: var(--dim); text-transform: uppercase; }
+  #npTitle { font-size: 17px; font-weight: 500; margin-top: 2px; }
+  #npArtist { font-size: 13px; color: var(--dim); }
+  .np-btns { display: flex; gap: 8px; margin-top: 12px; }
+  .np-btns button { flex: 1; display: grid; place-items: center; padding: 10px 0; border-radius: 14px; }
+  .np-btns svg { width: 22px; height: 22px; fill: #fff; }
+  /* two small cards side by side: Prayer | System, Power | Inputs */
+  .duo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
+  .duo > .card { padding: 12px 14px; min-width: 0; }
+  .duo .card-h { margin-bottom: 8px; }
+  .big { font-size: 20px; font-weight: 500; color: var(--accent); white-space: nowrap; }
+  .big small { display: block; font-size: 12px; font-weight: 400; color: var(--dim); margin: 2px 0 8px; }
+  .kv > div { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 3px 0; }
+  .kv span { flex: none; font-size: 12px; color: var(--dim); }
+  .kv b { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .kv .next span, .kv .next b { color: var(--accent); }
+  .kv span svg, .big svg, .card-h span svg { width: 12px; height: 12px; fill: currentColor; vertical-align: -1px; margin-right: 5px; }
+  .big svg { width: 18px; height: 18px; vertical-align: -2px; margin-right: 6px; }
+  /* volume pop-up after Vol −, Mute, Vol + */
+  #vol { position: fixed; left: 50%; top: 42%; transform: translate(-50%, -50%); z-index: 6; min-width: 160px; padding: 14px 22px 16px;
+    text-align: center; background: rgba(28,28,30,.95); border: 1px solid var(--edge); border-radius: 20px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.5); pointer-events: none; transition: opacity .2s; }
+  #vol.off { opacity: 0; }
+  #vol span { font-size: 11px; letter-spacing: .12em; color: var(--dim); }
+  #vol b { display: block; font-size: 44px; font-weight: 300; line-height: 1.1; margin-top: 2px; }
+  #vol b.word { font-size: 28px; line-height: 1.6; }
+  #vol .bar { height: 4px; border-radius: 2px; background: rgba(255,255,255,.15); margin-top: 8px; overflow: hidden; }
+  #vol .bar div { height: 100%; width: 0; background: var(--accent); transition: width .15s; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .grid2 button { padding: 9px 2px; border-radius: 12px; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mini-h { display: flex; justify-content: space-between; gap: 6px; font-size: 11px; letter-spacing: .1em; color: var(--dim);
+    text-transform: uppercase; margin: 10px 0 6px; }
+  .mini-h b { color: var(--accent); font-weight: 500; letter-spacing: 0; text-transform: none; }
+  .seg2 { display: flex; gap: 4px; }
+  .seg2 button.on { border-color: var(--accent); color: var(--accent); }
+  .alert { display: flex; gap: 10px; align-items: baseline; padding: 10px 0; border-top: 1px solid var(--edge); }
+  .alert:first-child { border-top: 0; padding-top: 0; }
+  .alert .t { flex: 1; min-width: 0; }
+  .alert .t div { font-size: 15px; }
+  .alert .t span { display: block; font-size: 13px; color: var(--dim); }
+  .alert time { font-size: 12px; color: var(--dim); flex: none; }
+  .empty { color: var(--dim); font-size: 14px; }
+  .inline { display: flex; gap: 8px; }
+  .inline input { flex: 1; min-width: 0; font: inherit; font-size: 16px; color: var(--text); background: rgba(255,255,255,.05);
+    border: 1px solid var(--edge); border-radius: 14px; padding: 11px 12px; outline: none; }
+  .inline button { padding: 0 16px; border-radius: 14px; font-size: 15px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips button.on { background: var(--glass-hi); border-color: var(--accent); color: var(--accent); }
+  .muted { color: var(--dim); font-size: 13px; margin-top: 8px; }
+  /* Apps tab: running apps, long-press menu, disabled apps */
+  .app { -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
+  .app img { pointer-events: none; }
+  .runs { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px; margin-bottom: 6px; }
+  .run { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 16px; background: var(--glass); border: 1px solid var(--edge); }
+  .run img { width: 64px; height: 36px; border-radius: 8px; object-fit: cover; background: #1c1c1e; flex: none; }
+  .run .t { flex: 1; min-width: 0; }
+  .run .t div { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .run .t span { display: block; font-size: 12px; color: var(--dim); }
+  .run button { padding: 8px 12px; border-radius: 12px; font-size: 13px; flex: none; }
+  .wide { grid-column: 1 / -1; padding: 13px; border-radius: 14px; font-size: 15px; margin-top: 4px; }
+  .chips button { font-size: 15px; padding: 10px 14px; border-radius: 14px; }
+  /* Settings tab: rows from the TV's schema */
+  #settingsBox > .card { padding: 14px 16px 4px; margin-bottom: 12px; }
+  .srow { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 12px; padding: 12px 0; border-top: 1px solid var(--edge); }
+  .card-h + .srow { border-top: 0; padding-top: 2px; }
+  .srow .t { flex: 1; min-width: 0; }
+  .srow.stack .t { flex-basis: 100%; }
+  .srow .t div { font-size: 16px; }
+  .srow .t span { display: block; font-size: 12px; color: var(--dim); margin-top: 2px; }
+  .srow > b { color: var(--accent); font-weight: 500; font-size: 15px; flex: none; }
+  .srow > button { padding: 8px 14px; border-radius: 12px; font-size: 14px; flex: none; }
+  .srow .seg { width: 100%; }
+  .seg button { flex: 1; padding: 9px 4px; font-size: 14px; }
+  .switch { flex: none; width: 50px; height: 30px; padding: 0; border: 0; border-radius: 15px; position: relative; background: rgba(255,255,255,.18); }
+  .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; transition: transform .15s; }
+  .switch.on { background: #34c759; }
+  .switch.on::after { transform: translateX(20px); }
+  .walls { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .wall { padding: 0; border-radius: 14px; overflow: hidden; text-align: left; border: 2px solid transparent; }
+  .wall.on { border-color: var(--accent); }
+  .wall .art { position: relative; padding-top: 56.25%; background: #1c1c1e; }
+  .wall img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .wall .art svg { position: absolute; inset: 0; margin: auto; width: 28px; height: 28px; fill: var(--dim); }
+  .wall span { display: block; padding: 6px 8px 7px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .wall.on span { color: var(--accent); }
+  .picks { width: 100%; display: flex; flex-direction: column; gap: 6px; }
+  .pick { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 12px; font-size: 15px; text-align: left; }
+  .pick i { flex: none; width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--dim); display: grid; place-items: center; font-style: normal; }
+  .pick.on i { background: var(--accent); border-color: var(--accent); }
+  .pick.on i::after { content: "\2713"; color: #000; font-size: 14px; font-weight: 700; }
+  #zoneSheet { position: fixed; inset: 0; z-index: 11; background: #0d0d0f; display: flex; flex-direction: column; gap: 10px;
+    padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); }
+  #zoneList { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+  .zone { text-align: left; padding: 11px 14px; border-radius: 14px; }
+  .zone div { font-size: 15px; }
+  .zone b { font-weight: 600; margin-right: 6px; }
+  .zone span { display: block; font-size: 13px; color: var(--dim); margin-top: 2px; }
+  .zone.on { border-color: var(--accent); }
+  .zone.on b { color: var(--accent); }
+
+  /* on-screen keyboard open (see "keyboard" in the script): lift the page above it */
+  body.kb { padding-bottom: calc(var(--kb) + 8px); }
+  body.kb nav { display: none; }
+  body.kb .tab { overflow-y: auto; }
+  body.kb #pad { min-height: 120px; }
+  body.kb #status { bottom: calc(var(--kb) + 12px); }
+
+  /* tab bar */
+  nav { display: grid; grid-template-columns: repeat(5, 1fr); margin: 10px -16px calc(-1 * max(12px, env(safe-area-inset-bottom)));
+    padding: 8px 8px max(10px, env(safe-area-inset-bottom)); border-top: 1px solid var(--edge); background: rgba(18,18,20,.92); }
+  nav button { background: none; border: 0; border-radius: 12px; padding: 4px 0; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    font-size: 11px; color: rgba(255,255,255,.45); }
+  nav button svg { width: 26px; height: 26px; fill: rgba(255,255,255,.45); }
+  nav button.on { color: var(--text); background: none; }
+  nav button.on svg { fill: var(--text); }
+  nav button:active { background: none; }
+
+  /* files */
+  .files-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .crumbs { flex: 1; min-width: 0; display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 4px; font-size: 14px; color: var(--dim); scrollbar-width: none; }
+  .crumbs::-webkit-scrollbar { display: none; }
+  .crumbs a { color: var(--dim); text-decoration: none; white-space: nowrap; }
+  .crumbs a:last-child { color: var(--text); }
+  .crumbs i { font-style: normal; opacity: .4; }
+  #uploadBtn { flex: none; padding: 9px 14px; font-size: 14px; display: flex; align-items: center; gap: 6px; border-radius: 14px; }
+  #uploadBtn svg { width: 18px; height: 18px; fill: #fff; }
+  #uploadBtn:disabled { opacity: .35; }
+  .progress { margin-bottom: 10px; padding: 10px 12px; font-size: 13px; color: var(--dim); }
+  .progress .bar { height: 4px; border-radius: 2px; background: rgba(255,255,255,.12); margin-top: 8px; overflow: hidden; }
+  .progress .bar div { height: 100%; width: 0; background: #fff; transition: width .2s; }
+  .files { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; gap: 6px; }
+  .file { display: flex; align-items: center; gap: 12px; text-align: left; padding: 11px 12px; border-radius: 14px; width: 100%; }
+  .file svg { flex: none; width: 26px; height: 26px; fill: rgba(255,255,255,.75); }
+  .file .meta { min-width: 0; flex: 1; }
+  .file .name { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .file .info { font-size: 12px; color: var(--dim); margin-top: 2px; }
+  .empty { color: var(--dim); font-size: 14px; text-align: center; padding: 40px 0; }
+
+  /* action sheet */
+  #appSheet { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: flex; align-items: flex-end; z-index: 10; }
+  #appSheet .panel { width: 100%; padding: 14px 16px max(16px, env(safe-area-inset-bottom)); background: #1c1c1e; border-radius: 22px 22px 0 0;
+    display: flex; flex-direction: column; gap: 10px; }
+  #appSheet .name { font-size: 14px; color: var(--dim); text-align: center; padding: 2px 8px 6px; }
+  #appSheet button { font-size: 17px; padding: 15px; }
+  #appSheet button.danger { color: #ff6b6b; }
+  #sheet { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: flex; align-items: flex-end; z-index: 10; }
+  #sheet .panel { width: 100%; padding: 14px 16px max(16px, env(safe-area-inset-bottom)); background: #1c1c1e; border-radius: 22px 22px 0 0;
+    display: flex; flex-direction: column; gap: 10px; }
+  #sheet .panel .name { font-size: 14px; color: var(--dim); text-align: center; padding: 2px 8px 6px; word-break: break-all; }
+  #sheet button { font-size: 17px; padding: 15px; }
+</style>
+</head>
+<body>
+
+<section id="pair" class="hidden">
+  <div>
+    <h1>TV Remote</h1>
+    <div class="sub">Pair this phone once. A 6-digit PIN will appear on the TV.</div>
+  </div>
+  <button id="showPin">Show PIN on TV</button>
+  <!-- Chrome no longer tells pages the phone's model over plain HTTP, so ask for a name. -->
+  <input id="phoneName" maxlength="40" autocomplete="off" placeholder="This phone's name (optional)">
+  <input id="pin" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" placeholder="······">
+  <button id="confirm">Pair</button>
+  <div id="pairStatus" class="status"></div>
+</section>
+
+<section id="main" class="hidden">
+  <header>
+    <div class="title">
+      <h1 id="tvName">TV</h1>
+      <button id="unpair" class="icon-btn" aria-label="Unpair this phone" title="Unpair this phone"><svg viewBox="0 0 24 24"><path d="M17 7h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1 0 1.43-.98 2.63-2.31 2.98l1.46 1.46C20.88 15.61 22 13.95 22 12c0-2.76-2.24-5-5-5zm-1 4h-2.19l2 2H16zM2 4.27l3.11 3.11C3.29 8.12 2 9.91 2 12c0 2.76 2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1 0-1.59 1.21-2.9 2.76-3.07L8.73 11H8v2h2.73L13 15.27V17h1.73l4.01 4L20 19.74 3.27 3 2 4.27z"/></svg></button>
+    </div>
+    <div class="where" id="where"></div>
+  </header>
+  <div id="status" class="status"></div>
+
+  <div class="tab" id="tab-remote">
+    <div id="pad" class="card"><span id="padHint">Swipe to move · double-tap for OK</span><div class="dot" id="dot"></div></div>
+    <div class="row">
+      <button data-key="back"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>Back</button>
+      <button data-key="home"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Home</button>
+      <button data-key="playpause"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7zM3 5h2v14H3z" transform="translate(1 0)"/></svg>Play/Pause</button>
+    </div>
+    <div class="row">
+      <button data-key="voldown"><svg viewBox="0 0 24 24"><path d="M18.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM5 9v6h4l5 5V4L9 9H5z"/></svg>Vol −</button>
+      <button data-key="mute"><svg viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>Mute</button>
+      <button data-key="volup"><svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>Vol +</button>
+    </div>
+    <div class="row four hidden" id="adbRow">
+      <button id="shotBtn"><svg viewBox="0 0 24 24"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4zM9 2 7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>Screenshot</button>
+      <button id="kbBtn"><svg viewBox="0 0 24 24"><path d="M20 5H4c-1.1 0-1.99.9-1.99 2L2 17c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-9 3h2v2h-2V8zm0 3h2v2h-2v-2zM8 8h2v2H8V8zm0 3h2v2H8v-2zm-1 2H5v-2h2v2zm0-3H5V8h2v2zm9 7H8v-2h8v2zm0-4h-2v-2h2v2zm0-3h-2V8h2v2zm3 3h-2v-2h2v2zm0-3h-2V8h2v2z"/></svg>Keyboard</button>
+      <button data-key="backspace"><svg viewBox="0 0 24 24"><path d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-3 12.59L17.59 17 14 13.41 10.41 17 9 15.59 12.59 12 9 8.41 10.41 7 14 10.59 17.59 7 19 8.41 15.41 12 19 15.59z"/></svg>Delete</button>
+      <button data-key="enter"><svg viewBox="0 0 24 24"><path d="M19 7v4H5.83l3.58-3.59L8 6l-6 6 6 6 1.41-1.41L5.83 13H21V7z"/></svg>Enter</button>
+    </div>
+    <form id="kbForm" class="hidden" autocomplete="off"><input id="kb" type="text" enterkeyhint="send" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Type here, it appears on the TV"></form>
+  </div>
+
+  <div class="tab hidden" id="tab-apps"><div class="grid" id="apps"></div></div>
+  <div class="tab scroll hidden" id="tab-tv">
+    <div class="card hidden" id="npCard">
+      <div id="np"><img id="npArt" alt=""><div class="t"><div id="npApp"></div><div id="npTitle"></div><div id="npArtist"></div></div></div>
+      <div class="np-btns">
+        <button data-media="playpause" aria-label="Play or pause"><svg viewBox="0 0 24 24"><path id="npPlayIcon" d="M8 5v14l11-7z"/></svg></button>
+        <button data-media="stop" aria-label="Stop"><svg viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg></button>
+        <button data-media="open" aria-label="Open app"><svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg></button>
+      </div>
+    </div>
+    <div class="duo">
+      <div class="card">
+        <div class="card-h"><span id="prayerZone">Prayer</span></div>
+        <div class="big" id="prayerBig"></div>
+        <div class="kv" id="prayerTimes"><span class="empty">Loading…</span></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><span>System</span></div>
+        <div class="kv" id="sysStats"></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><span>Power</span></div>
+        <div id="powerOn" class="hidden">
+          <div class="grid2"><button id="sleepNow">Sleep</button><button id="rebootNow">Restart</button></div>
+          <div id="rebootOff" class="muted hidden">Restart needs USB debugging on the TV.</div>
+          <div class="mini-h"><span>Timer</span><b id="sleepLeft"></b></div>
+          <div class="grid2" id="sleepChips">
+            <button data-min="30">30 min</button><button data-min="60">60 min</button><button data-min="90">90 min</button><button data-min="0">Off</button>
+          </div>
+        </div>
+        <div id="powerOff" class="muted">Turn on USB debugging (or TV Home's accessibility service) on the TV for sleep, restart and a sleep timer.</div>
+      </div>
+      <div class="card">
+        <div class="card-h"><span>Inputs</span></div>
+        <div class="grid2" id="inputs"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><span>Send to TV</span>
+        <div class="seg2" id="sendMode"><button type="button" data-mode="msg" class="on">Message</button><button type="button" data-mode="url">Link</button></div>
+      </div>
+      <form class="inline" id="sendForm" autocomplete="off"><input id="sendText" maxlength="120" enterkeyhint="send" placeholder="Dinner's ready!"><button>Send</button></form>
+    </div>
+    <div class="card hidden" id="alertsCard">
+      <div class="card-h"><span>Notifications</span><button id="alertsClear">Clear all</button></div>
+      <div id="alertsList"></div>
+    </div>
+  </div>
+
+  <div class="tab hidden" id="tab-files">
+    <div class="files-bar">
+      <div class="crumbs" id="crumbs"></div>
+      <button id="uploadBtn" disabled><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zm0-10h4v6h6v-6h4l-7-7-7 7z"/></svg>Upload</button>
+      <input type="file" id="uploadInput" multiple class="hidden">
+    </div>
+    <div class="progress card hidden" id="progress"><span id="progressText"></span><div class="bar"><div id="progressBar"></div></div></div>
+    <div class="files" id="files"></div>
+  </div>
+
+  <div class="tab scroll hidden" id="tab-settings">
+    <div id="settingsBox"><div class="empty">Loading…</div></div>
+    <input type="file" id="wallInput" accept="image/*" class="hidden">
+  </div>
+
+  <nav>
+    <button data-tab="remote" class="on"><svg viewBox="0 0 24 24"><path d="M15 9H9c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h6c.55 0 1-.45 1-1V10c0-.55-.45-1-1-1zm-3 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM7.05 6.05l1.41 1.41C9.37 6.56 10.62 6 12 6s2.63.56 3.54 1.46l1.41-1.41C15.68 4.78 13.93 4 12 4s-3.68.78-4.95 2.05zM12 0C8.96 0 6.21 1.23 4.22 3.22l1.41 1.41C7.26 3.01 9.51 2 12 2s4.74 1.01 6.36 2.64l1.41-1.41C17.79 1.23 15.04 0 12 0z"/></svg>Remote</button>
+    <button data-tab="tv"><svg viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>TV</button>
+    <button data-tab="apps"><svg viewBox="0 0 24 24"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg>Apps</button>
+    <button data-tab="files"><svg viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>Files</button>
+    <button data-tab="settings"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>Settings</button>
+  </nav>
+</section>
+
+<div id="vol" class="off" aria-live="polite"><span>VOLUME</span><b id="volNum">0</b><div class="bar"><div id="volBar"></div></div></div>
+
+<div id="shot" class="hidden">
+  <div class="view"><div class="msg" id="shotMsg"></div><img id="shotImg" class="hidden" alt="Screenshot of the TV"></div>
+  <div class="msg">Press and hold the picture to save it to Photos.</div>
+  <div class="actions">
+    <button id="shotRetake">Retake</button>
+    <button id="shotSave">Save</button>
+    <button id="shotClose">Close</button>
+  </div>
+</div>
+
+<div id="zoneSheet" class="hidden">
+  <form class="inline" id="zoneForm" autocomplete="off"><input id="zoneSearch" type="search" enterkeyhint="search" placeholder="Search state, area or code"><button type="button" id="zoneClose">Close</button></form>
+  <div id="zoneList"></div>
+</div>
+
+<div id="appSheet" class="hidden">
+  <div class="panel">
+    <div class="name" id="appSheetName"></div>
+    <div id="appSheetBtns" style="display:flex;flex-direction:column;gap:10px"></div>
+    <button id="appSheetCancel">Cancel</button>
+  </div>
+</div>
+
+<div id="sheet" class="hidden">
+  <div class="panel">
+    <div class="name" id="sheetName"></div>
+    <button id="sheetOpen">Open on TV</button>
+    <button id="sheetDownload">Download to phone</button>
+    <button id="sheetCancel">Cancel</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+let token = localStorage.getItem("tvtoken") || "";
+
+// Chrome opens a spare connection when the page loads; the TV closes connections that stay
+// silent for 10 s, and a request sent down that closed one fails before reaching the TV (the
+// "first tap" error). A network failure is retried once on a fresh connection; it never reached
+// the TV, so nothing happens twice.
+async function fetchOnce(path, opts) {
+  try { return await fetch(path, opts); }
+  catch (e) {
+    try { return await fetch(path, opts); }
+    catch (e2) { throw new Error("Can't reach the TV. Is this phone on the same Wi-Fi?"); }
+  }
+}
+
+async function api(path, opts = {}) {
+  const headers = Object.assign({}, opts.headers || {});
+  if (token) headers["X-Token"] = token;
+  const res = await fetchOnce(path, Object.assign({}, opts, { headers }));
+  let body = {};
+  try { body = await res.json(); } catch (e) {}
+  if (res.status === 401) { token = ""; localStorage.removeItem("tvtoken"); show("pair"); throw new Error("Not paired"); }
+  if (!res.ok) throw new Error(body.error || ("HTTP " + res.status));
+  return body;
+}
+const post = (path, body) => api(path, { method: "POST", body: body ? JSON.stringify(body) : undefined,
+  headers: body ? { "Content-Type": "application/json" } : {} });
+// The TV also sets an HttpOnly cookie at pairing; this refreshes it (and upgrades phones paired
+// before cookies existed) so banners and downloads, which can't send a header, stay authorised.
+const startSession = () => post("/api/session").catch(() => {});
+
+function show(which) {
+  $("pair").classList.toggle("hidden", which !== "pair");
+  $("main").classList.toggle("hidden", which !== "main");
+  if (which === "main") { refreshState(true); loadApps(); loadInputs(); }
+}
+function flash(msg) { $("status").textContent = msg || ""; if (msg) setTimeout(() => { if ($("status").textContent === msg) $("status").textContent = ""; }, 4000); }
+function buzz() { if (navigator.vibrate) navigator.vibrate(8); }
+
+// ---------------------------------------------------------------- pairing
+$("showPin").onclick = async () => {
+  $("pairStatus").textContent = "";
+  try { await post("/api/pair"); $("pairStatus").textContent = "Enter the PIN shown on the TV."; $("pin").focus(); }
+  catch (e) { $("pairStatus").textContent = e.message; }
+};
+$("confirm").onclick = async () => {
+  try {
+    const r = await post("/api/pair/confirm", { pin: $("pin").value.trim(), name: $("phoneName").value.trim() });
+    token = r.token; localStorage.setItem("tvtoken", token); $("pin").value = ""; await startSession(); show("main");
+  } catch (e) { $("pairStatus").textContent = e.message; }
+};
+$("pin").addEventListener("input", () => { if ($("pin").value.length === 6) $("confirm").click(); });
+// A friendly starting name for this phone in the TV's list ("Calm Otter"): kept until it pairs,
+// so reloading the page doesn't change it. Typing over it is fine; an empty box lets the TV guess.
+(() => {
+  const ADJ = ["Blue", "Calm", "Swift", "Bright", "Quiet", "Lucky", "Brave", "Sunny", "Cosy", "Happy",
+    "Silver", "Golden", "Gentle", "Clever", "Merry", "Bold"];
+  const ANIMAL = ["Otter", "Falcon", "Panda", "Tiger", "Koala", "Dolphin", "Fox", "Owl", "Kitten",
+    "Turtle", "Rabbit", "Eagle", "Penguin", "Deer", "Robin", "Lynx"];
+  const pick = (list) => list[Math.floor(Math.random() * list.length)];
+  let name = "";
+  try { name = localStorage.getItem("phoneName") || ""; } catch (e) {}
+  if (!name) {
+    name = pick(ADJ) + " " + pick(ANIMAL);
+    try { localStorage.setItem("phoneName", name); } catch (e) {}
+  }
+  $("phoneName").value = name;
+})();
+$("unpair").onclick = async (ev) => {
+  ev.preventDefault();
+  if (!confirm("Unpair this phone from the TV?")) return;
+  try { await post("/api/unpair"); } catch (e) {}
+  token = ""; localStorage.removeItem("tvtoken"); show("pair");
+};
+
+// ---------------------------------------------------------------- keys (one request at a time, in order)
+const queue = [];
+let busy = false, home = true;
+function key(k) { buzz(); queue.push(k); pump(); }
+const REASONS = {
+  "home-only": "Swipe and OK work on the home screen. Turn on USB debugging on the TV to use them in any app.",
+  "adb-allow": "On the TV, accept \"Allow USB debugging\" (tick Always allow).",
+  "adb-connecting": "Connecting to the TV… try again in a moment.",
+  "no-accessibility": "Back in apps needs the launcher's accessibility service (see README).",
+};
+async function pump() {
+  if (busy || !queue.length) return;
+  busy = true;
+  const job = queue.shift();
+  try {
+    const r = typeof job === "string" ? await post("/api/key?k=" + job) : await job();
+    if (r && r.volume != null) showVolume(r);
+    if (r && !r.ok) {
+      flash(REASONS[r.reason] || r.error || "The TV couldn't do that.");
+      if (r.reason !== "no-accessibility") { queue.length = 0; refreshState(true); }
+    }
+    if (job === "home") setTimeout(refreshState, 600);
+  } catch (e) { flash(e.message); queue.length = 0; }
+  busy = false;
+  pump();
+}
+// Vol −, Mute, Vol +: the TV answers with its new volume; show it for a moment.
+let volTimer = null;
+function showVolume(r) {
+  const n = $("volNum");
+  n.textContent = r.muted ? "Muted" : r.volume;
+  n.classList.toggle("word", !!r.muted);
+  $("volBar").style.width = (r.muted || !r.max ? 0 : Math.round(r.volume / r.max * 100)) + "%";
+  $("vol").classList.remove("off");
+  clearTimeout(volTimer);
+  volTimer = setTimeout(() => $("vol").classList.add("off"), 1500);
+}
+function sendText(t) { queue.push(() => post("/api/text", { text: t })); pump(); }
+function sendKeys(k, n) { if (n > 0) { queue.push(() => post("/api/key?k=" + k + "&n=" + n)); pump(); } }
+document.querySelectorAll("[data-key]").forEach((b) => b.addEventListener("click", () => key(b.dataset.key)));
+
+// trackpad: one arrow per STEP px along the dominant axis, double-tap = OK
+const pad = $("pad"), dot = $("dot"), STEP = 46, DOUBLE_MS = 350, DOUBLE_PX = 40;
+let start = null, lastTap = null;
+pad.addEventListener("pointerdown", (e) => {
+  pad.setPointerCapture(e.pointerId);
+  start = { x: e.clientX, y: e.clientY, t: Date.now(), ax: null, acc: 0, sent: 0, lx: e.clientX, ly: e.clientY };
+  const r = pad.getBoundingClientRect();
+  dot.style.left = (e.clientX - r.left) + "px"; dot.style.top = (e.clientY - r.top) + "px"; dot.style.opacity = 1;
+});
+pad.addEventListener("pointermove", (e) => {
+  if (!start) return;
+  const r = pad.getBoundingClientRect();
+  dot.style.left = (e.clientX - r.left) + "px"; dot.style.top = (e.clientY - r.top) + "px";
+  const dx = e.clientX - start.x, dy = e.clientY - start.y;
+  if (!start.ax && Math.hypot(dx, dy) > 12) start.ax = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+  if (!start.ax) return;
+  start.acc += start.ax === "x" ? e.clientX - start.lx : e.clientY - start.ly;
+  start.lx = e.clientX; start.ly = e.clientY;
+  while (Math.abs(start.acc) >= STEP) {
+    const neg = start.acc < 0;
+    key(start.ax === "x" ? (neg ? "left" : "right") : (neg ? "up" : "down"));
+    start.acc += neg ? STEP : -STEP; start.sent++;
+  }
+});
+function end(e) {
+  if (!start) return;
+  const dx = e.clientX - start.x, dy = e.clientY - start.y, dist = Math.hypot(dx, dy);
+  if (dist < 10 && Date.now() - start.t < 400) {
+    const now = Date.now();
+    if (lastTap && now - lastTap.t < DOUBLE_MS && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < DOUBLE_PX) {
+      key("ok"); lastTap = null;
+    } else {
+      lastTap = { t: now, x: e.clientX, y: e.clientY };
+    }
+  } else if (!start.sent && dist >= 18) key(Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? "left" : "right") : (dy < 0 ? "up" : "down"));
+  start = null; dot.style.opacity = 0;
+}
+pad.addEventListener("pointerup", end);
+pad.addEventListener("pointercancel", (e) => { start = null; dot.style.opacity = 0; });
+
+// ---------------------------------------------------------------- state, apps, inputs
+let adb = "off";
+function setHome(h, a) {
+  home = h; if (a) adb = a;
+  const ready = adb === "ready", works = h || ready;
+  pad.classList.toggle("off", !works);
+  $("padHint").textContent = works ? "Swipe to move · double-tap for OK"
+    : adb === "allow" ? "On the TV, accept \"Allow USB debugging\" (tick Always allow) to use swipe in any app."
+    : adb === "connecting" ? "Connecting to the TV…"
+    : "An app is open. Swipe works on the home screen, or turn on USB debugging on the TV for any app.";
+  $("where").innerHTML = h ? "<b>Home screen</b>" : "<b>In an app</b>";
+  $("adbRow").classList.toggle("hidden", !ready);
+  if (!ready) $("kbForm").classList.add("hidden");
+}
+async function refreshState(force) {
+  if (!token || (document.hidden && force !== true)) return;
+  try { const s = await api("/api/state"); $("tvName").textContent = s.name || "TV"; setHome(s.home, s.adb); } catch (e) {}
+}
+
+// full screen: tap the TV's name. It hides the browser's address bar (and the system bars on
+// Android). Browsers only allow it from a tap, so once turned on it's remembered and re-entered at
+// the next tap after a reload. iPhone browsers have no full-screen mode for pages: there, Add to
+// Home Screen opens the remote as a full-screen app (apple-mobile-web-app-capable above).
+const standalone = matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches
+  || navigator.standalone === true;
+const fsSupported = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
+const isFull = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+function enterFull() {
+  const el = document.documentElement;
+  const req = el.requestFullscreen ? el.requestFullscreen({ navigationUI: "hide" }) : el.webkitRequestFullscreen();
+  if (req && req.catch) req.catch(() => {});
+}
+function exitFull() { (document.exitFullscreen || document.webkitExitFullscreen).call(document); }
+$("tvName").onclick = () => {
+  if (standalone) return; // already full screen (opened from the home screen)
+  if (!fsSupported) { flash("For full screen on iPhone: tap Share, then Add to Home Screen, and open it from there."); return; }
+  if (isFull()) { exitFull(); try { localStorage.removeItem("tvfull"); } catch (e) {} }
+  else { enterFull(); try { localStorage.setItem("tvfull", "1"); } catch (e) {} }
+};
+let fsRestore = false;
+try { fsRestore = fsSupported && !standalone && localStorage.getItem("tvfull") === "1"; } catch (e) {}
+if (fsRestore) document.addEventListener("pointerup", function again() {
+  document.removeEventListener("pointerup", again);
+  if (!isFull()) enterFull();
+});
+
+// screenshot: the TV's screen, taken over its own ADB connection (so only while USB debugging is on).
+let shotUrl = null, shotBlob = null;
+const SHOT_REASONS = {
+  "home-only": "Turn on USB debugging on the TV to take screenshots.",
+  "adb-allow": "On the TV, accept \"Allow USB debugging\" (tick Always allow), then try again.",
+  "adb-connecting": "Connecting to the TV… try again in a moment.",
+};
+async function takeShot() {
+  $("shot").classList.remove("hidden");
+  $("shotImg").classList.add("hidden");
+  $("shotMsg").classList.remove("hidden");
+  $("shotMsg").textContent = "Taking a screenshot of the TV…";
+  $("shotSave").disabled = true;
+  try {
+    const res = await fetchOnce("/api/screenshot", { headers: { "X-Token": token } });
+    if (res.status === 401) { token = ""; localStorage.removeItem("tvtoken"); $("shot").classList.add("hidden"); show("pair"); return; }
+    if (!(res.headers.get("Content-Type") || "").startsWith("image/")) {
+      let b = {}; try { b = await res.json(); } catch (e) {}
+      throw new Error(SHOT_REASONS[b.reason] || b.error || "Couldn't take a screenshot. Try again.");
+    }
+    shotBlob = await res.blob();
+    if (shotUrl) URL.revokeObjectURL(shotUrl);
+    shotUrl = URL.createObjectURL(shotBlob);
+    $("shotImg").src = shotUrl;
+    $("shotImg").classList.remove("hidden");
+    $("shotMsg").classList.add("hidden");
+    $("shotSave").disabled = false;
+  } catch (e) { $("shotMsg").textContent = e.message; }
+}
+$("shotBtn").onclick = takeShot;
+$("shotRetake").onclick = takeShot;
+$("shotClose").onclick = () => $("shot").classList.add("hidden");
+$("shotSave").onclick = () => {
+  if (!shotBlob) return;
+  const d = new Date(), p = (n) => String(n).padStart(2, "0");
+  const a = document.createElement("a");
+  a.href = shotUrl;
+  a.download = `tv-screenshot-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}.png`;
+  document.body.appendChild(a); a.click(); a.remove();
+};
+
+// keyboard: mirror the field onto the TV. Diff against what the TV already has: removed chars
+// become Delete presses, added text is typed (batched, 350 ms after the last keystroke).
+let sentText = "", kbTimer = null;
+$("kbBtn").onclick = () => {
+  const f = $("kbForm"); f.classList.toggle("hidden");
+  if (!f.classList.contains("hidden")) { $("kb").value = ""; sentText = ""; $("kb").focus(); }
+};
+$("kb").addEventListener("input", () => { clearTimeout(kbTimer); kbTimer = setTimeout(syncText, 350); });
+function syncText() {
+  const cur = $("kb").value;
+  let p = 0; while (p < cur.length && p < sentText.length && cur[p] === sentText[p]) p++;
+  sendKeys("backspace", sentText.length - p);
+  if (cur.length > p) sendText(cur.slice(p));
+  sentText = cur;
+}
+$("kbForm").onsubmit = (e) => { e.preventDefault(); clearTimeout(kbTimer); syncText(); key("enter"); $("kb").value = ""; sentText = ""; };
+setInterval(refreshState, 3000);
+document.addEventListener("visibilitychange", refreshState);
+
+// Apps tab. Edit mode (DOCK "Edit"): ◀ ▶ reorder and ✕ remove on dock apps, + adds an app;
+// "Done" saves the dock on the TV.
+const TOOL_ICONS = {
+  prev: '<svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>',
+  next: '<svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>',
+  remove: '<svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>',
+  add: '<svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>',
+};
+let appsData = [], dockEdit = null; // dockEdit: pkgs being edited, or null
+let DOCK_MAX = 5; // the TV sends its "apps per row" with the apps
+
+let runningData = [], disabledData = [], showHidden = false;
+async function loadApps() {
+  try {
+    const r = await api("/api/apps");
+    appsData = r.apps;
+    if (r.dockMax) DOCK_MAX = r.dockMax;
+    renderApps();
+  } catch (e) {}
+  loadRunning();
+}
+// Running apps and apps disabled from here are slower to read (dumpsys, memory over ADB), so they
+// fill in after the grid.
+async function loadRunning() {
+  try { runningData = (await api("/api/running")).apps; } catch (e) { runningData = []; }
+  try { disabledData = (await api("/api/apps/disabled")).apps; } catch (e) { disabledData = []; }
+  if (dockEdit === null) renderApps();
+}
+function runRow(r) {
+  const row = document.createElement("div"); row.className = "run";
+  const img = document.createElement("img"); img.alt = "";
+  img.src = "/api/banner?pkg=" + encodeURIComponent(r.pkg);
+  const t = document.createElement("div"); t.className = "t";
+  const mb = r.memKb > 0 ? Math.round(r.memKb / 1024) + " MB · " : "";
+  t.innerHTML = `<div>${esc(r.label)}</div><span>${mb}${esc(r.hidden ? "Hidden" : r.state)}</span>`;
+  const close = document.createElement("button"); close.textContent = "Close";
+  close.onclick = async () => { buzz(); try { const x = await post("/api/running/close?pkg=" + encodeURIComponent(r.pkg)); flash(x.message || "Closed"); setTimeout(loadRunning, 800); } catch (e) { flash(e.message); } };
+  const hide = document.createElement("button"); hide.textContent = r.hidden ? "Show" : "Hide";
+  hide.onclick = async () => { buzz(); try { await post("/api/running/hide?pkg=" + encodeURIComponent(r.pkg) + "&on=" + (r.hidden ? 0 : 1)); loadRunning(); } catch (e) { flash(e.message); } };
+  row.append(img, t, hide);
+  if (!r.hidden) row.appendChild(close);
+  return row;
+}
+function renderRunning(box) {
+  const visible = runningData.filter((r) => !r.hidden), hidden = runningData.filter((r) => r.hidden);
+  if (!runningData.length) return;
+  box.appendChild(header("RUNNING · " + visible.length));
+  const runs = document.createElement("div"); runs.className = "runs";
+  visible.forEach((r) => runs.appendChild(runRow(r)));
+  if (hidden.length) {
+    const tog = document.createElement("button"); tog.className = "wide";
+    tog.textContent = (showHidden ? "Hide " : "Show ") + "hidden apps (" + hidden.length + ")";
+    tog.onclick = () => { showHidden = !showHidden; renderApps(); };
+    runs.appendChild(tog);
+    if (showHidden) hidden.forEach((r) => runs.appendChild(runRow(r)));
+  }
+  box.appendChild(runs);
+}
+function renderDisabled(box) {
+  const ready = adb === "ready";
+  if (disabledData.length) {
+    box.appendChild(header("DISABLED FROM THIS PHONE"));
+    const runs = document.createElement("div"); runs.className = "runs";
+    disabledData.forEach((d) => {
+      const row = document.createElement("div"); row.className = "run";
+      const t = document.createElement("div"); t.className = "t"; t.innerHTML = `<div>${esc(d.label)}</div><span>${esc(d.pkg)}</span>`;
+      const en = document.createElement("button"); en.textContent = "Enable";
+      en.onclick = async () => { buzz(); try { await post("/api/apps/enable?pkg=" + encodeURIComponent(d.pkg)); flash(d.label + " is back"); loadApps(); } catch (e) { flash(e.message); } };
+      row.append(t, en); runs.appendChild(row);
+    });
+    box.appendChild(runs);
+  }
+  if (ready) {
+    const b = document.createElement("button"); b.className = "wide"; b.textContent = "Free up cache (all apps)";
+    b.onclick = async () => { buzz(); flash("Freeing up cache…"); try { const x = await post("/api/apps/trimcaches"); flash("Freed " + x.freedMb + " MB"); } catch (e) { flash(e.message); } };
+    box.appendChild(b);
+  }
+}
+// Long-press (or right-click) on an app: open, dock, force close, disable.
+function appMenu(a) {
+  const dock = appsData.filter((x) => x.dock).map((x) => x.pkg), inDock = dock.includes(a.pkg);
+  const running = runningData.some((r) => r.pkg === a.pkg);
+  const items = [["Open on TV", async () => { await post("/api/open?pkg=" + encodeURIComponent(a.pkg)); flash("Opening " + a.label + "…"); }]];
+  if (inDock) items.push(["Remove from dock", async () => { await post("/api/dock", { pkgs: dock.filter((p) => p !== a.pkg) }); flash("Removed from the dock"); loadApps(); }]);
+  else if (dock.length < DOCK_MAX) items.push(["Add to dock", async () => { await post("/api/dock", { pkgs: dock.concat(a.pkg) }); flash("Added to the dock"); loadApps(); }]);
+  if (running) items.push(["Force close", async () => { const x = await post("/api/running/close?pkg=" + encodeURIComponent(a.pkg)); flash(x.message || "Closed"); setTimeout(loadRunning, 800); }]);
+  if (adb === "ready") items.push(["Disable app", async () => {
+    if (!confirm("Disable " + a.label + "? It disappears from the TV until you enable it again (Apps → Disabled from this phone).")) return;
+    await post("/api/apps/disable?pkg=" + encodeURIComponent(a.pkg)); flash(a.label + " disabled"); loadApps();
+  }, "danger"]);
+  $("appSheetName").textContent = a.label;
+  const box = $("appSheetBtns"); box.innerHTML = "";
+  items.forEach(([label, fn, cls]) => {
+    const b = document.createElement("button"); b.textContent = label; if (cls) b.className = cls;
+    b.onclick = async () => { $("appSheet").classList.add("hidden"); buzz(); try { await fn(); } catch (e) { flash(e.message); } };
+    box.appendChild(b);
+  });
+  $("appSheet").classList.remove("hidden");
+}
+$("appSheetCancel").onclick = () => $("appSheet").classList.add("hidden");
+$("appSheet").onclick = (e) => { if (e.target === $("appSheet")) $("appSheet").classList.add("hidden"); };
+
+function appCard(a, tools, pos) {
+  const b = document.createElement("button"); b.className = "app card";
+  const art = document.createElement("div"); art.className = "art";
+  const img = document.createElement("img"); img.alt = "";
+  img.src = "/api/banner?pkg=" + encodeURIComponent(a.pkg);
+  art.appendChild(img);
+  const label = document.createElement("span"); label.textContent = a.label;
+  b.append(art, label);
+  if (pos) { const p = document.createElement("div"); p.className = "pos"; p.textContent = pos; b.appendChild(p); }
+  if (tools) {
+    const t = document.createElement("div"); t.className = "tools";
+    tools.forEach(([sym, cls, fn]) => {
+      const i = document.createElement("i"); i.innerHTML = TOOL_ICONS[sym]; if (cls) i.className = cls;
+      i.onclick = (ev) => { ev.stopPropagation(); buzz(); if (fn) fn(); };
+      t.appendChild(i);
+    });
+    b.appendChild(t);
+  } else {
+    let timer = null, long = false;
+    const cancel = () => clearTimeout(timer);
+    b.addEventListener("pointerdown", () => { long = false; timer = setTimeout(() => { long = true; buzz(); appMenu(a); }, 500); });
+    ["pointerup", "pointerleave", "pointercancel"].forEach((ev) => b.addEventListener(ev, cancel));
+    b.oncontextmenu = (e) => { e.preventDefault(); if (!long) { long = true; appMenu(a); } };
+    b.onclick = async () => {
+      if (long) { long = false; return; }
+      buzz(); try { await post("/api/open?pkg=" + encodeURIComponent(a.pkg)); flash("Opening " + a.label + "…"); setTimeout(refreshState, 1200); } catch (e) { flash(e.message); }
+    };
+  }
+  return b;
+}
+
+function header(text, button) {
+  const h = document.createElement("div"); h.className = "section";
+  const t = document.createElement("span"); t.textContent = text; h.appendChild(t);
+  if (button) h.appendChild(button);
+  return h;
+}
+
+function renderApps() {
+  const box = $("apps"); box.innerHTML = "";
+  const byPkg = {}; appsData.forEach((a) => byPkg[a.pkg] = a);
+  const editing = dockEdit !== null;
+  if (!editing) renderRunning(box);
+  const dockPkgs = editing ? dockEdit : appsData.filter((a) => a.dock).map((a) => a.pkg);
+
+  const btn = document.createElement("button");
+  btn.textContent = editing ? "Done" : "Edit";
+  if (editing) btn.className = "done";
+  btn.onclick = async () => {
+    buzz();
+    if (!editing) {
+      // Start from the TV's current dock, not the copy loaded when the tab opened (it may have
+      // been changed on the TV since; saving a stale copy would put the old dock back).
+      try { appsData = (await api("/api/apps")).apps; } catch (e) { flash(e.message); return; }
+      dockEdit = appsData.filter((a) => a.dock).map((a) => a.pkg); renderApps(); return;
+    }
+    try { await post("/api/dock", { pkgs: dockEdit }); flash("Dock saved on the TV."); }
+    catch (e) { flash(e.message); }
+    dockEdit = null; loadApps();
+  };
+  box.appendChild(header("DOCK · " + dockPkgs.length + "/" + DOCK_MAX, btn));
+
+  const move = (i, d) => { const j = i + d; if (j < 0 || j >= dockEdit.length) return; [dockEdit[i], dockEdit[j]] = [dockEdit[j], dockEdit[i]]; renderApps(); };
+  dockPkgs.forEach((pkg, i) => {
+    const a = byPkg[pkg]; if (!a) return;
+    box.appendChild(editing ? appCard(a, [
+      ["prev", i === 0 ? "off" : "", () => move(i, -1)],
+      ["next", i === dockPkgs.length - 1 ? "off" : "", () => move(i, 1)],
+      ["remove", "", () => { dockEdit.splice(i, 1); renderApps(); }],
+    ], String(i + 1)) : appCard(a));
+  });
+  if (!dockPkgs.length) { const n = document.createElement("div"); n.className = "note"; n.textContent = editing ? "Tap + on an app below to add it." : "The dock is empty."; box.appendChild(n); }
+
+  box.appendChild(header(editing ? "TAP + TO ADD TO THE DOCK" : "ALL APPS · MOST USED FIRST"));
+  appsData.filter((a) => !dockPkgs.includes(a.pkg)).forEach((a) => {
+    const full = editing && dockEdit.length >= DOCK_MAX;
+    box.appendChild(editing ? appCard(a, [["add", full ? "add off" : "add", full
+      ? () => flash("The dock holds " + DOCK_MAX + " apps. Remove one first.")
+      : () => { dockEdit.push(a.pkg); renderApps(); }]]) : appCard(a));
+  });
+  if (!editing) renderDisabled(box);
+}
+async function loadInputs() {
+  try {
+    const r = await api("/api/inputs");
+    const box = $("inputs"); box.innerHTML = "";
+    r.inputs.forEach((i) => {
+      const b = document.createElement("button"); b.textContent = i.label;
+      b.onclick = async () => { buzz(); try { await post("/api/input?i=" + i.i); flash("Switching to " + i.label + "…"); setTimeout(refreshState, 1200); } catch (e) { flash(e.message); } };
+      box.appendChild(b);
+    });
+  } catch (e) {}
+}
+
+document.querySelectorAll("nav button").forEach((b) => b.addEventListener("click", () => {
+  document.querySelectorAll("nav button").forEach((x) => x.classList.toggle("on", x === b));
+  ["remote", "tv", "apps", "files", "settings"].forEach((t) => $("tab-" + t).classList.toggle("hidden", t !== b.dataset.tab));
+  if (b.dataset.tab === "tv") { loadDashboard(); loadInputs(); }
+  if (b.dataset.tab === "apps") loadApps();
+  if (b.dataset.tab === "files") loadFiles(filesPath);
+  if (b.dataset.tab === "settings") loadSettings();
+}));
+
+// ---------------------------------------------------------------- TV tab
+// One call returns Now Playing, prayer times, the System card and the bell; refreshed every 3 s
+// while the tab is open and the page is in front. The prayer countdown ticks locally.
+const tvOpen = () => !$("tab-tv").classList.contains("hidden") && !document.hidden;
+let prayerNextAt = 0, prayerNextName = "", prayerNextTime = "", prayerNextTomorrow = false;
+const gb = (b) => (b / 1073741824).toFixed(1);
+function ago(ms) {
+  const m = Math.max(0, Math.round((Date.now() - ms) / 60000));
+  return m < 1 ? "now" : m < 60 ? m + "m" : m < 1440 ? Math.round(m / 60) + "h" : Math.round(m / 1440) + "d";
+}
+async function loadDashboard() {
+  let d;
+  try { d = await api("/api/dashboard"); } catch (e) { return; }
+  // Now Playing
+  const np = d.nowPlaying;
+  $("npCard").classList.toggle("hidden", !np);
+  if (np) {
+    $("npArt").src = "/api/banner?pkg=" + encodeURIComponent(np.pkg);
+    $("npApp").textContent = np.app + " · " + np.state;
+    $("npTitle").textContent = np.title;
+    $("npArtist").textContent = np.artist;
+    $("npPlayIcon").setAttribute("d", np.playing ? "M6 19h4V5H6v14zm8-14v14h4V5h-4z" : "M8 5v14l11-7z");
+  }
+  // Prayer times
+  const p = d.prayer;
+  $("prayerZone").innerHTML = (p.next ? prayerIcon(p.next.name) : "") + esc("Prayer · " + p.zone);
+  $("prayerZone").title = p.area;
+  if (!p.times) { $("prayerTimes").innerHTML = '<span class="muted">Not downloaded yet (the TV fetches it when online).</span>'; prayerNextAt = 0; }
+  else {
+    const nextIdx = p.next && !p.next.tomorrow ? p.next.index : -1;
+    $("prayerTimes").innerHTML = p.times.map((t, i) =>
+      `<div class="${i === nextIdx ? "next" : ""}"><span>${prayerIcon(t.name)}${esc(t.name)}</span><b>${esc(t.time)}</b></div>`).join("");
+    prayerNextAt = p.next ? p.next.at : 0; prayerNextName = p.next ? p.next.name : "";
+    prayerNextTime = p.next ? p.next.time : ""; prayerNextTomorrow = !!(p.next && p.next.tomorrow);
+  }
+  tickPrayer();
+  // System
+  const s = d.system;
+  const up = s.uptimeMin >= 1440 ? Math.floor(s.uptimeMin / 1440) + "d " + Math.floor(s.uptimeMin % 1440 / 60) + "h"
+    : Math.floor(s.uptimeMin / 60) + "h " + s.uptimeMin % 60 + "m";
+  $("sysStats").innerHTML = [
+    ["CPU", s.cores ? s.cpuGhz.toFixed(2) + " GHz" : "—"],
+    ["RAM", Math.round(s.ramUsed / s.ramTotal * 100) + "% · " + Math.round(s.ramTotal / 1073741824) + "G"],
+    ["Disk", Math.round(s.diskUsed / s.diskTotal * 100) + "% · " + Math.round(s.diskTotal / 1e9) + "G"],
+    ["IP", s.ip || "—"],
+    [s.network === "LAN" ? "LAN" : "Wi-Fi", s.network === "Offline" ? "Offline" : s.rssi != null ? s.rssi + " dBm" : "On"],
+    ["Up", up],
+  ].map(([l, v]) => `<div><span>${esc(l)}</span><b>${esc(v)}</b></div>`).join("");
+  // Power and sleep timer: sleep works through the accessibility service too; restart needs USB debugging
+  const ready = d.adb === "ready", sleeps = ready || d.a11y === true;
+  $("powerOn").classList.toggle("hidden", !sleeps);
+  $("powerOff").classList.toggle("hidden", sleeps);
+  $("rebootNow").classList.toggle("hidden", !ready);
+  $("rebootOff").classList.toggle("hidden", ready);
+  sleepAt = d.sleepAt || 0;
+  tickSleep();
+  // Bell
+  const a = d.alerts.list;
+  $("alertsCard").classList.toggle("hidden", !a.length);
+  $("alertsList").innerHTML = "";
+  a.forEach((al) => {
+    const row = document.createElement("div"); row.className = "alert";
+    row.innerHTML = `<div class="t"><div>${esc(al.title)}</div>${al.text ? `<span>${esc(al.text)}</span>` : ""}</div><time>${ago(al.time)}</time>`;
+    row.onclick = async () => { buzz(); try { await post("/api/alerts/open?id=" + encodeURIComponent(al.id)); flash(al.openable ? "Opened on the TV" : "Cleared"); loadDashboard(); } catch (e) { flash(e.message); } };
+    $("alertsList").appendChild(row);
+  });
+}
+let sleepAt = 0;
+function tickSleep() {
+  if (!sleepAt) { $("sleepLeft").textContent = ""; return; }
+  const m = Math.max(0, Math.ceil((sleepAt - Date.now()) / 60000));
+  const at = new Date(sleepAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  $("sleepLeft").textContent = m + " min left"; $("sleepLeft").title = "Off at " + at;
+}
+$("sleepNow").onclick = async () => { buzz(); try { await post("/api/power?a=sleep"); flash("The TV is going to sleep."); } catch (e) { flash(e.message); } };
+$("rebootNow").onclick = async () => {
+  if (!confirm("Restart the TV now? Whatever is playing stops.")) return;
+  buzz(); try { await post("/api/power?a=reboot"); flash("Restarting the TV… reconnect in about a minute."); } catch (e) { flash(e.message); }
+};
+document.querySelectorAll("#sleepChips button").forEach((b) => b.onclick = async () => {
+  buzz();
+  try { await post("/api/sleeptimer?min=" + b.dataset.min); flash(b.dataset.min === "0" ? "Sleep timer off" : "The TV turns off in " + b.dataset.min + " min"); loadDashboard(); }
+  catch (e) { flash(e.message); }
+});
+const PRAYER_ICONS = {
+  Fajr: { d: "M12,1.5l3.5,3.5H13v3.5h-2V5H8.5zM2,19h20v2H2zM12,11c-3.04,0 -5.5,2.46 -5.5,5.5V17h11v-0.5C17.5,13.46 15.04,11 12,11zM3.4,11.4l1.4,-1.4 1.8,1.8 -1.4,1.4zM17.4,11.8l1.8,-1.8 1.4,1.4 -1.8,1.8z", even: false },
+  Dhuhr: { d: "M6.76,4.84l-1.8,-1.79 -1.41,1.41 1.79,1.79 1.42,-1.41zM4,10.5H1v2h3v-2zM13,0.55h-2V3.5h2V0.55zM20.45,4.46l-1.41,-1.41 -1.79,1.79 1.41,1.41 1.79,-1.79zM17.24,18.16l1.79,1.8 1.41,-1.41 -1.8,-1.79 -1.4,1.4zM20,10.5v2h3v-2h-3zM12,5.5c-3.31,0 -6,2.69 -6,6s2.69,6 6,6 6,-2.69 6,-6 -2.69,-6 -6,-6zM11,22.45h2V19.5h-2v2.95zM3.55,18.54l1.41,1.41 1.79,-1.8 -1.41,-1.41 -1.79,1.8z", even: false },
+  Asr: { d: "M6.76,4.84l-1.8,-1.79 -1.41,1.41 1.79,1.79 1.42,-1.41zM4,10.5H1v2h3v-2zM13,0.55h-2V3.5h2V0.55zM20.45,4.46l-1.41,-1.41 -1.79,1.79 1.41,1.41 1.79,-1.79zM17.24,18.16l1.79,1.8 1.41,-1.41 -1.8,-1.79 -1.4,1.4zM20,10.5v2h3v-2h-3zM11,22.45h2V19.5h-2v2.95zM3.55,18.54l1.41,1.41 1.79,-1.8 -1.41,-1.41 -1.79,1.8zM12,5.5a6,6 0 1,0 0.001,0zM12,7.2a4.3,4.3 0 1,1 -0.001,0zM12,7.2a4.3,4.3 0 0,0 0,8.6z", even: true },
+  Maghrib: { d: "M11,1.5h2V5h2.5L12,8.5 8.5,5H11zM2,19h20v2H2zM12,11c-3.04,0 -5.5,2.46 -5.5,5.5V17h11v-0.5C17.5,13.46 15.04,11 12,11zM3.4,11.4l1.4,-1.4 1.8,1.8 -1.4,1.4zM17.4,11.8l1.8,-1.8 1.4,1.4 -1.8,1.8z", even: false },
+  Isya: { d: "M12,2c1.82,0 3.53,0.5 5,1.35C14.01,5.08 12,8.3 12,12s2.01,6.92 5,8.65C15.53,21.5 13.82,22 12,22C6.48,22 2,17.52 2,12S6.48,2 12,2zM19.5,5l0.85,1.9 1.9,0.85 -1.9,0.85 -0.85,1.9 -0.85,-1.9 -1.9,-0.85 1.9,-0.85z", even: false },
+};
+const prayerIcon = (name) => { const i = PRAYER_ICONS[name]; return i ? `<svg viewBox="0 0 24 24"><path${i.even ? ' fill-rule="evenodd"' : ""} d="${i.d}"/></svg>` : ""; };
+function tickPrayer() {
+  if (!prayerNextAt) { $("prayerBig").textContent = ""; return; }
+  const m = Math.max(0, Math.ceil((prayerNextAt - Date.now()) / 60000));
+  $("prayerBig").innerHTML = prayerIcon(prayerNextName) + esc(prayerNextName + " " + prayerNextTime)
+    + "<small>" + (prayerNextTomorrow ? "tomorrow · " : "") + "in " + (m >= 60 ? Math.floor(m / 60) + "h " + m % 60 + "m" : m + "m") + "</small>";
+}
+setInterval(() => { if (tvOpen()) loadDashboard(); }, 3000);
+setInterval(() => { if (tvOpen()) { tickPrayer(); tickSleep(); } }, 15000);
+document.querySelectorAll("[data-media]").forEach((b) => b.onclick = async () => {
+  buzz();
+  try { await post("/api/media?a=" + b.dataset.media); if (b.dataset.media === "open") flash("Opening on the TV…"); setTimeout(loadDashboard, 700); }
+  catch (e) { flash(e.message); }
+});
+$("alertsClear").onclick = async () => { buzz(); try { await post("/api/alerts/clear"); loadDashboard(); } catch (e) { flash(e.message); } };
+// Send to TV: one field, as a message (a box on the TV until OK) or a link to open.
+let sendMode = "msg";
+document.querySelectorAll("#sendMode button").forEach((b) => b.onclick = () => {
+  sendMode = b.dataset.mode;
+  document.querySelectorAll("#sendMode button").forEach((x) => x.classList.toggle("on", x === b));
+  const f = $("sendText"), url = sendMode === "url";
+  f.type = url ? "url" : "text"; f.inputMode = url ? "url" : "text"; f.enterKeyHint = url ? "go" : "send";
+  f.maxLength = url ? 2000 : 120; f.placeholder = url ? "Paste a YouTube or web link" : "Dinner's ready!";
+  f.value = ""; f.focus();
+});
+$("sendForm").onsubmit = async (e) => {
+  e.preventDefault();
+  const v = $("sendText").value.trim(); if (!v) return;
+  try {
+    if (sendMode === "url") { await post("/api/openurl", { url: v }); flash("Opening on the TV…"); }
+    else { await post("/api/message", { text: v }); flash("Shown on the TV until someone presses OK"); }
+    $("sendText").value = "";
+  } catch (err) { flash(err.message); }
+};
+
+// ---------------------------------------------------------------- files
+const ICONS = {
+  folder: "M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z",
+  drive: "M18 2h-8L4.02 8 4 20c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-6 6h-2V4h2v4zm3 0h-2V4h2v4zm3 0h-2V4h2v4z",
+  video: "M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z",
+  image: "M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z",
+  audio: "M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z",
+  apk: "M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85-.29-.15-.65-.06-.83.22l-1.88 3.24c-2.86-1.21-6.08-1.21-8.94 0L5.65 5.67c-.19-.29-.58-.38-.87-.2-.28.18-.37.54-.22.83L6.4 9.48C3.3 11.25 1.28 14.44 1 18h22c-.28-3.56-2.3-6.75-5.4-8.52zM7 15.25c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25zm10 0c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25z",
+  file: "M6 2c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6H6zm7 7V3.5L18.5 9H13z",
+};
+const EXT = { video: /\.(mp4|mkv|avi|mov|webm|m4v|ts|flv|wmv|3gp)$/i, image: /\.(jpe?g|png|gif|webp|bmp|heic)$/i,
+  audio: /\.(mp3|m4a|aac|flac|wav|ogg|opus)$/i, apk: /\.apk$/i };
+const kindOf = (name) => Object.keys(EXT).find((k) => EXT[k].test(name)) || "file";
+const svg = (d) => '<svg viewBox="0 0 24 24"><path d="' + d + '"/></svg>';
+const esc = (t) => t.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+function size(n) { return n >= 1073741824 ? (n / 1073741824).toFixed(1) + " GB" : n >= 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB"; }
+function when(ms) { const d = new Date(ms); return d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }); }
+
+let filesPath = null, filesInfo = null, sheetFile = null;
+
+async function loadFiles(path) {
+  const box = $("files");
+  try {
+    if (!path) {
+      const r = await api("/api/files/roots");
+      filesPath = null; filesInfo = null;
+      $("crumbs").innerHTML = "<a>Storage</a>";
+      $("uploadBtn").disabled = true;
+      box.innerHTML = "";
+      r.roots.forEach((root) => box.appendChild(row(ICONS.drive, root.name, size(root.free) + " free", () => loadFiles(root.path))));
+      // Shortcuts, e.g. the folder the TV's wallpaper list reads.
+      (r.shortcuts || []).forEach((sc) => box.appendChild(row(ICONS.image, sc.name, sc.hint, () => loadFiles(sc.path))));
+      return;
+    }
+    const r = await api("/api/files/list?path=" + encodeURIComponent(path));
+    if (!r.ok) { flash(r.error); return; }
+    filesPath = r.path; filesInfo = r;
+    $("uploadBtn").disabled = false;
+    // breadcrumbs: Storage / <root> / sub / dirs
+    const rel = r.path.slice(r.rootPath.length).split("/").filter(Boolean);
+    const crumbs = [["Storage", null], [r.root, r.rootPath]];
+    rel.forEach((seg, i) => crumbs.push([seg, r.rootPath + "/" + rel.slice(0, i + 1).join("/")]));
+    $("crumbs").innerHTML = "";
+    crumbs.forEach(([label, p], i) => {
+      if (i) { const sep = document.createElement("i"); sep.textContent = "/"; $("crumbs").appendChild(sep); }
+      const a = document.createElement("a"); a.textContent = label; a.onclick = () => loadFiles(p); $("crumbs").appendChild(a);
+    });
+    $("crumbs").scrollLeft = 1e6;
+    box.innerHTML = "";
+    if (!r.entries.length) { box.innerHTML = '<div class="empty">This folder is empty.</div>'; return; }
+    r.entries.forEach((e) => {
+      const full = r.path + "/" + e.name;
+      if (e.dir) box.appendChild(row(ICONS.folder, e.name, when(e.mtime), () => loadFiles(full)));
+      else box.appendChild(row(ICONS[kindOf(e.name)], e.name, size(e.size) + " · " + when(e.mtime), () => openSheet(full, e.name)));
+    });
+  } catch (e) { flash(e.message); }
+}
+
+function row(icon, name, info, onTap) {
+  const b = document.createElement("button"); b.className = "file card";
+  b.innerHTML = svg(icon) + '<div class="meta"><div class="name">' + esc(name) + '</div><div class="info">' + esc(info) + "</div></div>";
+  b.onclick = () => { buzz(); onTap(); };
+  return b;
+}
+
+function openSheet(path, name) { sheetFile = { path, name }; $("sheetName").textContent = name; $("sheet").classList.remove("hidden"); }
+function closeSheet() { $("sheet").classList.add("hidden"); sheetFile = null; }
+$("sheetCancel").onclick = closeSheet;
+$("sheet").onclick = (e) => { if (e.target === $("sheet")) closeSheet(); };
+$("sheetOpen").onclick = async () => {
+  const f = sheetFile; closeSheet();
+  try { await post("/api/files/open?path=" + encodeURIComponent(f.path)); flash("Opening " + f.name + " on the TV…"); setTimeout(refreshState, 1200); }
+  catch (e) { flash(e.message); }
+};
+$("sheetDownload").onclick = () => {
+  const f = sheetFile; closeSheet();
+  const a = document.createElement("a");
+  a.href = "/api/files/raw?path=" + encodeURIComponent(f.path);
+  a.download = f.name; document.body.appendChild(a); a.click(); a.remove();
+};
+
+// upload: raw body streamed by the TV straight to disk; XHR for progress; one file at a time
+$("uploadBtn").onclick = () => $("uploadInput").click();
+$("uploadInput").onchange = async () => {
+  const list = Array.from($("uploadInput").files); $("uploadInput").value = "";
+  const dir = filesPath; if (!dir || !list.length) return;
+  $("uploadBtn").disabled = true; $("progress").classList.remove("hidden");
+  let ok = 0;
+  for (let i = 0; i < list.length; i++) {
+    const f = list[i];
+    try { await uploadOne(dir, f, (pct) => { $("progressText").textContent = "Uploading " + f.name + (list.length > 1 ? " (" + (i + 1) + "/" + list.length + ")" : "") + " · " + pct + "%"; $("progressBar").style.width = pct + "%"; }); ok++; }
+    catch (e) { flash(f.name + ": " + e.message); }
+  }
+  $("progress").classList.add("hidden"); $("progressBar").style.width = "0";
+  $("uploadBtn").disabled = false;
+  if (ok) flash("Uploaded " + ok + " file" + (ok > 1 ? "s" : "") + ".");
+  if (filesPath === dir) loadFiles(dir);
+};
+function uploadOne(dir, file, onPct, name) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/files/upload?dir=" + encodeURIComponent(dir) + "&name=" + encodeURIComponent(name || file.name));
+    xhr.setRequestHeader("X-Token", token);
+    xhr.setRequestHeader("Content-Type", "application/octet-stream");
+    xhr.upload.onprogress = (e) => { if (e.lengthComputable) onPct(Math.round(e.loaded * 100 / e.total)); };
+    xhr.onload = () => { let r = {}; try { r = JSON.parse(xhr.responseText); } catch (e) {} if (xhr.status === 200 && r.ok) resolve(r); else reject(new Error(r.error || ("HTTP " + xhr.status))); };
+    xhr.onerror = () => reject(new Error("Connection lost."));
+    onPct(0);
+    xhr.send(file);
+  });
+}
+
+// ---------------------------------------------------------------- Settings tab
+// Rendered from the schema the TV sends: the TV's own Settings, minus the phone remote's switch
+// and "Forget all phones". Each change is saved on the TV at once, and the TV answers with the
+// updated schema.
+let settingsData = null, wallData = null, zonesData = null, zonesCurrent = "", zonesAuto = false, picksOpen = false, wallTimer = null;
+const settingsOpen = () => !$("tab-settings").classList.contains("hidden") && !document.hidden;
+function settingValue(key) {
+  for (const c of settingsData ? settingsData.categories : []) for (const r of c.rows) if (r.key === key) return r.value;
+  return null;
+}
+async function loadSettings() {
+  try { settingsData = await api("/api/settings"); renderSettings(); } catch (e) { flash(e.message); }
+  loadWallpapers();
+}
+async function saveSetting(key, value, extra) {
+  buzz();
+  try { settingsData = await post("/api/settings", Object.assign({ key, value }, extra)); renderSettings(); return true; }
+  catch (e) { flash(e.message); return false; }
+}
+function renderSettings() {
+  const box = $("settingsBox"); box.innerHTML = "";
+  settingsData.categories.forEach((c) => {
+    const card = document.createElement("div"); card.className = "card set";
+    card.innerHTML = `<div class="card-h"><span>${esc(c.title)}</span></div>`;
+    c.rows.forEach((r) => card.appendChild(settingRow(r)));
+    box.appendChild(card);
+  });
+  const phones = document.createElement("div"); phones.className = "card set";
+  phones.innerHTML = `<div class="card-h"><span>Paired phones</span></div><div id="devicesBox"><div class="empty">Loading…</div></div>`;
+  box.appendChild(phones);
+  renderWalls();
+  loadDevices();
+}
+
+// Each phone that has paired, newest first, with its own Forget button ("Forget all" is on the TV).
+let devicesData = null;
+async function loadDevices() {
+  try { devicesData = (await api("/api/devices")).devices; renderDevices(); } catch (e) {}
+}
+function renderDevices() {
+  const box = $("devicesBox"); if (!box || !devicesData) return;
+  box.innerHTML = "";
+  devicesData.forEach((d) => {
+    const row = document.createElement("div"); row.className = "srow";
+    const t = document.createElement("div"); t.className = "t";
+    const seen = ago(d.lastSeen);
+    t.innerHTML = `<div>${esc(d.name)}${d.current ? " (this phone)" : ""}</div><span>Last used ${seen === "now" ? "just now" : seen + " ago"}</span>`;
+    if (d.current) {
+      // Name this phone (Chrome hides the model, so phones paired before showed up as "K").
+      const rn = document.createElement("button"); rn.textContent = "Rename";
+      rn.onclick = async () => {
+        buzz();
+        const name = prompt("Name for this phone", d.name);
+        if (name === null || !name.trim()) return;
+        try {
+          await post("/api/devices/rename", { name: name.trim() });
+          devicesData = (await api("/api/devices")).devices; renderDevices();
+        } catch (e) { flash(e.message); }
+      };
+      row.appendChild(rn);
+    }
+    const b = document.createElement("button"); b.textContent = "Forget";
+    b.onclick = async () => {
+      buzz();
+      if (!confirm(d.current ? "Forget this phone? It has to pair again with the PIN shown on the TV."
+          : "Forget " + d.name + "? It has to pair again with the PIN shown on the TV.")) return;
+      try {
+        await post("/api/devices/revoke", { id: d.id });
+        if (d.current) { token = ""; localStorage.removeItem("tvtoken"); show("pair"); }
+        else { devicesData = (await api("/api/devices")).devices; renderDevices(); }
+      } catch (e) { flash(e.message); }
+    };
+    row.prepend(t);
+    row.appendChild(b);
+    box.appendChild(row);
+  });
+}
+function settingRow(r) {
+  const row = document.createElement("div"); row.className = "srow";
+  const t = document.createElement("div"); t.className = "t";
+  t.innerHTML = `<div>${esc(r.label)}</div>${r.sub ? `<span>${esc(r.sub)}</span>` : ""}`;
+  row.appendChild(t);
+  if (r.type === "toggle") {
+    const sw = document.createElement("button"); sw.className = "switch" + (r.value ? " on" : "");
+    sw.setAttribute("role", "switch"); sw.setAttribute("aria-checked", r.value); sw.setAttribute("aria-label", r.label);
+    row.onclick = () => saveSetting(r.key, !r.value);
+    row.appendChild(sw);
+  } else if (r.type === "choice") {
+    row.classList.add("stack");
+    const seg = document.createElement("div"); seg.className = "chips seg";
+    r.options.forEach(([v, name]) => {
+      const b = document.createElement("button"); b.textContent = name; if (v === r.value) b.className = "on";
+      b.onclick = () => { if (v !== r.value) saveSetting(r.key, v); };
+      seg.appendChild(b);
+    });
+    row.appendChild(seg);
+  } else if (r.type === "zone") {
+    const b = document.createElement("button"); b.textContent = r.text || r.value; b.onclick = openZones;
+    row.appendChild(b);
+  } else if (r.type === "action") {
+    const b = document.createElement("button"); b.textContent = r.button || "Go";
+    b.onclick = async () => {
+      if (r.ask && !confirm(r.ask)) return; // a change that's hard to undo: asked first
+      if (await saveSetting(r.key, true)) flash(r.done || "Done");
+    };
+    row.appendChild(b);
+  } else if (r.type === "apps") {
+    const n = document.createElement("b"); n.textContent = r.value.length === 1 ? "1 app" : r.value.length + " apps";
+    const b = document.createElement("button"); b.textContent = picksOpen ? "Done" : "Choose";
+    row.append(n);
+    b.onclick = async () => {
+      buzz(); picksOpen = !picksOpen;
+      if (picksOpen && !appsData.length) try { appsData = (await api("/api/apps")).apps; } catch (e) { flash(e.message); }
+      renderSettings();
+    };
+    row.appendChild(b);
+    if (picksOpen) {
+      const picks = document.createElement("div"); picks.className = "picks";
+      // Apps already left out first, then A–Z, as on the TV.
+      const seen = new Set(), list = appsData.filter((a) => !seen.has(a.pkg) && seen.add(a.pkg));
+      list.sort((x, y) => (r.value.includes(y.pkg) - r.value.includes(x.pkg)) || x.label.localeCompare(y.label));
+      list.forEach((a) => {
+        const on = r.value.includes(a.pkg);
+        const p = document.createElement("button"); p.className = "pick" + (on ? " on" : "");
+        p.innerHTML = `<span>${esc(a.label)}</span><i></i>`;
+        p.onclick = () => saveSetting(r.key, a.pkg, { on: !on });
+        picks.appendChild(p);
+      });
+      row.appendChild(picks);
+    }
+  } else if (r.type === "wallpaper") {
+    row.classList.add("stack");
+    const name = document.createElement("b"); name.textContent = r.name;
+    const grid = document.createElement("div"); grid.className = "walls"; grid.id = "walls";
+    row.append(name, grid);
+  }
+  return row;
+}
+
+// Wallpapers: a thumbnail grid in the TV's order, then "Your photo", which uploads a picture to the
+// TV's Wallpapers folder and sets it. Built-ins still downloading on the TV fill in as they land.
+const UPLOAD_ICON = "M5 20h14v-2H5v2zm0-10h4v6h6v-6h4l-7-7-7 7z";
+async function loadWallpapers() {
+  clearTimeout(wallTimer);
+  try { wallData = await api("/api/wallpapers"); renderWalls(); } catch (e) { return; }
+  if (wallData.pending) wallTimer = setTimeout(() => { if (settingsOpen()) loadWallpapers(); }, 3000);
+}
+function renderWalls() {
+  const grid = $("walls"); if (!grid || !wallData) return;
+  const current = settingValue("wallpaper") || wallData.current;
+  grid.innerHTML = "";
+  wallData.items.forEach((w) => {
+    const b = document.createElement("button"); b.className = "wall" + (w.id === current ? " on" : "");
+    const art = document.createElement("div"); art.className = "art";
+    if (w.thumb) {
+      const img = document.createElement("img"); img.alt = ""; img.loading = "lazy";
+      img.src = "/api/wallpaper/thumb?id=" + encodeURIComponent(w.id) + "&v=" + w.thumb;
+      art.appendChild(img);
+    }
+    const label = document.createElement("span"); label.textContent = w.name; label.title = w.sub;
+    b.append(art, label);
+    b.onclick = async () => { if (w.id !== current && await saveSetting("wallpaper", w.id)) flash(w.name + " is on the TV"); };
+    grid.appendChild(b);
+  });
+  const add = document.createElement("button"); add.className = "wall";
+  add.innerHTML = `<div class="art">${svg(UPLOAD_ICON)}</div><span>Your photo</span>`;
+  add.onclick = () => { buzz(); $("wallInput").click(); };
+  grid.appendChild(add);
+}
+// Phone photos are 12 MP and may be rotated by EXIF (which the TV ignores): redraw as an upright
+// JPEG no bigger than 1920 px first. Smaller to send, and quicker for the TV to decode.
+async function shrink(file) {
+  if (!window.createImageBitmap) return null;
+  const bmp = await createImageBitmap(file);
+  const k = Math.min(1, 1920 / Math.max(bmp.width, bmp.height));
+  const c = document.createElement("canvas");
+  c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+  c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+  return new Promise((res) => c.toBlob(res, "image/jpeg", 0.88));
+}
+$("wallInput").onchange = async () => {
+  const f = $("wallInput").files[0]; $("wallInput").value = "";
+  if (!f || !wallData) return;
+  let blob = f, name = f.name;
+  try { const j = await shrink(f); if (j) { blob = j; name = (f.name.replace(/\.[^.]+$/, "") || "photo") + ".jpg"; } } catch (e) {}
+  if (!/\.(jpe?g|png|webp)$/i.test(name)) { flash("Use a JPEG, PNG or WebP picture."); return; }
+  try {
+    const r = await uploadOne(wallData.folder, blob, (pct) => flash("Uploading " + name + " · " + pct + "%"), name);
+    await loadWallpapers();
+    if (await saveSetting("wallpaper", "file:" + r.name)) flash(r.name + " is on the TV");
+  } catch (e) { flash(e.message); }
+};
+
+// Prayer zone: a searchable list of the 60 JAKIM zones.
+async function openZones() {
+  buzz();
+  try { const d = await api("/api/settings/zones"); zonesData = d.zones; zonesCurrent = d.current; zonesAuto = d.auto; }
+  catch (e) { flash(e.message); return; }
+  $("zoneSearch").value = "";
+  renderZones();
+  $("zoneSheet").classList.remove("hidden");
+  const on = $("zoneList").querySelector(".on"); if (on) on.scrollIntoView({ block: "center" });
+}
+function renderZones() {
+  const q = $("zoneSearch").value.trim().toLowerCase(), cur = settingValue("prayer_zone");
+  const list = $("zoneList"); list.innerHTML = "";
+  // Auto first: the zone from the TV's location.
+  if (!q || "auto".includes(q)) {
+    const a = document.createElement("button"); a.className = "zone" + (cur === "auto" ? " on" : "");
+    a.innerHTML = `<div><b>Auto (${esc(zonesCurrent || "")})</b></div><span>From the TV's location</span>`;
+    a.onclick = async () => { if (await saveSetting("prayer_zone", "auto")) { $("zoneSheet").classList.add("hidden"); flash("Prayer zone: Auto"); } };
+    list.appendChild(a);
+  }
+  zonesData.filter((z) => !q || (z.state + " " + z.code + " " + z.area).toLowerCase().includes(q)).forEach((z) => {
+    const b = document.createElement("button"); b.className = "zone" + (z.code === cur ? " on" : "");
+    b.innerHTML = `<div><b>${esc(z.code)}</b>${esc(z.state)}</div><span>${esc(z.area)}</span>`;
+    b.onclick = async () => { if (await saveSetting("prayer_zone", z.code)) { $("zoneSheet").classList.add("hidden"); flash("Prayer zone: " + z.code); } };
+    list.appendChild(b);
+  });
+  if (!list.children.length) list.innerHTML = '<div class="empty">No zone matches.</div>';
+}
+$("zoneSearch").addEventListener("input", renderZones);
+$("zoneForm").onsubmit = (e) => { e.preventDefault(); $("zoneSearch").blur(); };
+$("zoneClose").onclick = () => $("zoneSheet").classList.add("hidden");
+
+// ---------------------------------------------------------------- keyboard
+// In normal mode the browser shrinks the page for the on-screen keyboard and scrolls the focused
+// field above it. In full screen Android draws the keyboard over the page without resizing it,
+// so fields near the bottom (Send to TV, the keyboard field) end up behind it. Where the browser
+// can tell us where the keyboard is (Chrome's VirtualKeyboard API; else the visual viewport), lift
+// the page by only as much as the keyboard covers it (some phones still shrink the page part of
+// the way in full screen), hide the tab bar while typing, and bring the field just into view.
+let kbRect = null;
+function setKb(h) {
+  h = Math.max(0, Math.round(h));
+  document.documentElement.style.setProperty("--kb", h + "px");
+  document.body.classList.toggle("kb", h > 80);
+  const f = document.activeElement;
+  if (h > 80 && f && f.matches("input")) setTimeout(() => f.scrollIntoView({ block: "nearest", behavior: "smooth" }), 60);
+}
+const kbCover = () => kbRect && kbRect.height > 0 ? innerHeight - kbRect.y : 0;
+if (navigator.virtualKeyboard) {
+  navigator.virtualKeyboard.overlaysContent = true; // same handling in normal and full screen
+  navigator.virtualKeyboard.addEventListener("geometrychange", (e) => { kbRect = e.target.boundingRect; setKb(kbCover()); });
+  addEventListener("resize", () => { if (kbRect) setKb(kbCover()); });
+} else if (window.visualViewport && fsSupported) {
+  // Other browsers with full screen (Firefox): only while full screen, where nothing else helps.
+  visualViewport.addEventListener("resize", () => setKb(isFull() ? innerHeight - visualViewport.height - visualViewport.offsetTop : 0));
+}
+
+if (token) startSession().then(() => show(token ? "main" : "pair"));
+else show("pair");
+</script>
+</body>
+</html>

@@ -1,0 +1,217 @@
+# Development
+
+Notes for changing and rebuilding the launcher. To install it, see the [install guides](../README.md#install); for how each feature works, see [features.md](features.md).
+
+The optional Net traffic monitor (Settings → Net traffic, new in 1.15) includes native code. Install **NDK 28.2.13676358** and **CMake 3.22.1** through the Android SDK manager (Gradle can offer to download them after accepting the SDK licences):
+
+```bash
+sdkmanager "ndk;28.2.13676358" "cmake;3.22.1"
+```
+
+Its forwarding library is pinned in `launcher/app/src/main/cpp/zdtun/`, built separately as `libzdtun.so` for ARM32/ARM64/x86/x86_64 with 16 KB page alignment. The engine (`libzdtun.so` and its bridge `libtraffic.so`) is **not packed into the APK**: the `netEngineRelease` Gradle task copies it to `launcher/app/build/outputs/netengine/release/netengine-<cpu>-<lib>.so` and writes each file's SHA-256 into the APK as `assets/netengine.txt`. The app loads only files matching those fingerprints, from where `scripts/build-and-install.sh` pushes a local build's engine (`/sdcard/Android/data/com.swadaya.tv/files/netengine/`), or else downloaded from the installed version's GitHub release, where CI attaches the files with the library's licence texts. Keep the corresponding source and LGPL/GPL notices with distributions; see that directory's `UPSTREAM.md`. No capture is enabled by building or installing the APK. See [Net traffic](features.md#net-traffic-internet-connection-monitor) for consent, limitations, and the live-network test checklist.
+
+## Folder structure
+
+```
+SwadayaTV/
+├── README.md
+├── PROMPT.md                    paste into an AI coding agent to repeat the whole setup (debloat + launcher) on another TV
+├── docs/                        install guides (install-*.md), features.md, xiaomi-debloat.md, development.md, screenshots
+├── backup/<serial>/             each TV's state captured BEFORE any change (local only, not in the repo: it identifies the TV)
+│   ├── disabled-by-us.txt       every package this project disabled (restore.sh reads it)
+│   ├── packages-*.txt           full package lists (all, system, third-party, disabled)
+│   ├── getprop.txt, settings-{global,secure,system}.txt
+│   ├── stock-home.txt           the TV's own launcher, recorded by build-and-install.sh (restore.sh returns to it)
+│   ├── home-default.txt, home-candidates.txt, accessibility.txt, accessibility-enabled-before.txt, private-dns-before.txt
+│   ├── settings-before.txt      settings the TUI's Tweaks changed, with their old values (`<ns> <key> <value|null>`)
+│   └── dumpsys/                 activities/services of every manufacturer package that was checked
+├── launcher/                    the launcher source (Java, AndroidX RecyclerView, minSdk 26, targetSdk 36), incl. the phone remote
+│   ├── app/src/main/            the launcher, the phone remote page (assets/remote.html) and its resources
+│   └── app/src/test/            unit tests for the pure logic (no TV or emulator needed)
+├── tui/                         the terminal app (Rust, ratatui): connect, install from Releases, debloat, tweaks, restore
+│   ├── src/                     adb runner, parsers, plans (command preview), flows mirroring the scripts, UI
+│   └── catalog.toml             notes and advice for the Debloat menu (safe / caution / keep / never)
+├── .github/workflows/ci.yml     GitHub Actions: lint, unit tests and the release build on every push; the TUI for 4 platforms
+├── scripts/
+│   ├── build-and-install.sh     check the computer and TV, build the launcher (R8 release, ~0.6 MB APK), install it, make it the home screen
+│   ├── benchmark.sh             measure a launcher's memory, CPU, start-up and smoothness
+│   ├── restore.sh               undo everything (back to the TV's own launcher)
+│   ├── disable.sh               disable packages, or --recommended (and log them so restore.sh can undo)
+│   ├── restrict.sh              stop apps running in the background, or --recommended (logged the same way)
+│   ├── key.sh / shot.sh         send remote keys / pull a screenshot (for testing)
+│   └── env.sh                   TV address: TV=<ip> once, then remembered in .tv (not in the repo)
+└── shots/                       screenshots taken during the work
+```
+
+The scripts need ADB debugging switched on; the [install guides](../README.md#install) cover connecting.
+
+## Rebuild and reinstall
+
+```bash
+scripts/build-and-install.sh                 # build, install, set as home
+scripts/build-and-install.sh --disable-stock # same, and disable the TV's own launcher (needed on Google TV, and wherever the TV's own launcher outranks TV Home for Home)
+```
+Notes on the install:
+- It uses `pm install` over the shell, not `adb install`.
+- It grants location permission so the Wi-Fi pill can show the network name. Android 10 requires that.
+- It uses `cmd package set-home-activity`, because several apps claim HOME on this TV: the factory test, tvusage and FallbackHome.
+- While the stock launcher is enabled, it always wins (its priority is 2). That's why it has to be disabled.
+- **New TV IP:** run `TV=<new-ip> scripts/build-and-install.sh` once; the new address is saved in `.tv` for every script.
+- **Adding a permission:** adding a permission like INTERNET to an already-installed app doesn't reach the network firewall on Android 10, so the app gets `EPERM` on sockets. If you ever add one, reinstall cleanly: `adb shell pm uninstall com.swadaya.tv && scripts/build-and-install.sh`.
+- **Signing:** release builds are signed with the project's release key when it's available (CI secrets, or `launcher/keystore.properties` on your computer; see [Release signing and GitHub Releases](#release-signing-and-github-releases)), so any build upgrades any other in place. Without the key, they're signed with this computer's debug key, which only upgrades an install built on the same computer. Switching between the two needs one uninstall (`adb shell pm uninstall com.swadaya.tv`), which loses the launcher's settings and the paired phones.
+
+## Release signing and GitHub Releases
+
+Every CI build is signed with one fixed **release key**, kept in the repository's secrets. So an APK from GitHub installs over the previous one and the TV keeps the launcher's settings. A version tag publishes the APK as a **GitHub Release**, which anyone can download without signing in.
+
+### One-time setup (the repository owner)
+
+You need the JDK's `keytool` (from step 2 of the install guide) and the GitHub CLI (`gh`, signed in with `gh auth login`).
+
+1. **Create the key** (it asks for a password; pick a strong one and store it in your password manager):
+   ```bash
+   keytool -genkeypair -v -keystore tvhome-release.jks -alias tvhome \
+     -keyalg RSA -keysize 4096 -validity 36500 -dname "CN=TV Home"
+   ```
+   **Back up `tvhome-release.jks` and its password** somewhere safe and private (not in the repository). If you lose them, no future build can update the installed launcher without an uninstall.
+2. **Give it to CI** as four repository secrets (run in the repository folder):
+   ```bash
+   base64 < tvhome-release.jks | tr -d '\n' | gh secret set SIGNING_KEYSTORE_BASE64
+   gh secret set SIGNING_STORE_PASSWORD      # paste the password, then Enter
+   gh secret set SIGNING_KEY_PASSWORD        # the same password (keytool uses one for both)
+   gh secret set SIGNING_KEY_ALIAS --body tvhome
+   ```
+   Or add them on GitHub: the repository → Settings → Secrets and variables → Actions → New repository secret. For `SIGNING_KEYSTORE_BASE64`, paste the output of `base64 < tvhome-release.jks | tr -d '\n'`.
+3. **Optional, to sign your own builds with it too** (so `scripts/build-and-install.sh` and GitHub Releases can update each other): create `launcher/keystore.properties` (git ignores it):
+   ```properties
+   storeFile=/full/path/to/tvhome-release.jks
+   storePassword=your-password
+   keyAlias=tvhome
+   keyPassword=your-password
+   ```
+
+Check it worked: the next CI run's *Release signing key* step runs instead of being skipped. On your computer, `apksigner verify --print-certs launcher/app/build/outputs/apk/release/app-release.apk` shows `CN=TV Home`.
+
+### Publishing a version
+
+1. Bump `versionCode` (by 1) and `versionName` in `launcher/app/build.gradle`, and commit.
+2. Tag the commit with `v` + the versionName and push the tag:
+   ```bash
+   git tag v1.9
+   git push origin master v1.9
+   ```
+3. CI builds and tests it, then creates the release **TV Home 1.9** with `tvhome-1.9.apk` and notes generated from the commits.
+
+TVs running TV Home 1.10.2 or newer see the release in the bell within a day and can update from there; the setup app shows its own newer version in its header.
+
+The release job refuses to publish if the tag doesn't match `versionName`, or if the signing secrets are missing (a debug-signed release couldn't be updated later without losing settings).
+
+## The terminal app (tui/)
+
+A Rust ([ratatui](https://ratatui.rs)) front end to everything the scripts do, without bash. User guide: [tui.md](tui.md).
+
+- **Guided for non-technical people:** each screen (`screens.rs`) is a few plain sentences and a list of choices; `ui.rs` draws them all the same way, and keys and mouse clicks pick them.
+  - If adb isn't installed, it offers to download Google's Platform Tools into its own folder (`setup.rs`).
+  - It finds TVs from `adb mdns services` (Wireless debugging, including TVs waiting to pair) and by scanning the /24 network for port 5555. It waits for "Allow USB debugging?" by itself and supports pairing codes.
+  - *Set up my TV* (`flows::setup_all`) is install, the recommended clean-up and optionally Private DNS, as one plan with one Home check at the end.
+  - Quitting while connected offers `flows::debugging_off`.
+  - *Overview*, *Health* and *Playback* are read-only. Each is one batched `adb shell` read (`Worker::read_batch`, split on a marker line). The parsers are pure: `health.rs` (`/proc/stat`, `/proc/net/dev` and every `/proc/<pid>/stat` sampled 2 s apart, before the heavier reads, with names from `ps`; `/proc/meminfo`, `df`, `thermalservice`, `hardware_properties`, `dumpsys meminfo`) and `media.rs` (codec XML, `dumpsys display`, `dumpsys audio`, surround settings, DRM). Their tests run on output captured from a Mi TV in `src/testdata/`.
+  - The shell can't read the Widevine level (`dumpsys media.drm` is empty on Android 10), so Playback runs a tiny Java reader as the shell user. Its source is `tui/drminfo/DrmInfo.java`; `tui/drminfo/build.sh` (JDK 17 + Android SDK) compiles it into `drminfo.jar` (2 KB, committed, embedded with `include_bytes!`, so building the app needs no Android SDK). The app pushes it to `/data/local/tmp`, runs `app_process -cp <jar> /system/bin tvhome.DrmInfo`, which prints `key=value` lines from `MediaDrm`, and deletes it. It works on any TV, with or without TV Home. After changing `DrmInfo.java`, run `build.sh` and commit both.
+  - *Tweaks* changes Android settings through `flows::set_settings`, which records each old value (`null` if unset) in `backup/<serial>/settings-before.txt` (first value wins), then runs `settings put`. Undo puts each back, or deletes it if it was unset; `restore.sh` reads the same file.
+  - *Save a support report* (`report.rs`) writes the TV's details, its records and the end of the log (pairing codes masked) to Downloads.
+  - `--ascii` (automatic in Windows' classic console) and `NO_COLOR`/`--no-color` rewrite the finished frame (`ui::plain`), so screens don't need to know about either. A test checks every non-ASCII symbol in the screens has a stand-in.
+- **Runs `adb` directly** (no shell), so Windows shells can't rewrite paths. Every call is pinned with `-s <serial>`.
+- **Plans:** `flows.rs` builds each action from read-only checks (logged), so the preview shows the real commands with the real values. `plan.rs` runs them: a required step that fails stops the plan, an optional one is noted, and `pm install`'s signature mismatch offers uninstall-then-install.
+  - **Health check with rollback:** install, Set up and disabling end in an `Action::VerifyHome` step. After an install it polls the focused window for TV Home (giving up early on Google TV's setup screen). After disabling, it checks HOME still resolves to something other than `FallbackHome` or the setup app. On failure it re-enables what that plan disabled and, after an install, sets the recorded stock launcher as Home.
+- **Shares `backup/` and `.tv` with the scripts** when run inside the repository, in the same file formats. `scripts/restore.sh` undoes the TUI and the other way round.
+  - **Per-TV records** in `backup/<serial>/`: `Store::use_tv` in the TUI and `tv_backup` in `scripts/env.sh` follow the same rules. The serial is `ro.serialno`, then `ro.boot.serialno`, else the TV's IP, with anything other than letters, digits, `-` and `_` turned into `_`. A `tv.txt` inside names the TV.
+  - Loose records from before this move once into the folder of the TV that `backup/getprop.txt` names, or of the first TV seen when there's none. The TUI writes nothing until a TV has been chosen.
+- **Mirrors the scripts:**
+  - Install is `build-and-install.sh` without the build. It records the stock launcher once, pushes and runs `pm install -r`, grants the same permissions (plus `BLUETOOTH_CONNECT` on Android 12+), appends the accessibility service and sets Home, with the optional Google TV handover. Then it checks what's in front.
+  - Disable/enable is `disable.sh`.
+  - Restore follows `restore.sh` step by step.
+- **Debloat notes:**
+  - `catalog.toml` is this project's own reviewed notes. *never* matches `AppManager.PROTECTED` in the launcher, and a test keeps the two in step.
+  - `catalog-cleanyourtv.toml` is generated from [cleanyourtv](https://github.com/Gathin23/cleanyourtv)'s 420+ per-model lists (MIT) by `tools/import_cleanyourtv.py`. It pre-ticks only ads, tracking and promos that owners of at least two TVs disabled, and never anything that looks like a system part (a test checks this).
+  - Ours wins for any package in both. To refresh it, clone cleanyourtv and run `python3 -I tui/tools/import_cleanyourtv.py <clone> tui/catalog-cleanyourtv.toml`.
+
+```bash
+cd tui
+cargo test                                  # parsers, backups, plans, install/restore flows (fake adb)
+cargo clippy --all-targets -- -D warnings
+cargo run -- --dry-run                      # try it against a TV without changing anything
+```
+
+CI checks and builds it for Linux, Windows, both kinds of Mac, and Android phones (Termux, 64- and 32-bit ARM, built with the runner's Android NDK at API 24); a version tag attaches the six archives to the GitHub Release next to the APK. To build the phone version locally: `rustup target add aarch64-linux-android`, then point `CC_aarch64_linux_android` and `CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER` at the NDK's `aarch64-linux-android24-clang` (and `AR_aarch64_linux_android` at `llvm-ar`) and `cargo build --release --target aarch64-linux-android`. Inside Termux it's just `pkg install rust clang && cargo build --release`.
+
+Release builds use size optimization, fat LTO, one codegen unit and symbol stripping. CI also strips the finished binaries before upload: GNU `strip` on Linux, the Android NDK's `llvm-strip` for Termux, macOS `strip`, and Rust's `llvm-strip` component on Windows. For a local Rust toolchain warning about missing `libLLVM.dylib` during stripping, install `rustup component add llvm-tools-preview` and rebuild.
+
+## Tests and CI
+
+For the Live TV startup scripts, `node scripts/test-tv-player.cjs` (Node 18+, no npm packages)
+exercises the exact JavaScript injected by `TvPlayer`: early preview-quality selection, throttled
+play/quality requests, full-screen quality, malformed-video fallback, sign-in/errors and rejecting
+the previous channel's still-playing document during navigation, and switching channel inside the page (RTMKlik's router, Tonton's history change) without taking the previous channel's video for the new one. These are provider stubs, not a
+replacement for testing real DRM playback on a TV.
+
+To inspect real startup timing, `adb -s <TV IP>:5555 logcat -v time TvPlayer:I '*:S'` shows browser
+preparation and each channel's elapsed time to page visibility, page load, player/video presence,
+media metadata and playback. It logs only channel slugs and timings, not stream URLs or credentials.
+The independent 45-second watchdog still ends a stalled attempt if navigation discards a JavaScript
+callback. When comparing builds, measure several cold and warm runs on the same channels and network;
+one faster run does not establish a speedup.
+
+The launcher's pure logic is unit tested on the computer, so a change doesn't need the TV to catch a regression:
+
+```bash
+cd launcher
+./gradlew testDebugUnitTest     # just the tests (70 of them, a few seconds)
+./gradlew lint                  # Android lint; errors fail the build, warnings don't
+./gradlew assembleRelease       # the APK scripts/build-and-install.sh installs
+```
+
+Gradle needs Java 17-21: `export JAVA_HOME="$(/usr/libexec/java_home -v 21)"` on macOS, or `JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64` on Linux. The build script also picks a suitable JDK itself when `JAVA_HOME` is missing or too new. The tests read a stubbed `android.jar`, so they can't touch the TV's APIs — that's why the logic they cover is kept free of `Context`:
+
+| Test | Covers |
+|---|---|
+| `FileApiTest` | Files tab: name cleaning, unique names, `Range` parsing, keeping paths inside a root |
+| `HidKeysTest` | Phone typing → USB-HID reports (letters, digits, punctuation) |
+| `DockConfigTest` | `dock.txt` parsing and cleaning (comments, blanks, duplicates, the 5-app cap) |
+| `UsageScoresTest` | "Most used": the week window, the per-day merge, per-app totals, exclusions |
+| `RemotePairingTest` | Pairing: PIN lifetime, tries, lockout and its exponential backoff |
+| `RemoteDevicesTest` | Paired phones' names: the name typed on the phone wins, Chrome's "K" isn't a model, older browsers and iPhones |
+| `PlayUpdatesTest` | The bell's Play Store updates: reading the Play Store's log lines, and apps leaving the list once updated, disabled or forgotten |
+| `UpdateCheckTest` | TV Home's own updates: versions compared number by number |
+| `StatusOverlayTest` | Info overlay: speed in decimal bits a second, uptime and elapsed time, the clock |
+| `DreamViewTest` | Screen savers: splitting `logcat` lines (Live log), the Hijri date as on the home screen |
+| `ZoneDetectTest` | Auto prayer zone: towns land in their zone, mountain-top zones are never picked, no guess outside Malaysia |
+| `GlobeTest` | Globe: where the sun is overhead, the prayer lines against JAKIM's times for Kuala Lumpur, the Earth's tilt and the sun in the ecliptic frame, great circles (qibla), every JAKIM zone has a place, reading OpenStreetMap, USGS and aurora feeds, snow and ice map colours, picking the GFS run |
+| `OrbitTest` | Globe satellites: SGP4 against the reference implementation (ISS and Tiangong within 10 m; GPS within 25 km without the Moon and Sun), reading CelesTrak's files |
+| `GribTest` | Globe wind: reading NOAA's GRIB2 (complex packing with spatial differencing, against a real global field; simple packing) |
+
+`.github/workflows/ci.yml` runs the same three tasks on every push and pull request, validates the Gradle wrapper and uploads the release APK as a build artifact.
+
+## Benchmark
+
+Measured on 2026-11-04 with `scripts/benchmark.sh <home component> <label>`, using the optimised R8 release build of TV Home 1.16.0. Conditions:
+- Nothing was playing, and USB debugging was on.
+- The stock launcher ran without its recommendation services, which this setup disables. It was enabled only for its own run (with it enabled, Home keeps going to it), then disabled again before this launcher's run.
+
+| | TV Home 1.16.0 | Stock Android TV launcher |
+|---|---|---|
+| Memory, idle / after navigating (PSS) | 87 / **115 MB** | 90 / 178 MB |
+| CPU, idle, 60 s | 0.18–0.27 s settled (0.71 s while the weather effects play) | 0.08 s |
+| Cold start (process killed → first frame) | **0.76–0.81 s** | 1.47–2.34 s |
+| Back to home from an app (wait time) | 18–20 ms | 15–17 ms |
+| Janky frames while navigating | **4.8 % (59/1240)** | 29.4 % (109/371) |
+| Frame time p50 / p90 / p99 | 9 / **12** / **38** ms | 7 / 28 / 150 ms |
+| APK size | **0.53 MB** | 12.7 MB |
+
+**Notes:**
+- **Idle memory depends on the graphics buffers.** About 45 MB of this launcher's PSS is GPU memory (`GL mtrack`: the window's buffers, the wallpaper and the tile textures). Whether they're all allocated when the idle sample is taken changes the idle figure a lot: earlier runs measured 44–51 MB idle, this one 88 MB, settling at 82 MB a few minutes later. The after-navigating figure, when everything is drawn, is steady across runs (75–83 MB) and is the fairer comparison.
+- **Extra processes only while used:** the launcher is a single process at idle. The Now Playing helper (~23 MB) runs only while something plays, and the virtual keypad (~21 MB) only for 5 minutes after a phone-remote key press inside an app.
+- **Screensaver:** under the screensaver the launcher uses no CPU (0 ticks in 60 s). The System card refreshes every 5 s, and only while home is on screen and in focus.
+- **Other apps in front:** after 30 s with another full-screen app in front, the app-list tile images are freed and redrawn on return. Hardware bitmaps live in graphics memory, so this saving doesn't show up in PSS.
+- **Idle CPU and the weather effects:** the script measures idle 25 s after its last cold start, while the weather effects (45 s after the home screen starts, when it's raining or stormy; it was) are still playing: 0.71 s. Measured again once they had settled: 0.18–0.27 s per 60 s, with the System card's 5-second refresh the only regular work.
+- **Since 1.8** (2026-10-25: 88 / 83 MB, 0.15 s idle CPU, 0.51–0.57 s cold start, 5.8 % janky frames, against the stock launcher's 87 / 122 MB, 1.49–1.59 s and 22.4 %), the weather card and effects, the Globe, Net traffic, quick actions and Button Mapper came in: cold start is about 0.25 s slower and memory after navigating about 30 MB higher. The stock launcher measured higher too this time (178 MB after navigating, 29.4 % janky), so part of the difference is the TV's state on the day.
+- **Before these optimisations** the same benchmark measured 104 / 133 MB, 0.54 s idle CPU, 2.0–2.1 s cold start and 11.4 % janky frames.

@@ -1,0 +1,11 @@
+.gradle/
+build/
+app/build/
+# CMake/NDK build files for the native traffic monitor
+app/.cxx/
+local.properties
+
+# Release signing key and its passwords: never commit them (CI reads them from repository secrets).
+keystore.properties
+*.jks
+*.keystore
