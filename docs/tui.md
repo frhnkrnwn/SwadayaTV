@@ -17,7 +17,7 @@ You don't need to install anything else first. If your computer doesn't have Goo
 
 ## 1. Get the app
 
-From [Releases](https://github.com/nullifye/SwadayaTV-TV-Launcher/releases/latest), under **Assets**, download the file for your computer:
+From [Releases](https://github.com/nullifye/RFHN-TV-Launcher/releases/latest), under **Assets**, download the file for your computer:
 
 | Your computer | File |
 |---|---|
@@ -53,9 +53,9 @@ No computer? The app also runs on an Android phone, in [Termux](https://termux.d
    pkg install android-tools
    termux-setup-storage
    ```
-2. Get the app. Replace `<version>` with the newest version on [Releases](https://github.com/nullifye/SwadayaTV-TV-Launcher/releases/latest), for example `1.10.3`. In Termux, `uname -m` says `aarch64` on most phones (use the `aarch64-linux-android` file) or `armv7l` on older ones (`armv7-linux-androideabi`):
+2. Get the app. Replace `<version>` with the newest version on [Releases](https://github.com/nullifye/RFHN-TV-Launcher/releases/latest), for example `1.10.3`. In Termux, `uname -m` says `aarch64` on most phones (use the `aarch64-linux-android` file) or `armv7l` on older ones (`armv7-linux-androideabi`):
    ```bash
-   curl -LO https://github.com/nullifye/SwadayaTV-TV-Launcher/releases/latest/download/tvhome-tui-<version>-aarch64-linux-android.tar.gz
+   curl -LO https://github.com/nullifye/RFHN-TV-Launcher/releases/latest/download/tvhome-tui-<version>-aarch64-linux-android.tar.gz
    tar -xzf tvhome-tui-*.tar.gz
    ./tvhome-tui
    ```

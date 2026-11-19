@@ -8,12 +8,12 @@ The optional Net traffic monitor (Settings → Net traffic, new in 1.15) include
 sdkmanager "ndk;28.2.13676358" "cmake;3.22.1"
 ```
 
-Its forwarding library is pinned in `launcher/app/src/main/cpp/zdtun/`, built separately as `libzdtun.so` for ARM32/ARM64/x86/x86_64 with 16 KB page alignment. The engine (`libzdtun.so` and its bridge `libtraffic.so`) is **not packed into the APK**: the `netEngineRelease` Gradle task copies it to `launcher/app/build/outputs/netengine/release/netengine-<cpu>-<lib>.so` and writes each file's SHA-256 into the APK as `assets/netengine.txt`. The app loads only files matching those fingerprints, from where `scripts/build-and-install.sh` pushes a local build's engine (`/sdcard/Android/data/com.swadaya.tv/files/netengine/`), or else downloaded from the installed version's GitHub release, where CI attaches the files with the library's licence texts. Keep the corresponding source and LGPL/GPL notices with distributions; see that directory's `UPSTREAM.md`. No capture is enabled by building or installing the APK. See [Net traffic](features.md#net-traffic-internet-connection-monitor) for consent, limitations, and the live-network test checklist.
+Its forwarding library is pinned in `launcher/app/src/main/cpp/zdtun/`, built separately as `libzdtun.so` for ARM32/ARM64/x86/x86_64 with 16 KB page alignment. The engine (`libzdtun.so` and its bridge `libtraffic.so`) is **not packed into the APK**: the `netEngineRelease` Gradle task copies it to `launcher/app/build/outputs/netengine/release/netengine-<cpu>-<lib>.so` and writes each file's SHA-256 into the APK as `assets/netengine.txt`. The app loads only files matching those fingerprints, from where `scripts/build-and-install.sh` pushes a local build's engine (`/sdcard/Android/data/my.rafhan.app.tvhome/files/netengine/`), or else downloaded from the installed version's GitHub release, where CI attaches the files with the library's licence texts. Keep the corresponding source and LGPL/GPL notices with distributions; see that directory's `UPSTREAM.md`. No capture is enabled by building or installing the APK. See [Net traffic](features.md#net-traffic-internet-connection-monitor) for consent, limitations, and the live-network test checklist.
 
 ## Folder structure
 
 ```
-SwadayaTV-TV-Launcher/
+RFHN-TV-Launcher/
 ├── README.md
 ├── PROMPT.md                    paste into an AI coding agent to repeat the whole setup (debloat + launcher) on another TV
 ├── docs/                        install guides (install-*.md), features.md, xiaomi-debloat.md, development.md, screenshots
@@ -57,8 +57,8 @@ Notes on the install:
 - It uses `cmd package set-home-activity`, because several apps claim HOME on this TV: the factory test, tvusage and FallbackHome.
 - While the stock launcher is enabled, it always wins (its priority is 2). That's why it has to be disabled.
 - **New TV IP:** run `TV=<new-ip> scripts/build-and-install.sh` once; the new address is saved in `.tv` for every script.
-- **Adding a permission:** adding a permission like INTERNET to an already-installed app doesn't reach the network firewall on Android 10, so the app gets `EPERM` on sockets. If you ever add one, reinstall cleanly: `adb shell pm uninstall com.swadaya.tv && scripts/build-and-install.sh`.
-- **Signing:** release builds are signed with the project's release key when it's available (CI secrets, or `launcher/keystore.properties` on your computer; see [Release signing and GitHub Releases](#release-signing-and-github-releases)), so any build upgrades any other in place. Without the key, they're signed with this computer's debug key, which only upgrades an install built on the same computer. Switching between the two needs one uninstall (`adb shell pm uninstall com.swadaya.tv`), which loses the launcher's settings and the paired phones.
+- **Adding a permission:** adding a permission like INTERNET to an already-installed app doesn't reach the network firewall on Android 10, so the app gets `EPERM` on sockets. If you ever add one, reinstall cleanly: `adb shell pm uninstall my.rafhan.app.tvhome && scripts/build-and-install.sh`.
+- **Signing:** release builds are signed with the project's release key when it's available (CI secrets, or `launcher/keystore.properties` on your computer; see [Release signing and GitHub Releases](#release-signing-and-github-releases)), so any build upgrades any other in place. Without the key, they're signed with this computer's debug key, which only upgrades an install built on the same computer. Switching between the two needs one uninstall (`adb shell pm uninstall my.rafhan.app.tvhome`), which loses the launcher's settings and the paired phones.
 
 ## Release signing and GitHub Releases
 
