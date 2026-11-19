@@ -32,7 +32,7 @@ import java.net.URL;
 import java.security.MessageDigest;
 
 /**
- * "TV Home x.y is available" (the bell): downloads the release APK from GitHub and hands it to
+ * "SwadayaTV x.y is available" (the bell): downloads the release APK from GitHub and hands it to
  * Android's installer (a PackageInstaller session), which asks the user to confirm. Android
  * accepts it only if it's signed with the installed app's key, so settings are kept and nothing
  * else can be slipped in. Installing replaces this app, so the process ends and Home comes back
@@ -83,8 +83,8 @@ public class UpdateActivity extends Activity {
         if (started) return;
         if (!getPackageManager().canRequestPackageInstalls()) {
             waitingForPermission = true;
-            show("TV Home needs your OK to install its own updates (once). In the next screen, "
-                    + "switch on \"TV Home\" (Allow from this source), then press Back.");
+            show("SwadayaTV needs your OK to install its own updates (once). In the next screen, "
+                    + "switch on \"SwadayaTV\" (Allow from this source), then press Back.");
             button(primary, "Open settings", this::openUnknownSources);
             return;
         }
@@ -184,11 +184,11 @@ public class UpdateActivity extends Activity {
                     try {
                         if (confirm != null) startActivity(confirm.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
                     } catch (ActivityNotFoundException | SecurityException e) {
-                        fail("This TV can't install updates itself. Update TV Home with the setup app on a computer.");
+                        fail("This TV can't install updates itself. Update SwadayaTV with the setup app on a computer.");
                     }
                     break;
                 case PackageInstaller.STATUS_SUCCESS:
-                    show("Updated. TV Home restarts in a moment.");
+                    show("Updated. SwadayaTV restarts in a moment.");
                     break;
                 case PackageInstaller.STATUS_FAILURE_ABORTED:
                     fail("Update cancelled. Open the notification again any time.");
@@ -199,7 +199,7 @@ public class UpdateActivity extends Activity {
                 case PackageInstaller.STATUS_FAILURE_CONFLICT:
                 case PackageInstaller.STATUS_FAILURE_INCOMPATIBLE:
                     fail(msg.contains("UPDATE_INCOMPATIBLE") || msg.contains("signatures")
-                            ? "This TV Home was installed from a computer build, so it can't take this update. "
+                            ? "This SwadayaTV was installed from a computer build, so it can't take this update. "
                               + "Update it with the setup app on the computer."
                             : "The update couldn't be installed: " + msg);
                     break;
@@ -245,7 +245,7 @@ public class UpdateActivity extends Activity {
         card.setBackground(bg);
 
         title = text(24, 0xFFFFFFFF, 600);
-        title.setText("Updating TV Home" + (version != null ? " to " + version : ""));
+        title.setText("Updating SwadayaTV" + (version != null ? " to " + version : ""));
         status = text(17, 0xCCFFFFFF, 400);
         status.setPadding(0, px(12), 0, px(22));
         LinearLayout buttons = new LinearLayout(this);

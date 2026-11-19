@@ -12,7 +12,7 @@ import android.os.Looper;
 
 /**
  * The prayer zone's "Auto": the JAKIM zone the TV is in, from its location. The TV's network
- * location (Google's, from nearby Wi-Fi networks; TV Home already has the location permission) is
+ * location (Google's, from nearby Wi-Fi networks; SwadayaTV already has the location permission) is
  * matched offline to the nearest of a few reference towns per zone: no online service is asked.
  * Near a zone border it can pick the neighbour, where the times differ by a minute or two.
  *

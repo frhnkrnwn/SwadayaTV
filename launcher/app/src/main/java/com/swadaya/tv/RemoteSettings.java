@@ -89,7 +89,7 @@ final class RemoteSettings {
                         "Not on the card, like Live TV (it's only the HDMI and antenna screen)")
                         .put("value", new JSONArray(LauncherSettings.usageExcludedPresent(ctx)))));
         cats.put(category("Notifications", "What the bell tells you",
-                toggle(LauncherSettings.ALERT_UPDATE, "TV Home updates", "Checked once a day"),
+                toggle(LauncherSettings.ALERT_UPDATE, "SwadayaTV updates", "Checked once a day"),
                 toggle(LauncherSettings.ALERT_PLAY, "Play Store updates", "Apps with an update waiting, checked every hour"),
                 toggle(LauncherSettings.ALERT_HDMI, "New HDMI devices", "A device that appears over HDMI-CEC"),
                 toggle(LauncherSettings.ALERT_BT, "Bluetooth devices", "Connecting or disconnecting (not the TV remote)"),
@@ -124,13 +124,13 @@ final class RemoteSettings {
         int buttons = LauncherSettings.buttons(ctx).size();
         cats.put(category("Button Mapper", "New actions for the remote's buttons",
                 row("action", LauncherSettings.BUTTONS, "Reset all buttons",
-                        buttons == 0 ? "None set up. Set them up in TV Home's Settings on the TV"
+                        buttons == 0 ? "None set up. Set them up in SwadayaTV's Settings on the TV"
                                 : (buttons == 1 ? "1 button" : buttons + " buttons") + " with new actions: all back to normal")
                         .put("button", "Reset").put("done", "Every button back to normal")
                         .put("ask", "Put every remote button back to normal? Their new actions are removed.")));
         cats.put(category("Misc", "Compatibility and accessibility",
                 toggle(AccessibilityKeeper.SETTING, "Keep accessibility enabled",
-                        "Restores TV Home if the TV disables it. Turn this off first to disable accessibility manually")
+                        "Restores SwadayaTV if the TV disables it. Turn this off first to disable accessibility manually")
                         .put("value", AccessibilityKeeper.enabled(ctx))));
         return new JSONObject().put("ok", true).put("categories", cats);
     }

@@ -25,7 +25,7 @@ import android.widget.Toast;
 
 /**
  * Settings → Live TV → Sign in to Tonton: Tonton's own sign-in page, full screen, driven with the
- * remote and the on-screen keyboard. TV Home never reads what's typed; it only notices when the
+ * remote and the on-screen keyboard. SwadayaTV never reads what's typed; it only notices when the
  * page holds a login token, then closes. The session stays in the app's WebView storage, which
  * Live TV's player shares.
  *

@@ -18,13 +18,13 @@ import android.view.accessibility.AccessibilityEvent;
  * Gives the phone remote Back and Home inside any app (performGlobalAction), and makes the
  * remote's Input button work: the TV's hotkey dispatcher opens one named screen of the stock
  * launcher for it (com.google.android.tvlauncher/.inputs.InputsPanelActivity), which is
- * disabled once TV Home replaces it, so the button did nothing. This catches that key first and
+ * disabled once SwadayaTV replaces it, so the button did nothing. This catches that key first and
  * opens InputsActivity instead.
  *
  * It also runs Settings → Button Mapper: the buttons remapped there are taken (PressDetector
  * tells their single, double and long presses apart) and do their action (ButtonActions); every
  * other key passes through untouched. While Settings waits for "Press a button", the next key
- * goes there instead. On TV Home's Button Mapper page every button works normally, so a
+ * goes there instead. On SwadayaTV's Button Mapper page every button works normally, so a
  * remapping can always be undone there. It doesn't read window content and ignores events.
  * Enabled by build-and-install.sh and the setup app.
  */
@@ -32,7 +32,7 @@ public class RemoteAccessibilityService extends AccessibilityService {
     private static volatile RemoteAccessibilityService instance;
     /** Settings waiting for "Press a button": gets the next key's code (on its release). */
     private static volatile java.util.function.IntConsumer capture;
-    /** TV Home's Button Mapper page is on screen (with home in front): remapping is paused. */
+    /** SwadayaTV's Button Mapper page is on screen (with home in front): remapping is paused. */
     static volatile boolean editing;
 
     private final Handler main = new Handler(Looper.getMainLooper());

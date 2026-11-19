@@ -13,7 +13,7 @@ import android.view.WindowManager;
 /**
  * Settings' "Start now" (and the quick menu's "Start screen saver") on TVs that can't start a
  * screen saver on request: Google TV has no SystemUI "start now" screen (Somnambulator). It shows
- * one of TV Home's own screen savers full screen, as the screen saver does (other apps' overlays
+ * one of SwadayaTV's own screen savers full screen, as the screen saver does (other apps' overlays
  * hidden on Android 12+); any key ends it (the Globe's arrows turn the globe), and so does anything
  * else coming in front.
  */
@@ -22,7 +22,7 @@ public final class SaverActivity extends Activity implements Saver.Host {
     private final Saver.ExitKey exitKey = new Saver.ExitKey();
     private Saver saver;
 
-    /** Null if the screen saver isn't one of TV Home's own. */
+    /** Null if the screen saver isn't one of SwadayaTV's own. */
     static Intent intent(Context ctx, ComponentName dream) {
         if (dream == null || !dream.getPackageName().equals(ctx.getPackageName())) return null;
         if (!Saver.own(dream.getClassName())) return null;
@@ -52,7 +52,7 @@ public final class SaverActivity extends Activity implements Saver.Host {
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         if (saver != null) saver.start();
-        RemoteBridge.saverShowing(true); // TV Home's info overlay stays off, as over the real one
+        RemoteBridge.saverShowing(true); // SwadayaTV's info overlay stays off, as over the real one
     }
 
     @Override

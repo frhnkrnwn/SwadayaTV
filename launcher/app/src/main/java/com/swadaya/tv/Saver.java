@@ -5,9 +5,9 @@ import android.view.KeyEvent;
 import android.view.View;
 
 /**
- * One of TV Home's screen savers (Prayer time, Live log, Globe), apart from where it runs: as the
+ * One of SwadayaTV's screen savers (Prayer time, Live log, Globe), apart from where it runs: as the
  * TV's screen saver (SaverDream) or, on TVs that can't start a screen saver on request (Google
- * TV has no "start now" screen), shown by TV Home itself for Settings' "Start now" (SaverActivity).
+ * TV has no "start now" screen), shown by SwadayaTV itself for Settings' "Start now" (SaverActivity).
  */
 abstract class Saver {
     /** Where it runs. */
@@ -44,13 +44,13 @@ abstract class Saver {
         return false;
     }
 
-    /** Whether the class is one of TV Home's screen savers. */
+    /** Whether the class is one of SwadayaTV's screen savers. */
     static boolean own(String dreamClass) {
         return ClockDream.class.getName().equals(dreamClass) || LogDream.class.getName().equals(dreamClass)
                 || GlobeDream.class.getName().equals(dreamClass);
     }
 
-    /** The saver for one of TV Home's screen-saver classes, or null for anyone else's. */
+    /** The saver for one of SwadayaTV's screen-saver classes, or null for anyone else's. */
     static Saver of(String dreamClass, Host host) {
         if (ClockDream.class.getName().equals(dreamClass)) return new ClockDream.Show(host);
         if (LogDream.class.getName().equals(dreamClass)) return new LogDream.Show(host);

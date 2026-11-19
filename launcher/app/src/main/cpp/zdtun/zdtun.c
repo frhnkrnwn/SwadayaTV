@@ -633,7 +633,7 @@ static void build_reply_tcpip(zdtun_t *tun, zdtun_conn_t *conn, u_int8_t flags,
 /* ******************************************************* */
 
 /*
- * TV Home change: answer a TCP segment for a connection zdtun doesn't know (one it already closed,
+ * SwadayaTV change: answer a TCP segment for a connection zdtun doesn't know (one it already closed,
  * or one from before the forwarder restarted, e.g. across the TV's sleep) with a reset, as RFC 793
  * says a closed port must. Upstream drops it silently, so the app's socket keeps retransmitting
  * until its own TCP gives up, minutes later: Android 10's DNS-over-TLS, which reuses one connection

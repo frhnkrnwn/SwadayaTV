@@ -9,7 +9,7 @@ import android.os.Bundle;
  * The remote's Input button: opened by RemoteAccessibilityService (which catches the key), and
  * for Android TV's "show inputs" (com.android.tv.action.VIEW_INPUTS) when it's asked for without
  * naming the stock launcher. Opens the TV's own input picker when it has one (PatchWall's, on
- * Xiaomi), else TV Home's Inputs menu on the home screen. No window of its own: it hands over
+ * Xiaomi), else SwadayaTV's Inputs menu on the home screen. No window of its own: it hands over
  * and finishes.
  */
 public class InputsActivity extends Activity {

@@ -11,7 +11,7 @@
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- TV Home updates from GitHub, installed with Android's installer after the user confirms. -->
+    <!-- SwadayaTV updates from GitHub, installed with Android's installer after the user confirms. -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <!-- Bell: Bluetooth devices connecting / disconnecting. BLUETOOTH alone is enough up to
          Android 11; 12+ needs the runtime permission below for names and the ACL broadcasts, and
@@ -156,7 +156,7 @@
             </intent-filter>
         </activity>
 
-        <!-- Screen savers (TV Home's Settings → Screen saver, or the TV's): a clock with the dates
+        <!-- Screen savers (SwadayaTV's Settings → Screen saver, or the TV's): a clock with the dates
              and prayer times (also what the others show while they can't run), the TV's live log
              on black, and the Earth turning with the prayer lines and live dots. -->
         <service
@@ -190,7 +190,7 @@
             </intent-filter>
         </service>
 
-        <!-- "Start now" for TV Home's own screen savers on TVs with no SystemUI "start screen
+        <!-- "Start now" for SwadayaTV's own screen savers on TVs with no SystemUI "start screen
              saver now" screen (Google TV): shows the screen saver itself (SaverActivity). -->
         <activity
             android:name=".SaverActivity"

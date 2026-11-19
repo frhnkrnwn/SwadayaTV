@@ -8,7 +8,7 @@ import android.webkit.WebStorage;
 
 /**
  * The Tonton account the Tonton channels play with. Signing in happens on Tonton's own page
- * (TontonSignInActivity); TV Home never sees the password. The session lives in the WebView's
+ * (TontonSignInActivity); SwadayaTV never sees the password. The session lives in the WebView's
  * cookies and storage, shared by every WebView in the app, so Live TV's player uses it too.
  */
 final class TontonAccount {

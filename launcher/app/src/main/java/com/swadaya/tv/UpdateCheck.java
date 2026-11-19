@@ -14,7 +14,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Is there a newer TV Home on GitHub? Reads the repository's latest release (drafts and
+ * Is there a newer SwadayaTV on GitHub? Reads the repository's latest release (drafts and
  * pre-releases are never "latest") and its tvhome-<version>.apk. Releases are signed with the
  * same key as the installed app, so UpdateActivity can install one over it, settings kept.
  * Debug builds don't look: they're signed with another key and couldn't take the update.

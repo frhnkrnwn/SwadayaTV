@@ -20,7 +20,7 @@ import java.util.Map;
 
 /**
  * The Net traffic monitor's native engine (libzdtun, the forwarding library, and libtraffic, its
- * bridge), kept out of the APK so TV Home stays small. The build records each file's SHA-256 in
+ * bridge), kept out of the APK so SwadayaTV stays small. The build records each file's SHA-256 in
  * assets/netengine.txt; the first time the monitor starts, the files for this TV's CPU are taken
  * from where build-and-install.sh pushed them (a local build) or downloaded from this version's
  * GitHub release, checked against those fingerprints, kept in files/netengine/ and loaded. A file

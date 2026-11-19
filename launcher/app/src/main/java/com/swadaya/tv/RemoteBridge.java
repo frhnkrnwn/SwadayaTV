@@ -5,7 +5,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /**
  * Hands phone-remote D-pad keys to the launcher. MainActivity attaches while it's resumed, so
  * "attached" also means "the home screen is what's on the TV"; home listeners (the info overlay)
- * hear when that changes, on the main thread, and when TV Home's screen-saver preview
+ * hear when that changes, on the main thread, and when SwadayaTV's screen-saver preview
  * (SaverActivity) comes and goes, which the overlay stays off for too.
  */
 final class RemoteBridge {

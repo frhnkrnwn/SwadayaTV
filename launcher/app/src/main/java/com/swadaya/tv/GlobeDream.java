@@ -10,7 +10,7 @@ import android.widget.FrameLayout;
  * "Globe": a screen saver with the Earth turning, lit as it is right now, with the prayer lines
  * and live dots (GlobeView). Its two maps are downloaded the first time (GlobeFeeds); until they
  * are, it shows the Prayer time picture (DreamView), like Live log does when it can't read the
- * log, and switches over once they're in. Chosen in TV Home's Settings → Screen saver.
+ * log, and switches over once they're in. Chosen in SwadayaTV's Settings → Screen saver.
  *
  * The remote's arrows turn the globe (GlobeView.key); any other key ends the screen saver.
  */
