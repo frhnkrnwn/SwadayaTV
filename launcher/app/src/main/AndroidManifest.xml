@@ -268,7 +268,7 @@
             android:label="Remote Wallpaper"
             android:exported="false"
             android:screenOrientation="landscape"
-            android:theme="@style/Theme.TvHome" />
+            android:theme="@style/HomeTheme" />
 
     </application>
 </manifest>
