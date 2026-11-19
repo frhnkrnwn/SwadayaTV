@@ -1,7 +1,7 @@
 {
-  "versionCode": 54,
-  "versionName": "3.9.0",
+  "versionCode": 55,
+  "versionName": "4.1.0",
   "apkUrl": "https://github.com/frhnkrnwn/SwadayaTV/releases/latest/download/SwadayaTV.apk",
-  "changelog": "fix: OTA update signature and UI layout overlap",
-  "releaseDate": "2026-11-18"
+  "changelog": "fix: resolve layout overlaps, theme names, soccer widget, and OTA signature",
+  "releaseDate": "2026-11-19"
 }
