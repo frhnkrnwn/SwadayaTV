@@ -146,6 +146,7 @@ public class MainActivity extends Activity {
     private PrayerPanel prayer;
     private UsagePanel usage;
     private WeatherPanel weather;
+    private SoccerPanel soccer;
     private WeatherEffects weatherFx;
     /** This week (the Most used card) and all time (the grid order). */
     private UsageScores.Scores usageScores = UsageScores.Scores.NONE;
@@ -317,7 +318,7 @@ public class MainActivity extends Activity {
         bellBadge.setTypeface(Fonts.outfit(this, 600));
         LinearLayout weatherCard = findViewById(R.id.weatherPanel), sysCard = findViewById(R.id.sysPanel),
                 prayerCard = findViewById(R.id.prayerPanel), usageCard = findViewById(R.id.usagePanel),
-                nowCard = findViewById(R.id.nowPlaying);
+                soccerCard = findViewById(R.id.soccerPanel), nowCard = findViewById(R.id.nowPlaying);
         homeViews = new View[] {findViewById(R.id.clockBlock), findViewById(R.id.pills), findViewById(R.id.dockBand),
                 sysCard, prayerCard, usageCard, weatherCard, findViewById(R.id.peekFade), nowCard};
         system = new SystemPanel(this, sysCard, worker);
@@ -344,6 +345,7 @@ public class MainActivity extends Activity {
         rootView.addView(weatherFx, rootView.indexOfChild(wallpaper) + 1, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         weather = new WeatherPanel(this, weatherCard, weatherFx);
+        soccer = new SoccerPanel(this, soccerCard);
         alignSystemPanel();
         centreDatesOnClock();
 

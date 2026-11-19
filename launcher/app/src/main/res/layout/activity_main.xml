@@ -110,6 +110,19 @@
                 android:paddingTop="11dp"
                 android:paddingEnd="2dp"
                 android:paddingBottom="12dp" />
+
+            <!-- Filled by SoccerPanel. -->
+            <LinearLayout
+                android:id="@+id/soccerPanel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/sys_bg"
+                android:orientation="vertical"
+                android:paddingStart="14dp"
+                android:paddingTop="11dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="12dp" />
         </LinearLayout>
 
         <LinearLayout
