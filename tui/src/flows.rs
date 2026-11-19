@@ -13,8 +13,7 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 /// The launcher's own log of apps disabled from the phone remote (restore.sh reads it too).
-pub const REMOTE_LOG: &str =
-    "/sdcard/Android/data/com.swadaya.tv/files/disabled-by-remote.txt";
+pub const REMOTE_LOG: &str = "/sdcard/Android/data/com.swadaya.tv/files/disabled-by-remote.txt";
 const TMP_APK: &str = "/data/local/tmp/tvhome.apk";
 pub const ADGUARD_DNS: &str = "dns.adguard-dns.com";
 
