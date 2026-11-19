@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -30,3 +33,18 @@ jobs:
       - name: Run assembleDebug
         working-directory: launcher
         run: ./gradlew --no-daemon assembleDebug
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: launcher/app/build/outputs/apk/debug/*.apk
+
+      - name: Create GitHub Release
+        if: github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: SwadayaTV build ${{ github.run_number }}
+          files: launcher/app/build/outputs/apk/debug/*.apk
+          token: ${{ secrets.GITHUB_TOKEN }}
