@@ -31,7 +31,9 @@ final class LauncherSettings {
             PRAYER_REMINDER = "prayer_reminder",
             STATUS_BAR = "status_bar", STATUS_LEFT = "status_left", STATUS_CENTER = "status_center",
             STATUS_RIGHT = "status_right", STATUS_POS = "status_position", STATUS_SIZE = "status_size",
-            STATUS_BG = "status_background", APPS_PER_ROW = "apps_per_row";
+            STATUS_BG = "status_background", APPS_PER_ROW = "apps_per_row",
+            SHOW_SOCCER = "show_soccer", SOCCER_LEAGUE = "soccer_league", SOCCER_TEAM = "soccer_team",
+            PRAYER_SUBUH_OFFSET = "prayer_subuh_offset";
     // Live TV (Settings → Live TV): the screen above Running apps, and each station in it
     // (stationKey); all on by default.
     static final String LIVE_TV = "live_tv";

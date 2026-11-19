@@ -180,8 +180,10 @@ final class PrayerPanel {
 
         LocalTime[] t = new LocalTime[KEYS.length];
         boolean h24 = LauncherSettings.use24h(ctx);
+        boolean subuhOffset = LauncherSettings.flag(ctx, LauncherSettings.PRAYER_SUBUH_OFFSET);
         for (int i = 0; i < KEYS.length; i++) {
             t[i] = parse(day.optString(KEYS[i]));
+            if (i == 0 && subuhOffset && t[i] != null) t[i] = t[i].plusMinutes(8);
             times[i].setText(t[i] == null ? "--:--" : t[i].format(java.time.format.DateTimeFormatter.ofPattern(h24 ? "HH:mm" : "h:mm")));
         }
 
@@ -200,6 +202,7 @@ final class PrayerPanel {
             next = 0;
             JSONObject tomorrow = entryFor(today.plusDays(1));
             LocalTime fajr = tomorrow != null ? parse(tomorrow.optString(KEYS[0])) : t[0];
+            if (subuhOffset && fajr != null) fajr = fajr.plusMinutes(8);
             target = fajr == null ? null : today.plusDays(1).atTime(fajr);
         }
         for (int i = 0; i < KEYS.length; i++) {

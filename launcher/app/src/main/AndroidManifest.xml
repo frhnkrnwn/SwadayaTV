@@ -263,5 +263,12 @@
                 android:name="android.accessibilityservice"
                 android:resource="@xml/remote_accessibility" />
         </service>
+        <activity
+            android:name=".RemoteWallpaperActivity"
+            android:label="Remote Wallpaper"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.TvHome" />
+
     </application>
 </manifest>
