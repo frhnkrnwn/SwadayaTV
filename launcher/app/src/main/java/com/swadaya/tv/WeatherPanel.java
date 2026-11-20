@@ -43,7 +43,7 @@ import java.util.concurrent.Executors;
  * so a slow server never holds up the app list.
  */
 final class WeatherPanel {
-    private static final String MET = "https://api.data.gov.my/weather/forecast/";
+    private static final String BMKG = "https://api.bmkg.go.id/publik/prakiraan-cuaca";
     private static final String APIMS = "https://eqms.doe.gov.my/api3/publicmapproxy/PUBLIC_DISPLAY/"
             + "CAQM_MCAQM_Current_Reading/MapServer/0/query?where=1%3D1&returnGeometry=false&f=json"
             + "&outFields=STATION_ID,DATETIME,API,CLASS,PARAM_SYMBOL,LATITUDE,LONGITUDE,STATION_LOCATION,STATE_NAME";
@@ -341,6 +341,9 @@ final class WeatherPanel {
             placesKept = Weather.parsePlaces(read(f));
             placesMade = f.lastModified();
         }
+        if (placesKept == null || placesKept.isEmpty()) {
+            placesKept = java.util.Arrays.asList(new Weather.Place("31.71.03.1001", "Kemayoran"));
+        }
         return placesKept;
     }
 
@@ -361,7 +364,9 @@ final class WeatherPanel {
             Weather.Place p = Weather.place(places, id);
             if (p != null) return p;
         }
-        return autoPlace(ctx, places);
+        Weather.Place a = autoPlace(ctx, places);
+        if (a != null) return a;
+        return places.isEmpty() ? null : places.get(0);
     }
 
     /**
@@ -467,7 +472,7 @@ final class WeatherPanel {
             if (now - f.lastModified() > FORECAST_EVERY_MS
                     || Weather.parseForecast(read(f), p.id, LocalDate.now()) == null) {
                 deleteOthers(ctx, "forecast-", f.getName());
-                fetchTo(ctx, MET + "?contains=" + p.id + "@location__location_id", f.getName());
+                fetchTo(ctx, BMKG + "?adm4=" + p.id, f.getName());
             }
         }
         if (stationsDue(ctx, now)) fetchTo(ctx, APIMS, "stations.json");
@@ -496,8 +501,21 @@ final class WeatherPanel {
 
     /** Today's forecast for every MET location: the place list (about 130 KB). */
     private static void fetchPlaces(Context ctx) {
-        String d = LocalDate.now().toString();
-        fetchTo(ctx, MET + "?date_start=" + d + "@date&date_end=" + d + "@date&limit=1000", "places.json");
+        // BMKG has no places list; keep a single default (Kemayoran) in places.json.
+        try {
+            org.json.JSONArray arr = new org.json.JSONArray();
+            org.json.JSONObject o = new org.json.JSONObject();
+            org.json.JSONObject loc = new org.json.JSONObject();
+            loc.put("location_id", "31.71.03.1001");
+            loc.put("location_name", "Kemayoran");
+            o.put("location", loc);
+            o.put("date", java.time.LocalDate.now().toString());
+            arr.put(o);
+            java.io.File f = file(ctx, "places.json");
+            try (java.io.FileOutputStream out = new java.io.FileOutputStream(f)) {
+                out.write(arr.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            }
+        } catch (Exception ignored) {}
     }
 
     private static String forecastName(String placeId) {
