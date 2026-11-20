@@ -148,6 +148,54 @@ final class Weather {
 
     /** The row for {@code today} among a location's forecast days (they don't come in order), or null. */
     static Day parseForecast(String json, String placeId, LocalDate today) {
+        // BMKG Open Data format: {"data":[{"lokasi":{...},"cuaca":[[slots...],...]}}
+        try {
+            JSONObject root = new JSONObject(json);
+            JSONArray data = root.optJSONArray("data");
+            if (data != null && data.length() > 0) {
+                JSONObject first = data.optJSONObject(0);
+                JSONObject loc = first == null ? null : first.optJSONObject("lokasi");
+                if (loc != null) {
+                    String adm4 = loc.optString("adm4");
+                    if (placeId != null && !placeId.isEmpty() && !adm4.isEmpty() && !placeId.equals(adm4)) return null;
+                    JSONArray days = first.optJSONArray("cuaca");
+                    if (days != null) {
+                        int min = Integer.MAX_VALUE, max = Integer.MIN_VALUE;
+                        String morning = "", afternoon = "", night = "", summary = "";
+                        for (int d = 0; d < days.length(); d++) {
+                            JSONArray slots = days.optJSONArray(d);
+                            if (slots == null) continue;
+                            for (int s = 0; s < slots.length(); s++) {
+                                JSONObject sl = slots.optJSONObject(s);
+                                if (sl == null) continue;
+                                String local = sl.optString("local_datetime");
+                                if (!local.startsWith(today.toString())) continue;
+                                int t = sl.optInt("t", Integer.MIN_VALUE);
+                                if (t != Integer.MIN_VALUE) {
+                                    if (t < min) min = t;
+                                    if (t > max) max = t;
+                                }
+                                String desc = sl.optString("weather_desc");
+                                // pick representative slots by hour
+                                String hour = local.length() >= 13 ? local.substring(11, 13) : "";
+                                int h = 0;
+                                try { h = Integer.parseInt(hour); } catch (Exception ignored) {}
+                                if (h >= 5 && h < 12 && morning.isEmpty()) morning = desc;
+                                else if (h >= 12 && h < 18 && afternoon.isEmpty()) afternoon = desc;
+                                else if ((h >= 18 || h < 5) && night.isEmpty()) night = desc;
+                                if (summary.isEmpty()) summary = desc;
+                            }
+                        }
+                        if (min == Integer.MAX_VALUE) return null;
+                        if (summary.isEmpty()) summary = morning.isEmpty() ? (afternoon.isEmpty() ? night : afternoon) : morning;
+                        return new Day(min, max, summary, "", morning, afternoon, night);
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+            // not BMKG format; fall through to MET
+        }
+        // MET Malaysia format
         try {
             JSONArray rows = new JSONArray(json);
             String date = today.toString();
@@ -162,7 +210,6 @@ final class Weather {
                         r.optString("afternoon_forecast"), r.optString("night_forecast"));
             }
         } catch (Exception ignored) {
-            // not the forecast (an error page): nothing to show
         }
         return null;
     }
