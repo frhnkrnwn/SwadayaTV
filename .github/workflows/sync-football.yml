@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "0 */6 * * *"
   workflow_dispatch:
+  # Validate a change to the sync itself. Data commits don't match these paths, so no loop.
+  push:
+    paths:
+      - '.github/workflows/sync-football.yml'
+      - 'scripts/sync-football.py'
 
 permissions:
   contents: write
