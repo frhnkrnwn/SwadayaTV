@@ -5,7 +5,10 @@ app/build/
 app/.cxx/
 local.properties
 
-# Release signing key and its passwords: never commit them (CI reads them from repository secrets).
 keystore.properties
 *.jks
 *.keystore
+# ...except the launcher's release key and its passwords, committed on purpose so every build is
+# signed with the same key and the in-app update installs over the last build (docs/development.md).
+!keystore.properties
+!tvhome-release.jks

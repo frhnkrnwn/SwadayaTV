@@ -3,9 +3,11 @@ plugins {
 }
 
 // Release signing: one fixed key, so every build (CI or any computer) upgrades the last one in
-// place and the TV keeps the launcher's settings. The key comes from environment variables (CI
-// secrets) or launcher/keystore.properties (git-ignored; see docs/development.md). Without it,
-// release builds fall back to this computer's debug key, as before.
+// place and the TV keeps the launcher's settings. The key and its passwords are committed
+// (launcher/tvhome-release.jks and launcher/keystore.properties): this project is open source and
+// the key only has to be the same in every build (see docs/development.md). SIGNING_* environment
+// variables, e.g. a rotated key in CI secrets, replace them when set. Without either, release
+// builds fall back to this computer's debug key, as before.
 def keyProps = new Properties()
 def keyPropsFile = rootProject.file('keystore.properties')
 if (keyPropsFile.exists()) keyPropsFile.withInputStream { keyProps.load(it) }
@@ -21,8 +23,8 @@ android {
         applicationId 'com.swadaya.tv'
         minSdk 26          // Android 8.0: the overlays, fonts and java.time need it; the Mi TV runs 10, the Mi Box 9
         targetSdk 36       // some Google TV 14 sets refuse old targets at install
-        versionCode 3
-        versionName '1.1.1'
+        versionCode 4
+        versionName '1.1.2'
         ndk { abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' }
         // TV Home is English-only: leave out the libraries' translations.
         resourceConfigurations += ['en']

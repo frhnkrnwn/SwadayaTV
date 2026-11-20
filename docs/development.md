@@ -59,43 +59,21 @@ Notes on the install:
 - While the stock launcher is enabled, it always wins (its priority is 2). That's why it has to be disabled.
 - **New TV IP:** run `TV=<new-ip> scripts/build-and-install.sh` once; the new address is saved in `.tv` for every script.
 - **Adding a permission:** adding a permission like INTERNET to an already-installed app doesn't reach the network firewall on Android 10, so the app gets `EPERM` on sockets. If you ever add one, reinstall cleanly: `adb shell pm uninstall my.rafhan.app.tvhome && scripts/build-and-install.sh`.
-- **Signing:** release builds are signed with the project's release key when it's available (CI secrets, or `launcher/keystore.properties` on your computer; see [Release signing and GitHub Releases](#release-signing-and-github-releases)), so any build upgrades any other in place. Without the key, they're signed with this computer's debug key, which only upgrades an install built on the same computer. Switching between the two needs one uninstall (`adb shell pm uninstall my.rafhan.app.tvhome`), which loses the launcher's settings and the paired phones.
+- **Signing:** every release build is signed with the project's release key (`launcher/tvhome-release.jks` and `launcher/keystore.properties`, both committed; see [Release signing and GitHub Releases](#release-signing-and-github-releases)), so any build upgrades any other in place. Replacing that key needs one uninstall (`adb shell pm uninstall com.swadaya.tv`), which loses the launcher's settings and the paired phones.
 
 ## Release signing and GitHub Releases
 
-Every CI build is signed with one fixed **release key**, kept in the repository's secrets. So an APK from GitHub installs over the previous one and the TV keeps the launcher's settings. A version tag publishes the APK as a **GitHub Release**, which anyone can download without signing in.
+Every build, CI or on your own computer, is signed with one fixed **release key**, committed to the repository as `launcher/tvhome-release.jks` with its passwords in `launcher/keystore.properties` (alias `swadaya`, certificate `CN=SwadayaTV`). So an APK from GitHub installs over the previous one, the TV keeps the launcher's settings and the bell's update works. A version tag publishes the APK as a **GitHub Release**, which anyone can download without signing in.
 
-### One-time setup (the repository owner)
+**The key is public on purpose.** This project is open source, and the key only has to be *the same* in every build, so it is committed instead of living in the repository owner's secrets: nothing to set up, and a build on any computer signs the same way. The cost is that anyone who can read the repository can sign an APK that Android accepts as an update of this app. The app itself only ever downloads the APK attached to this repository's latest release, and anyone else's APK has to be installed by hand like any other app. If that trade ever stops being acceptable, rotate the key (below) and take the new one out of the repository.
 
-You need the JDK's `keytool` (from step 2 of the install guide) and the GitHub CLI (`gh`, signed in with `gh auth login`).
+### Rotating the key (optional)
 
-1. **Create the key** (it asks for a password; pick a strong one and store it in your password manager):
-   ```bash
-   keytool -genkeypair -v -keystore tvhome-release.jks -alias tvhome \
-     -keyalg RSA -keysize 4096 -validity 36500 -dname "CN=TV Home"
-   ```
-   **Back up `tvhome-release.jks` and its password** somewhere safe and private (not in the repository). If you lose them, no future build can update the installed launcher without an uninstall.
-2. **Give it to CI** as four repository secrets (run in the repository folder):
-   ```bash
-   base64 < tvhome-release.jks | tr -d '\n' | gh secret set SIGNING_KEYSTORE_BASE64
-   gh secret set SIGNING_STORE_PASSWORD      # paste the password, then Enter
-   gh secret set SIGNING_KEY_PASSWORD        # the same password (keytool uses one for both)
-   gh secret set SIGNING_KEY_ALIAS --body tvhome
-   ```
-   Or add them on GitHub: the repository → Settings → Secrets and variables → Actions → New repository secret. For `SIGNING_KEYSTORE_BASE64`, paste the output of `base64 < tvhome-release.jks | tr -d '\n'`.
-3. **Optional, to sign your own builds with it too** (so `scripts/build-and-install.sh` and GitHub Releases can update each other): create `launcher/keystore.properties` (git ignores it):
-   ```properties
-   storeFile=/full/path/to/tvhome-release.jks
-   storePassword=your-password
-   keyAlias=tvhome
-   keyPassword=your-password
-   ```
+`scripts/setup-signing.sh` creates a new key and stores it as the four repository secrets `SIGNING_KEYSTORE_BASE64`, `SIGNING_STORE_PASSWORD`, `SIGNING_KEY_ALIAS` and `SIGNING_KEY_PASSWORD` (or add them on GitHub: repository → Settings → Secrets and variables → Actions → New repository secret). CI uses a secret when one is set and the committed key otherwise, and `SIGNING_*` environment variables win over `launcher/keystore.properties` everywhere (`launcher/app/build.gradle`).
 
-The four commands of step 2 are also one command, `scripts/setup-signing.sh`: it creates the key (or uses the one you point `KEY` at), asks for the password once and stores all four secrets.
+**Changing the key costs one manual install.** Android only accepts an update signed with the same key, so an app installed from a build signed with a different one (any release before 1.1.2, signed with the runner's throwaway debug key) has to be removed once: `adb shell pm uninstall com.swadaya.tv`, then install the new APK. The launcher's settings and the paired phones are lost that once; every update after that installs from the bell and the settings stay.
 
-Check it worked: the next CI run's *Release signing key* step runs instead of being skipped. On your computer, `apksigner verify --print-certs launcher/app/build/outputs/apk/release/app-release.apk` shows `CN=TV Home`.
-
-**Switching to the key costs one manual install.** An app installed from an earlier release was signed with the runner's throwaway debug key, and Android refuses an APK with a different signature. Uninstall it once (`adb shell pm uninstall com.swadaya.tv`) and install the first signed build; settings and paired phones are lost that once. Every update after that installs over it from the bell, and the settings stay.
+Check a build's signature with `apksigner verify --print-certs launcher/app/build/outputs/apk/release/app-release.apk`: it prints `CN=SwadayaTV`, never `CN=Android Debug`.
 
 ### Publishing a version
 

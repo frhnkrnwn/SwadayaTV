@@ -18,7 +18,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      # The same key as CI, so the released APK can install over the app the TV already has.
+      # Normally empty: every build signs with the committed release key (launcher/tvhome-release.jks
+      # and launcher/keystore.properties), so the released APK installs over the one the TV has.
+      # A repository secret here replaces that key when it is rotated (scripts/setup-signing.sh).
       SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
     steps:
       - uses: actions/checkout@v4
@@ -49,10 +51,6 @@ jobs:
         run: |
           echo "$SIGNING_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
           echo "SIGNING_STORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
-
-      - name: Check OTA signing
-        if: env.SIGNING_KEYSTORE_BASE64 == ''
-        run: echo "::warning title=OTA signing not configured::Add SIGNING_KEYSTORE_BASE64 and the signing passwords. This APK is debug-signed with a throwaway key, so the in-app updater cannot install it over another build."
 
       - name: Build the release APK
         working-directory: launcher

@@ -1,7 +1,8 @@
 #!/bin/bash
-# Make in-app updates (OTA) work: create the release key once and store it in this repository's
-# GitHub Actions secrets, so every build is signed with the same key and installs over the last
-# one. Without it, CI signs with a throwaway key and the bell's update can't install.
+# Optional: rotate the launcher's release key. The key and its passwords are committed
+# (launcher/tvhome-release.jks, launcher/keystore.properties), so every build already signs with
+# the same key and the bell's in-app update installs over the last build; run this only to replace
+# it. It stores the new key as four repository secrets, which CI prefers over the committed one.
 # Usage: scripts/setup-signing.sh
 #        KEY=/path/to/tvhome-release.jks scripts/setup-signing.sh   use a key you already have
 # Needs the JDK's keytool (docs/install-*.md, step 2) and the GitHub CLI signed in (`gh auth login`).
@@ -34,8 +35,9 @@ printf '%s' "$PASSWORD" | gh secret set SIGNING_KEY_PASSWORD
 gh secret set SIGNING_KEY_ALIAS --body "$ALIAS"
 
 echo
-echo "Done: the four secrets are set, so CI now signs with this key."
+echo "Done: the four secrets are set, so CI now signs with this key instead of the committed one."
 echo "Back up $KEY and its password somewhere private, outside this repository: without them no"
 echo "future build can update the installed app."
 echo "Next: re-run the Build workflow (Actions -> Build -> Re-run all jobs) and install that APK on"
-echo "the TV once by hand; updates install from the bell after that."
+echo "the TV once by hand (the key changed, so Android needs one uninstall first); updates install"
+echo "from the bell after that."

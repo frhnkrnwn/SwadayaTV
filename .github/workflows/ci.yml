@@ -14,8 +14,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      # Release signing key (repository secrets, see docs/development.md). Absent on forks and pull
-      # requests from them: those builds fall back to the runner's throwaway debug key.
+      # Normally empty: every build signs with the committed release key (launcher/tvhome-release.jks
+      # and launcher/keystore.properties, see docs/development.md). A repository secret replaces it
+      # when the key is rotated.
       SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
     steps:
       - uses: actions/checkout@v4
