@@ -11,10 +11,12 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -28,47 +30,27 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * The Weather card, under the prayer card: today's MET Malaysia forecast for the place set in
- * Settings → Weather (and any MET warning in force there, in amber), then two air-quality
- * readings for the same spot: the DOE's Air Pollutant Index (APIMS, the station chosen or the one
- * nearest the prayer zone) and Copernicus's US AQI (Open-Meteo) at that station. Weather
- * (Weather.java) does the parsing.
+ * The Weather card, under the prayer card: today's BMKG forecast for the city set in
+ * Settings → Weather, a feels-like reading from BMKG's nearest forecast slot, then air quality
+ * for the same city: Copernicus's US AQI and PM2.5 (Open-Meteo, no key). Weather (Weather.java)
+ * does the parsing; BMKG is credited on the card, as its terms ask.
  *
  * Everything is kept in files/weather/ and shown from there straight away (offline too), and
- * fetched again as its source changes: the APIMS reading (with the station's last 24 hours, for
- * the trend) once each hour's is out, from about 10 past; Copernicus's values each new hour;
- * ECMWF's feels-like now (Open-Meteo) every 15 minutes;
- * MET's warnings every 15 minutes; its forecast hourly; the list of MET places weekly. It's
- * checked on the clock's minute tick, so there's no polling; the fetches run on their own thread
- * so a slow server never holds up the app list.
+ * fetched again as its source changes: BMKG's forecast hourly, Copernicus's values each new
+ * hour. It's checked on the clock's minute tick, so there's no polling; the fetches run on their
+ * own thread so a slow server never holds up the app list.
  */
 final class WeatherPanel {
     private static final String BMKG = "https://api.bmkg.go.id/publik/prakiraan-cuaca";
-    private static final String APIMS = "https://eqms.doe.gov.my/api3/publicmapproxy/PUBLIC_DISPLAY/"
-            + "CAQM_MCAQM_Current_Reading/MapServer/0/query?where=1%3D1&returnGeometry=false&f=json"
-            + "&outFields=STATION_ID,DATETIME,API,CLASS,PARAM_SYMBOL,LATITUDE,LONGITUDE,STATION_LOCATION,STATE_NAME";
-    /** One station's readings over the last 24 hours (about 6 KB), for the trend. */
-    private static final String APIMS_HOURLY = "https://eqms.doe.gov.my/api3/publicportalapims/apitablehourly?stationid=";
-    private static final String WARNINGS = "https://api.data.gov.my/weather/warning/?limit=30";
-    private static final String CAMS = "https://air-quality-api.open-meteo.com/v1/air-quality"
-            + "?current=us_aqi,pm2_5,aerosol_optical_depth&timezone=Asia%2FKuala_Lumpur";
-    /** ECMWF's feels-like and weather code now (its IFS model, 15-minute steps), for the same spot. */
-    private static final String ECMWF = "https://api.open-meteo.com/v1/forecast"
-            + "?current=temperature_2m,apparent_temperature,weather_code&models=ecmwf_ifs025&timezone=Asia%2FKuala_Lumpur";
-    // How often each part is fetched, by how often its source changes: MET's forecast is put out
-    // daily (now and then revised in the day), its warnings whenever needed; the APIMS reading and
-    // Copernicus's values are hourly (hourlyDue); the place list hardly ever changes.
-    private static final long FORECAST_EVERY_MS = 3_600_000L, WARNINGS_EVERY_MS = 15 * 60_000L,
-            PLACES_EVERY_MS = 7 * 24 * 3_600_000L, NOW_EVERY_MS = 15 * 60_000L, HOURLY_RETRY_MS = 10 * 60_000L,
+    private static final String AIR = "https://air-quality-api.open-meteo.com/v1/air-quality"
+            + "?current=us_aqi,pm2_5,aerosol_optical_depth&timezone=Asia%2FJakarta";
+    private static final long FORECAST_EVERY_MS = 3_600_000L, HOURLY_RETRY_MS = 10 * 60_000L,
             RETRY_MS = 5 * 60_000L, OLD_MS = 3 * 3_600_000L;
-    /** Minutes past the hour each hourly source has its new reading out (the APIMS portal looks at :10). */
-    private static final int APIMS_MINUTE = 10, CAMS_MINUTE = 1;
+    /** Minutes past the hour Copernicus has its new reading out. */
+    private static final int AIR_MINUTE = 1;
     private static final int MAX_BYTES = 2 << 20;
-    private static final int TEXT = 0xFFFFFFFF, DIM = 0x8CFFFFFF, ICON = 0xA6FFFFFF, WARN = 0xFFFFB340,
-            FALLING = 0xFF63D489; // a falling API: the System card's green
-    /** The API's trend: the newest reading against the one this many hours before. */
-    private static final int TREND_HOURS = 3;
-    private static final String NONE = "–", MET_NAME = "BMKG";
+    private static final int TEXT = 0xFFFFFFFF, DIM = 0x8CFFFFFF, ICON = 0xA6FFFFFF;
+    private static final String NONE = "–";
     /** One thread for all weather fetches (the card's and Settings'), apart from the app's worker. */
     private static final ExecutorService NET = Executors.newSingleThreadExecutor(r -> {
         Thread t = new Thread(r, "weather");
@@ -82,21 +64,19 @@ final class WeatherPanel {
     private final ImageView titleIcon, skyIcon;
     private final TextView title, outlook, temp, feelsLabel, feelsTemp, skyTime;
     private final ImageView[] partIcons = new ImageView[3]; // morning, afternoon, night
-    private final Gauge api, aqi;
+    private final Gauge pm25, aqi;
     private final WeatherEffects effects; // the home screen's rain, lightning and haze, or null
     private boolean fetching;
     private long lastAttempt;
     private final WeatherFileCache<Weather.Day> forecastCache = new WeatherFileCache<>();
-    private final WeatherFileCache<List<Weather.Warning>> warningCache = new WeatherFileCache<>();
     private final WeatherFileCache<Weather.Now> nowCache = new WeatherFileCache<>();
-    private final WeatherFileCache<List<Weather.Reading>> trendCache = new WeatherFileCache<>();
     private final WeatherFileCache<Weather.Air> airCache = new WeatherFileCache<>();
 
     WeatherPanel(Context ctx, LinearLayout root, WeatherEffects effects) {
         this.ctx = ctx;
         this.effects = effects;
         dp = ctx.getResources().getDisplayMetrics().density;
-        // Title: WEATHER · KLANG, and today's outlook in words on the right.
+        // Title: WEATHER · BANDUNG, and today's outlook in words on the right.
         LinearLayout header = new LinearLayout(ctx);
         header.setGravity(Gravity.CENTER_VERTICAL);
         titleIcon = icon(R.drawable.ic_sun_ring, DIM); // a ring sun: not the prayer card's solid ones
@@ -119,8 +99,7 @@ final class WeatherPanel {
         rlp.topMargin = px(9);
         root.addView(row, rlp);
 
-        // Weather: the day's range, then morning / afternoon / night (MET's pagi, petang, malam), then
-        // when MET's forecast came in.
+        // Weather: the day's range, then morning / afternoon / night, then when BMKG's forecast came in.
         LinearLayout sky = column(row, 1.65f);
         LinearLayout top = new LinearLayout(ctx);
         top.setGravity(Gravity.CENTER_VERTICAL);
@@ -128,7 +107,7 @@ final class WeatherPanel {
         LinearLayout.LayoutParams slp = new LinearLayout.LayoutParams(px(16), px(16));
         slp.setMarginEnd(px(6));
         top.addView(skyIcon, slp);
-        // The range, then how hot it feels now (ECMWF), with a small word before it: "FEELS 35°C".
+        // The range, then how hot it feels now (BMKG), with a small word before it: "FEELS 35°C".
         LinearLayout temps = new LinearLayout(ctx); // baseline-aligned: the word sits on the numbers' line
         temp = value();
         temps.addView(temp);
@@ -150,10 +129,10 @@ final class WeatherPanel {
             parts.addView(small(names[i], DIM, 7.5f, 0.03f));
         }
         sky.addView(parts, top(5));
-        skyTime = small("MET", DIM, 8.5f, 0.06f);
+        skyTime = small("BMKG", DIM, 8.5f, 0.06f);
         sky.addView(skyTime, top(5));
 
-        api = new Gauge(column(row, 1f));
+        pm25 = new Gauge(column(row, 1f));
         aqi = new Gauge(column(row, 1f));
         render();
     }
@@ -171,7 +150,7 @@ final class WeatherPanel {
         if (stale(ctx)) fetch();
     }
 
-    /** Zone, place or station changed: show and fetch for the new one now. */
+    /** City changed: show and fetch for the new one now. */
     void settingsChanged() {
         lastAttempt = 0;
         refresh();
@@ -208,75 +187,54 @@ final class WeatherPanel {
         Weather.Day day = ff == null ? null : forecastCache.get(ff, today.toString(),
                 json -> Weather.parseForecast(json, place.id, today));
         setText(title, place != null ? "WEATHER · " + place.name.toUpperCase(Locale.ROOT) : "WEATHER");
-        Weather.Warning warning = place == null ? null : Weather.activeWarning(
-                warningCache.get(file(ctx, "warnings.json"), "", Weather::parseWarnings),
-                LocalDateTime.now(), warningPlaces(place));
-        if (warning != null) {
-            String w = "⚠ " + Weather.warningName(warning) + " until " + clock(warning.to);
-            setText(outlook, w);
-            outlook.setTextColor(WARN);
-        } else {
-            setText(outlook, day != null ? Weather.outlook(day) : "");
-            outlook.setTextColor(DIM);
-        }
+        setText(outlook, day != null ? Weather.outlook(day) : "");
         if (day != null) {
             int kind = Weather.kind(day.summary);
             setIcon(skyIcon, kindIcon(kind));
-            String range = day.min + "–" + day.max + "°C";
-            setText(temp, range);
+            setText(temp, day.min + "–" + day.max + "°C");
             temp.setTextColor(TEXT);
             String[] p = {day.morning, day.afternoon, day.night};
             for (int i = 0; i < 3; i++) setIcon(partIcons[i], kindIcon(Weather.kind(p[i])));
-            String at = "MET · " + clock(ff.lastModified());
-            setText(skyTime, at);
+            setText(skyTime, "BMKG · " + clock(ff.lastModified()));
         } else {
             setIcon(skyIcon, R.drawable.ic_cloud);
             setText(temp, NONE);
             temp.setTextColor(DIM);
             for (ImageView v : partIcons) setIcon(v, R.drawable.ic_cloud);
-            setText(skyTime, MET_NAME);
+            setText(skyTime, "BMKG");
         }
 
-        Weather.Station st = station(ctx, stations(ctx));
-        File nf = st == null ? null : file(ctx, nowName(st.id));
-        Weather.Now now = nf == null ? null : nowCache.get(nf, "", Weather::parseNow);
-        boolean nowOld = now != null && System.currentTimeMillis() - nf.lastModified() > OLD_MS;
-        degrees(feelsTemp, feelsLabel, now == null ? Double.NaN : now.feels, nowOld);
-        boolean apiOld = st == null || st.time == null
-                || st.time.isBefore(LocalDateTime.now().minus(Duration.ofMillis(OLD_MS)));
-        if (effects != null) {
-            // The weather now (an old reading counts as none): rain, lightning, and haze when the API is unhealthy.
-            boolean on = LauncherSettings.flag(ctx, LauncherSettings.WEATHER_FX);
-            int code = now == null || nowOld ? -1 : now.code;
-            effects.setWeather(on ? Weather.rainEffect(code) : Weather.FX_NONE, on && Weather.thunder(code, warning),
-                    on && !apiOld && st.api > 100);
-        }
-        if (st != null && st.api >= 0) {
-            boolean old = apiOld;
-            int b = Weather.band(st.api, Weather.API_TOP);
-            // Rising or falling: this station's last few hours (APIMS's hourly table).
-            Integer change = Weather.change(trendCache.get(file(ctx, trendName(st.id)), st.id,
-                    json -> Weather.parseHourly(json, st.id)), st.time,
-                    TREND_HOURS);
-            int trendColor = change == null || Math.abs(change) < 2 ? DIM : change > 0 ? WARN : FALLING;
-            api.set("API " + st.api, Weather.API_BANDS[b], Weather.API_COLORS[b], Weather.trend(change, TREND_HOURS),
-                    trendColor, "APIMS" + (st.time != null ? " · " + clock(st.time) : ""), old);
-        } else {
-            api.none("API –", "APIMS");
-        }
+        LocalDateTime now = LocalDateTime.now();
+        Weather.Now cur = ff == null ? null : nowCache.get(ff, today + " " + now.truncatedTo(java.time.temporal.ChronoUnit.HOURS),
+                json -> Weather.parseNow(json, LocalDateTime.now()));
+        boolean nowOld = cur != null && now.isAfter(cur.time.plusHours(6));
+        degrees(feelsTemp, feelsLabel, cur == null ? Double.NaN : cur.feels, nowOld);
 
-        File af = st == null ? null : file(ctx, airName(st.id));
+        File af = place == null ? null : file(ctx, airName(place.id));
         Weather.Air air = af == null ? null : airCache.get(af, "", Weather::parseAir);
         if (air != null) {
             boolean old = System.currentTimeMillis() - af.lastModified() > OLD_MS;
-            int b = Weather.band(air.aqi, Weather.US_TOP);
-            String detail = (Double.isNaN(air.pm25) ? "" : "PM2.5 " + Math.round(air.pm25))
-                    + (Double.isNaN(air.pm25) || Double.isNaN(air.haze) ? "" : " · ")
-                    + (Double.isNaN(air.haze) ? "" : String.format(Locale.ROOT, "Haze %.2f", air.haze));
-            aqi.set("AQI " + air.aqi, Weather.US_SHORT[b], Weather.US_COLORS[b], detail, DIM,
+            boolean pmKnown = !Double.isNaN(air.pm25);
+            int pb = pmKnown ? Weather.pm25Band(air.pm25) : 0;
+            String haze = Double.isNaN(air.haze) ? "" : String.format(Locale.ROOT, "Haze %.2f", air.haze);
+            pm25.set(pmKnown ? "PM2.5 " + Math.round(air.pm25) : "PM2.5 –",
+                    pmKnown ? Weather.US_SHORT[pb] : "", Weather.US_COLORS[pb], haze, DIM,
+                    "COPERNICUS" + (air.time != null ? " · " + clock(air.time) : ""), old);
+            int ab = Weather.band(air.aqi, Weather.US_TOP);
+            aqi.set("AQI " + air.aqi, Weather.US_SHORT[ab], Weather.US_COLORS[ab],
+                    pmKnown ? "PM2.5 " + Math.round(air.pm25) : "", DIM,
                     "COPERNICUS" + (air.time != null ? " · " + clock(air.time) : ""), old);
         } else {
+            pm25.none("PM2.5 –", "COPERNICUS");
             aqi.none("AQI –", "COPERNICUS");
+        }
+
+        if (effects != null) {
+            // The weather now (an old reading counts as none): rain, lightning, and haze when the air is unhealthy.
+            boolean on = LauncherSettings.flag(ctx, LauncherSettings.WEATHER_FX);
+            int code = cur == null || nowOld ? -1 : cur.code;
+            effects.setWeather(on ? Weather.rainEffect(code) : Weather.FX_NONE, on && Weather.thunder(code),
+                    on && air != null && air.aqi > 100);
         }
     }
 
@@ -288,24 +246,6 @@ final class WeatherPanel {
         if (Double.isNaN(value)) return;
         setText(number, Math.round(value) + "°C");
         number.setTextColor(old ? DIM : TEXT);
-    }
-
-    /**
-     * The names a MET warning would use for the place: its own, and for Auto the prayer zone's
-     * state and areas too. MET usually lists districts ("Selangor (Klang, Kuala Langat …)"), but
-     * sometimes names a state on its own ("… • Selangor • …"), so the state is matched as well.
-     */
-    private List<String> warningPlaces(Weather.Place place) {
-        List<String> out = new java.util.ArrayList<>();
-        out.add(place.name);
-        if (LauncherSettings.weatherPlace(ctx).isEmpty()) {
-            String[] z = RemoteSettings.zoneEntry(ctx, LauncherSettings.zone(ctx)); // state, code, areas
-            if (z != null) {
-                out.add(z[0]); // the state, for a warning that names it without districts
-                for (String a : z[2].split(",")) out.add(a.trim());
-            }
-        }
-        return out;
     }
 
     /** "15:40" or "3:40 PM", as the home clock is set. */
@@ -329,35 +269,28 @@ final class WeatherPanel {
 
     // ---------------------------------------------------------------- data (also for Settings)
 
-    // The two lists, parsed once per file version (they're read every minute).
-    private static long placesMade = -1, stationsMade = -1;
     private static List<Weather.Place> placesKept;
-    private static List<Weather.Station> stationsKept;
 
-    /** The MET places (today's forecast for every location, kept a week), or none yet. */
+    /** The Indonesian cities in assets/places.json (BMKG adm4 codes), or none yet. */
     static synchronized List<Weather.Place> places(Context ctx) {
-        File f = file(ctx, "places.json");
-        if (f.lastModified() != placesMade || placesKept == null) {
-            placesKept = Weather.parsePlaces(read(f));
-            placesMade = f.lastModified();
-        }
-        if (placesKept == null || placesKept.isEmpty()) {
-            placesKept = java.util.Arrays.asList(new Weather.Place("31.71.03.1001", "Kemayoran"));
+        if (placesKept == null) {
+            placesKept = Weather.parsePlaces(readAsset(ctx, "places.json"));
         }
         return placesKept;
     }
 
-    /** The APIMS stations with their latest readings, or none yet. */
-    static synchronized List<Weather.Station> stations(Context ctx) {
-        File f = file(ctx, "stations.json");
-        if (f.lastModified() != stationsMade || stationsKept == null) {
-            stationsKept = Weather.parseStations(read(f));
-            stationsMade = f.lastModified();
+    private static String readAsset(Context ctx, String name) {
+        try (BufferedReader r = new BufferedReader(
+                new InputStreamReader(ctx.getAssets().open(name), StandardCharsets.UTF_8))) {
+            StringBuilder sb = new StringBuilder();
+            for (String line; (line = r.readLine()) != null; ) sb.append(line).append('\n');
+            return sb.toString();
+        } catch (IOException e) {
+            return "";
         }
-        return stationsKept;
     }
 
-    /** The place set in Settings, or for Auto the one matching the prayer zone. */
+    /** The city set in Settings, or for Auto the nearest one. */
     static Weather.Place place(Context ctx, List<Weather.Place> places) {
         String id = LauncherSettings.weatherPlace(ctx);
         if (!id.isEmpty()) {
@@ -369,169 +302,79 @@ final class WeatherPanel {
         return places.isEmpty() ? null : places.get(0);
     }
 
-    /**
-     * Auto: the MET town nearest the TV (where the prayer zone's Auto found it), else the place
-     * matching the prayer zone's town (else its state).
-     */
+    /** Auto: the city nearest the TV (where the prayer zone's Auto found it), else the prayer city. */
     static Weather.Place autoPlace(Context ctx, List<Weather.Place> places) {
         double[] here = LauncherSettings.where(ctx);
-        Weather.Place town = here == null ? null : Weather.nearestTown(places, here[0], here[1]);
-        if (town != null) return town;
-        String[] z = RemoteSettings.zoneEntry(ctx, LauncherSettings.zone(ctx)); // state, code, areas
-        Weather.Station near = nearestStation(ctx, stations(ctx)); // its town first: forecast and air for one place
-        return z == null ? null : Weather.autoPlace(z[0], z[2], places, near == null ? null : near.place);
-    }
-
-    /** The station set in Settings, or for Nearest the one closest to the TV (or the prayer zone's town). */
-    static Weather.Station station(Context ctx, List<Weather.Station> stations) {
-        String id = LauncherSettings.weatherStation(ctx);
-        if (!id.isEmpty()) {
-            Weather.Station s = Weather.station(stations, id);
-            if (s != null) return s;
+        if (here != null) {
+            Weather.Place near = nearestPlace(places, here[0], here[1]);
+            if (near != null) return near;
         }
-        return nearestStation(ctx, stations);
+        String zone = LauncherSettings.zone(ctx);
+        for (Weather.Place p : places) if (p.name.equalsIgnoreCase(zone)) return p;
+        return null;
     }
 
-    /** Nearest: the APIMS station closest to the TV (else to the prayer zone's main town). */
-    static Weather.Station nearestStation(Context ctx, List<Weather.Station> stations) {
-        double[] home = LauncherSettings.where(ctx);
-        if (home == null) home = Globe.zonePlace(LauncherSettings.zone(ctx));
-        return Weather.nearest(stations, home[0], home[1]);
-    }
-
-    /** Fetches the places and stations if they aren't kept yet (Settings' lists), then runs {@code done}. */
-    static void loadLists(Context ctx, Runnable done) {
-        Context app = ctx.getApplicationContext();
-        Handler main = new Handler(Looper.getMainLooper());
-        NET.execute(() -> {
-            if (places(app).isEmpty()) fetchPlaces(app);
-            if (stations(app).isEmpty()) fetchTo(app, APIMS, "stations.json");
-            main.post(done);
-        });
+    /** The city nearest a spot, or null when every city is far away. */
+    static Weather.Place nearestPlace(List<Weather.Place> places, double lat, double lon) {
+        Weather.Place best = null;
+        double bestD = Double.MAX_VALUE, k = Math.cos(Math.toRadians(lat));
+        for (Weather.Place p : places) {
+            if (Double.isNaN(p.lat) || Double.isNaN(p.lon)) continue;
+            double dLat = lat - p.lat, dLon = (lon - p.lon) * k;
+            double d = dLat * dLat + dLon * dLon;
+            if (d < bestD) {
+                bestD = d;
+                best = p;
+            }
+        }
+        return best;
     }
 
     private boolean stale(Context ctx) {
         long now = System.currentTimeMillis();
-        List<Weather.Place> places = places(ctx);
-        if (places.isEmpty() || now - file(ctx, "places.json").lastModified() > PLACES_EVERY_MS) return true;
-        Weather.Place p = place(ctx, places);
-        if (p != null) {
-            File f = file(ctx, forecastName(p.id));
-            LocalDate today = LocalDate.now();
-            if (now - f.lastModified() > FORECAST_EVERY_MS
-                    || forecastCache.get(f, today.toString(),
-                    json -> Weather.parseForecast(json, p.id, today)) == null) return true;
-        }
-        if (stationsDue(ctx, now)) return true;
-        if (now - file(ctx, "warnings.json").lastModified() > WARNINGS_EVERY_MS) return true;
-        Weather.Station s = station(ctx, stations(ctx));
-        return s != null && (airDue(ctx, s, now,
-                airCache.get(file(ctx, airName(s.id)), "", Weather::parseAir))
-                || trendDue(ctx, s) || nowDue(ctx, s, now));
+        Weather.Place p = place(ctx, places(ctx));
+        if (p == null) return false;
+        File f = file(ctx, forecastName(p.id));
+        LocalDate today = LocalDate.now();
+        if (now - f.lastModified() > FORECAST_EVERY_MS
+                || forecastCache.get(f, today.toString(),
+                json -> Weather.parseForecast(json, p.id, today)) == null) return true;
+        return airDue(ctx, p, now);
     }
 
-    /** The APIMS readings: the shown station's newer hour should be out (from :10 past the hour). */
-    private static boolean stationsDue(Context ctx, long now) {
-        Weather.Station s = station(ctx, stations(ctx));
-        return Weather.hourlyDue(s == null ? null : s.time, LocalDateTime.now(), APIMS_MINUTE,
-                now - file(ctx, "stations.json").lastModified(), HOURLY_RETRY_MS);
-    }
-
-    /** The station's last 24 hours: missing, or older than the readings it should go with. */
-    private static boolean trendDue(Context ctx, Weather.Station s) {
-        File t = file(ctx, trendName(s.id));
-        return !t.isFile() || t.lastModified() < file(ctx, "stations.json").lastModified();
-    }
-
-    /** Copernicus's values for the station's spot: a new hour has begun (or there's no haze yet). */
-    private static boolean airDue(Context ctx, Weather.Station s, long now) {
-        File f = file(ctx, airName(s.id));
-        return airDue(ctx, s, now, Weather.parseAir(read(f)));
-    }
-
-    private static boolean airDue(Context ctx, Weather.Station s, long now, Weather.Air a) {
-        File f = file(ctx, airName(s.id));
+    /** Copernicus's values for the city: a new hour has begun (or there's none yet). */
+    private static boolean airDue(Context ctx, Weather.Place p, long now) {
+        File f = file(ctx, airName(p.id));
+        Weather.Air a = Weather.parseAir(read(f));
         LocalDateTime have = a == null || Double.isNaN(a.haze) ? null : a.time;
-        return Weather.hourlyDue(have, LocalDateTime.now(), CAMS_MINUTE, now - f.lastModified(), HOURLY_RETRY_MS);
+        return Weather.hourlyDue(have, LocalDateTime.now(), AIR_MINUTE, now - f.lastModified(), HOURLY_RETRY_MS);
     }
 
-    /** ECMWF's values now: older than one 15-minute step. */
-    private static boolean nowDue(Context ctx, Weather.Station s, long now) {
-        return now - file(ctx, nowName(s.id)).lastModified() > NOW_EVERY_MS;
-    }
-
-    /** Fetches whatever is old, in order (the place and station decide the rest). Blocking. */
+    /** Fetches whatever is old, in order (the city decides the rest). Blocking. */
     private static void update(Context ctx) {
         long now = System.currentTimeMillis();
-        if (places(ctx).isEmpty() || now - file(ctx, "places.json").lastModified() > PLACES_EVERY_MS) {
-            fetchPlaces(ctx);
-        }
         Weather.Place p = place(ctx, places(ctx));
-        if (p != null) {
-            File f = file(ctx, forecastName(p.id));
-            if (now - f.lastModified() > FORECAST_EVERY_MS
-                    || Weather.parseForecast(read(f), p.id, LocalDate.now()) == null) {
-                deleteOthers(ctx, "forecast-", f.getName());
-                fetchTo(ctx, BMKG + "?adm4=" + p.id, f.getName());
-            }
+        if (p == null) return;
+        File f = file(ctx, forecastName(p.id));
+        if (now - f.lastModified() > FORECAST_EVERY_MS
+                || Weather.parseForecast(read(f), p.id, LocalDate.now()) == null) {
+            deleteOthers(ctx, "forecast-", f.getName());
+            fetchTo(ctx, BMKG + "?adm4=" + p.id, f.getName());
         }
-        if (stationsDue(ctx, now)) fetchTo(ctx, APIMS, "stations.json");
-        if (now - file(ctx, "warnings.json").lastModified() > WARNINGS_EVERY_MS) fetchTo(ctx, WARNINGS, "warnings.json");
-        Weather.Station s = station(ctx, stations(ctx));
-        if (s != null) {
-            File t = file(ctx, trendName(s.id));
-            if (trendDue(ctx, s)) {
-                deleteOthers(ctx, "trend-", t.getName());
-                fetchTo(ctx, APIMS_HOURLY + s.id + "&", t.getName());
-            }
-            File f = file(ctx, airName(s.id));
-            if (airDue(ctx, s, now)) {
-                deleteOthers(ctx, "air-", f.getName());
-                fetchTo(ctx, CAMS + String.format(Locale.ROOT, "&latitude=%.4f&longitude=%.4f", s.lat, s.lon),
-                        f.getName());
-            }
-            File n = file(ctx, nowName(s.id));
-            if (nowDue(ctx, s, now)) {
-                deleteOthers(ctx, "now-", n.getName());
-                fetchTo(ctx, ECMWF + String.format(Locale.ROOT, "&latitude=%.4f&longitude=%.4f", s.lat, s.lon),
-                        n.getName());
-            }
+        if (airDue(ctx, p, now)) {
+            File a = file(ctx, airName(p.id));
+            deleteOthers(ctx, "air-", a.getName());
+            fetchTo(ctx, AIR + String.format(Locale.ROOT, "&latitude=%.4f&longitude=%.4f", p.lat, p.lon),
+                    a.getName());
         }
-    }
-
-    /** Today's forecast for every MET location: the place list (about 130 KB). */
-    private static void fetchPlaces(Context ctx) {
-        // BMKG has no places list; keep a single default (Kemayoran) in places.json.
-        try {
-            org.json.JSONArray arr = new org.json.JSONArray();
-            org.json.JSONObject o = new org.json.JSONObject();
-            org.json.JSONObject loc = new org.json.JSONObject();
-            loc.put("location_id", "31.71.03.1001");
-            loc.put("location_name", "Kemayoran");
-            o.put("location", loc);
-            o.put("date", java.time.LocalDate.now().toString());
-            arr.put(o);
-            java.io.File f = file(ctx, "places.json");
-            try (java.io.FileOutputStream out = new java.io.FileOutputStream(f)) {
-                out.write(arr.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
-            }
-        } catch (Exception ignored) {}
     }
 
     private static String forecastName(String placeId) {
         return "forecast-" + placeId + ".json";
     }
 
-    private static String trendName(String stationId) {
-        return "trend-" + stationId + ".json";
-    }
-
-    private static String nowName(String stationId) {
-        return "now-" + stationId + ".json";
-    }
-
-    private static String airName(String stationId) {
-        return "air-" + stationId + ".json";
+    private static String airName(String placeId) {
+        return "air-" + placeId + ".json";
     }
 
     private static File file(Context ctx, String name) {
@@ -655,8 +498,8 @@ final class WeatherPanel {
     }
 
     /**
-     * An air reading: "API 74" with its band beside it in the band's colour, a detail line (the
-     * trend, or PM2.5 and haze), then source · time.
+     * An air reading: "AQI 74" with its band beside it in the band's colour, a detail line, then
+     * source · time.
      */
     private final class Gauge {
         final TextView value, band, detail, label;

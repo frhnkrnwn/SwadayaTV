@@ -859,7 +859,7 @@ final class SettingsScreen {
         out.add(test);
     }
 
-    /** The Weather card: on/off, the MET place (Auto: the town nearest the TV) and the APIMS station. */
+    /** The Weather card: on/off and the BMKG city (Auto: the city nearest the TV). */
     private void weatherRows(List<Row> out) {
         out.add(toggle(LauncherSettings.SHOW_WEATHER, "Weather card",
                 "Today's forecast and air quality on the home screen"));
@@ -867,19 +867,11 @@ final class SettingsScreen {
         Weather.Place place = WeatherPanel.place(ctx, places);
         boolean auto = LauncherSettings.weatherPlace(ctx).isEmpty();
         Row loc = new Row(PICKER, "Location");
-        loc.sub = place != null ? "BMKG forecast for this " + place.type().toLowerCase(Locale.ROOT)
-                : "BMKG forecast. Auto: the town nearest your TV";
+        loc.sub = place != null ? "BMKG forecast for this city · " + place.type()
+                : "BMKG forecast. Auto: the city nearest your TV";
         loc.value = () -> place == null ? "Auto" : auto ? "Auto (" + place.name + ")" : place.name;
         loc.action = this::openPlacePicker;
         out.add(loc);
-        List<Weather.Station> stations = WeatherPanel.stations(ctx);
-        Weather.Station station = WeatherPanel.station(ctx, stations);
-        boolean nearest = LauncherSettings.weatherStation(ctx).isEmpty();
-        Row st = new Row(PICKER, "Air quality station");
-        st.sub = "APIMS reading there; Copernicus for the same spot";
-        st.value = () -> station == null ? "Nearest" : nearest ? "Nearest (" + station.place + ")" : station.place;
-        st.action = this::openStationPicker;
-        out.add(st);
     }
 
     private void usageRows(List<Row> out) {
@@ -1456,13 +1448,12 @@ final class SettingsScreen {
         openPicker("Zone", items, focus);
     }
 
-    /** Every MET forecast location, with Auto (the town nearest the TV) first. */
+    /** Every Indonesian city, with Auto (the city nearest the TV) first. */
     private void openPlacePicker() {
-        if (WeatherPanel.places(ctx).isEmpty()) loadingPicker("Location", this::openPlacePicker);
-        else preparing("Location", this::showPlaces);
+        preparing("Location", this::showPlaces);
     }
 
-    /** The 441 rows take a moment to build: shown after "Loading…" (preparing). */
+    /** The rows take a moment to build: shown after "Loading…" (preparing). */
     private void showPlaces() {
         List<Weather.Place> places = WeatherPanel.places(ctx);
         String chosen = LauncherSettings.weatherPlace(ctx);
@@ -1492,41 +1483,6 @@ final class SettingsScreen {
         openPicker("Location", items, focus);
     }
 
-    /** Every APIMS station by state, with Nearest (to the TV, or the prayer zone's town) first. */
-    private void openStationPicker() {
-        if (WeatherPanel.stations(ctx).isEmpty()) loadingPicker("Air quality station", this::openStationPicker);
-        else preparing("Air quality station", this::showStations);
-    }
-
-    private void showStations() {
-        List<Weather.Station> stations = WeatherPanel.stations(ctx);
-        String chosen = LauncherSettings.weatherStation(ctx);
-        Weather.Station near = WeatherPanel.nearestStation(ctx, stations);
-        List<Row> items = new ArrayList<>();
-        Row n = new Row(CHECK, "Nearest");
-        n.sub = (LauncherSettings.where(ctx) != null ? "Closest to your TV" : "Closest to your prayer zone's town")
-                + (near != null ? ": " + near.place : "");
-        n.checked = chosen.isEmpty();
-        n.action = () -> {
-            LauncherSettings.setWeatherStation(ctx, "");
-            closePicker();
-        };
-        items.add(n);
-        int focus = 0;
-        for (Weather.Station s : stations) {
-            Row r = new Row(CHECK, s.place);
-            r.sub = s.state + " · " + s.id + (s.api >= 0 ? " · API " + s.api : "");
-            r.checked = s.id.equals(chosen);
-            if (r.checked) focus = items.size();
-            r.action = () -> {
-                LauncherSettings.setWeatherStation(ctx, s.id);
-                closePicker();
-            };
-            items.add(r);
-        }
-        openPicker("Air quality station", items, focus);
-    }
-
     /**
      * A long list: "Loading…" at once, so OK answers straight away, then the list itself once the
      * highlight has settled on it (building hundreds of rows holds the screen's thread for a
@@ -1551,30 +1507,6 @@ final class SettingsScreen {
      * A list that isn't downloaded yet: "Loading…" while it is, then the list (or a line saying it
      * couldn't be fetched). Leaving meanwhile is fine: the result is kept for next time.
      */
-    private void loadingPicker(String title, Runnable reopen) {
-        Row r = new Row(INFO, "Loading…");
-        r.sub = "Fetching the list from the internet";
-        List<Row> items = new ArrayList<>();
-        items.add(r);
-        openPicker(title, items, 0);
-        WeatherPanel.loadLists(ctx, () -> {
-            if (picker == null || !title.equals(pickerTitle)) return; // left meanwhile
-            int from = pickerFrom;
-            boolean got = title.equals("Location") ? !WeatherPanel.places(ctx).isEmpty()
-                    : !WeatherPanel.stations(ctx).isEmpty();
-            if (got) {
-                picker = null;
-                row = from;
-                reopen.run(); // opens the real list, still returning to the same row
-            } else {
-                Row fail = new Row(INFO, "Couldn't load the list");
-                fail.sub = "Check the internet connection and try again";
-                picker.set(0, fail);
-                render();
-            }
-        });
-    }
-
     private static final String WALLPAPER_TITLE = "Wallpaper";
     private final Map<String, Bitmap> thumbs = new HashMap<>();
     private final Set<String> failed = new HashSet<>();

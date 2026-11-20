@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
  * Bing's "photo of the day" as a wallpaper that changes by itself each day. The last seven days'
  * pictures are downloaded from Bing's public HPImageArchive feed and cached in the app's files
  * dir; the newest is shown. Bing's day follows its market (the TV's language: en-US starts a new
- * picture at 07:00 UTC, 15:00 in Malaysia), so the feed is checked again only once the next
+ * picture at 07:00 UTC, 14:00 in Indonesia), so the feed is checked again only once the next
  * picture is due, not at local midnight. Nothing is bundled in the APK. Only scenic pictures are
  * kept: ones whose caption names people, or where a face is detected, are skipped (and remembered,
  * so they aren't downloaded again), so the wallpaper has no people or faces.

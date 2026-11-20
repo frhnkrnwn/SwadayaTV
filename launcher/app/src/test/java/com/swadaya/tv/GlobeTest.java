@@ -31,17 +31,17 @@ public class GlobeTest {
     }
 
     @Test
-    public void thePrayerLinesMatchJakimTimesInKualaLumpur() {
-        double[] kl = Globe.zonePlace("WLY01");
-        // e-solat WLY01, 30 Oct 2026: Subuh 05:48, Maghrib 18:59 (UTC+8). JAKIM adds a minute or
-        // two of caution to each, so the sun is a little past the line.
-        assertEquals(Globe.MAGHRIB_ALT, Globe.sunAltitude(kl[0], kl[1], ms("2026-10-30T10:59:00Z")), 1.0);
-        assertEquals(Globe.FAJR_ALT, Globe.sunAltitude(kl[0], kl[1], ms("2026-10-29T21:48:00Z")), 1.0);
+    public void thePrayerLinesMatchKemenagTimesInJakarta() {
+        double[] jk = Globe.zonePlace("Jakarta");
+        // Kemenag (method 20, through Aladhan), Jakarta, 30 Oct 2026: Subuh 04:07, Maghrib 17:46
+        // (UTC+7), so 21:07 and 10:46 UTC.
+        assertEquals(Globe.MAGHRIB_ALT, Globe.sunAltitude(jk[0], jk[1], ms("2026-10-30T10:46:00Z")), 1.0);
+        assertEquals(Globe.FAJR_ALT, Globe.sunAltitude(jk[0], jk[1], ms("2026-10-29T21:07:00Z")), 1.0);
         // Fajr is on the rising side, Maghrib on the setting side.
-        assertTrue(Globe.sunRising(kl[0], kl[1], ms("2026-10-29T21:48:00Z")));
-        assertTrue(!Globe.sunRising(kl[0], kl[1], ms("2026-10-30T10:59:00Z")));
-        // And at Zuhur (13:00) it's high in the sky.
-        assertTrue(Globe.sunAltitude(kl[0], kl[1], ms("2026-10-30T05:00:00Z")) > 60);
+        assertTrue(Globe.sunRising(jk[0], jk[1], ms("2026-10-29T21:07:00Z")));
+        assertTrue(!Globe.sunRising(jk[0], jk[1], ms("2026-10-30T10:46:00Z")));
+        // And at Zuhur (11:36) it's high in the sky.
+        assertTrue(Globe.sunAltitude(jk[0], jk[1], ms("2026-10-30T04:36:00Z")) > 60);
     }
 
     @Test
@@ -69,7 +69,7 @@ public class GlobeTest {
         double[] v = Globe.vector(0, 90);
         assertEquals(1, v[0], 1e-9);
         assertEquals(0, v[1], 1e-9);
-        double[] kl = Globe.zonePlace("WLY01");
+        double[] kl = Globe.zonePlace("Jakarta");
         List<double[]> arc = Globe.greatCircle(kl[0], kl[1], Globe.MAKKAH_LAT, Globe.MAKKAH_LON, 10);
         assertEquals(11, arc.size());
         double[] end = arc.get(10), makkah = Globe.vector(Globe.MAKKAH_LAT, Globe.MAKKAH_LON);
@@ -80,15 +80,15 @@ public class GlobeTest {
     }
 
     @Test
-    public void everyJakimZoneHasAPlace() throws Exception {
+    public void everyPrayerCityHasAPlace() throws Exception {
         String xml = new String(Files.readAllBytes(Paths.get("src/main/res/values/zones.xml")), StandardCharsets.UTF_8);
-        Matcher m = Pattern.compile("<item>[^|]*\\|(\\w+)\\|").matcher(xml);
+        Matcher m = Pattern.compile("<item>[^|]*\\|([^|]+)\\|").matcher(xml);
         int n = 0;
         while (m.find()) {
             assertTrue(m.group(1), Globe.knowsZone(m.group(1)));
             n++;
         }
-        assertEquals(60, n);
+        assertEquals(58, n);
     }
 
     @Test

@@ -32,25 +32,23 @@ import java.util.Locale;
 import java.util.concurrent.Executor;
 
 /**
- * JAKIM e-solat prayer times card, plus the Hijri date line above the clock.
+ * Prayer times card for the chosen Indonesian city (Kemenag's method, through Aladhan), plus the
+ * Hijri date line above the clock.
  *
- * The whole month for the zone is fetched once, cached in the app's files dir, and fetched
- * again only when the month changes (or after a failed fetch, at most once a minute when the
+ * The whole month for the city is fetched once, cached in the app's files dir, and fetched again
+ * only when the city or month changes (or after a failed fetch, at most once a minute when the
  * network comes back). Display updates ride on the clock's minute tick, so there's no polling.
  */
 final class PrayerPanel {
     private static final String API_BASE =
-            "https://api.aladhan.com/v1/calendarByCity?city=%s&country=Indonesia&method=20&month=%d&year=%d";
+            "https://api.aladhan.com/v1/calendar/%d/%d?latitude=%.5f&longitude=%.5f&method=20";
     private static final String[] KEYS = {"fajr", "dhuhr", "asr", "maghrib", "isha"};
-    static final String[] NAMES = {"Fajr", "Dhuhr", "Asr", "Maghrib", "Isya"};
+    static final String[] NAMES = {"Subuh", "Dzuhur", "Ashar", "Maghrib", "Isya"};
     /** Dawn, midday sun, afternoon sun, sunset, night: one per prayer, in NAMES order. */
     static final int[] ICONS = {R.drawable.ic_fajr, R.drawable.ic_dhuhr, R.drawable.ic_asr,
             R.drawable.ic_maghrib, R.drawable.ic_isya};
-    private static final String[] HIJRI_MONTHS = {"Muharam", "Safar", "Rabiulawal", "Rabiulakhir",
-            "Jamadilawal", "Jamadilakhir", "Rejab", "Syaaban", "Ramadan", "Syawal", "Zulkaedah", "Zulhijjah"};
-    // e-solat dates use Malay month abbreviations: "20-Okt-2026".
-    private static final String[] MALAY_MONTHS = {"Jan", "Feb", "Mac", "Apr", "Mei", "Jun",
-            "Jul", "Ogo", "Sep", "Okt", "Nov", "Dis"};
+    private static final String[] HIJRI_MONTHS = {"Muharram", "Safar", "Rabiul Awal", "Rabiul Akhir",
+            "Jumadil Awal", "Jumadil Akhir", "Rajab", "Sya'ban", "Ramadan", "Syawal", "Zulkaidah", "Zulhijjah"};
     private static final int TEXT = 0xFFFFFFFF, DIM = 0x8CFFFFFF, NEXT = 0xFFFFC857;
 
     private final Context ctx;
@@ -225,7 +223,7 @@ final class PrayerPanel {
         if (month == null || !YearMonth.from(date).equals(monthKey)) return null;
         for (int i = 0; i < month.length(); i++) {
             JSONObject o = month.optJSONObject(i);
-            String d = o == null ? "" : o.optString("date"); // e.g. "20-Okt-2026"
+            String d = o == null ? "" : o.optString("date"); // e.g. "20-10-2026"
             if (d.length() >= 2 && TextUtils.isDigitsOnly(d.substring(0, 2))
                     && Integer.parseInt(d.substring(0, 2)) == date.getDayOfMonth()) {
                 return o;
@@ -243,7 +241,7 @@ final class PrayerPanel {
     }
 
     /** "1448-05-08" -> "8 Jamadilawal 1448H". */
-    /** "1448-05-19" (JAKIM) -> "19 Jamadilawal 1448H". */
+    /** "1448-05-19" -> "19 Jumadil Awal 1448H". */
     static String hijri(String raw) {
         String[] p = raw.split("-");
         if (p.length != 3) return raw;
@@ -275,7 +273,7 @@ final class PrayerPanel {
             JSONArray month = new JSONArray(sb.toString());
             for (int i = 0; i < month.length(); i++) {
                 JSONObject o = month.optJSONObject(i);
-                String d = o == null ? "" : o.optString("date"); // e.g. "20-Okt-2026"
+                String d = o == null ? "" : o.optString("date"); // e.g. "20-10-2026"
                 if (d.length() >= 2 && TextUtils.isDigitsOnly(d.substring(0, 2))
                         && Integer.parseInt(d.substring(0, 2)) == date.getDayOfMonth()) {
                     LocalTime[] t = new LocalTime[KEYS.length];
@@ -334,9 +332,9 @@ final class PrayerPanel {
             JSONArray result = null;
             HttpURLConnection c = null;
             try {
+                double[] at = Globe.zonePlace(z);
                 String url = String.format(java.util.Locale.ROOT, API_BASE,
-                        java.net.URLEncoder.encode(z, "UTF-8"),
-                        ym.getMonthValue(), ym.getYear());
+                        ym.getYear(), ym.getMonthValue(), at[0], at[1]);
                 c = (HttpURLConnection) new URL(url).openConnection();
                 c.setConnectTimeout(15_000);
                 c.setReadTimeout(15_000);

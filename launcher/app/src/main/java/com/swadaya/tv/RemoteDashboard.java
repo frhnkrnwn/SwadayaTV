@@ -112,7 +112,7 @@ final class RemoteDashboard {
         return new JSONObject().put("unread", Alerts.get().unread()).put("list", list);
     }
 
-    /** "Klang, Kuala Langat" for SGR03, from the zone list in Settings. */
+    /** "Jakarta", from the city list in Settings. */
     private static String zoneArea(Context ctx, String zone) {
         String[] z = RemoteSettings.zoneEntry(ctx, zone);
         return z != null ? z[2] : "";

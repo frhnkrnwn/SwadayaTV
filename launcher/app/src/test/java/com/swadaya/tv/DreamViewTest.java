@@ -30,6 +30,6 @@ public class DreamViewTest {
 
     @Test
     public void hijriDatesReadLikeTheHomeScreen() {
-        assertEquals("19 Jamadilawal 1448H", PrayerPanel.hijri("1448-05-19"));
+        assertEquals("19 Jumadil Awal 1448H", PrayerPanel.hijri("1448-05-19"));
     }
 }
