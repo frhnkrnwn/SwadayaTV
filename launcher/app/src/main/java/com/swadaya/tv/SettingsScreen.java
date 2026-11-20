@@ -629,19 +629,16 @@ final class SettingsScreen {
 
     // ---------------------------------------------------------------- Speed test
 
-    private static final int[] SPEED_SOURCES = {0, 1};
-    private static final String[] SPEED_SOURCE_NAMES = {"Cloudflare", "Netflix"};
-
     /**
-     * Settings → Speed test (SpeedTest): a source to test from, a Run row with the live download
-     * speed, the last run's latency, and the last 10 results (SpeedHistory) to compare.
+     * Settings → Speed test (SpeedTest): a Run row with the live download speed, the last run's
+     * latency, and the last 10 results (SpeedHistory) to compare. It always tests against fast.com.
      */
     private void speedRows(List<Row> out) {
         if (speedResults == null) speedResults = SpeedHistory.load(ctx);
         SpeedHistory.Result last = speedResults.isEmpty() ? null : speedResults.get(0);
 
-        out.add(choice(LauncherSettings.SPEED_SOURCE, "Test from",
-                "Cloudflare (nearest edge) or Netflix (streaming)", SPEED_SOURCES, SPEED_SOURCE_NAMES));
+        out.add(detail("Test from", SpeedTest.SOURCE,
+                "Netflix's speed test, often served from your ISP's cache"));
 
         Row run = new Row(ACTION, speedRunning ? "Testing…" : "Run speed test");
         if (speedRunning) {
@@ -708,9 +705,8 @@ final class SettingsScreen {
         speedLivePing = -1;
         if (speedResults == null) speedResults = SpeedHistory.load(ctx);
         refreshRows();
-        SpeedTest.Source src = SpeedTest.Source.of(LauncherSettings.choice(ctx, LauncherSettings.SPEED_SOURCE));
         speedTest = new SpeedTest();
-        speedTest.start(src, new SpeedTest.Listener() {
+        speedTest.start(new SpeedTest.Listener() {
             @Override
             public void onLatency(int ms) {
                 speedLivePing = ms;
@@ -727,7 +723,7 @@ final class SettingsScreen {
                 speedTest = null;
                 speedLiveMbps = down;
                 SysInfo.Net n = SysInfo.network(ctx);
-                SpeedHistory.add(speedResults, new SpeedHistory.Result(System.currentTimeMillis(), src.label, down, ping,
+                SpeedHistory.add(speedResults, new SpeedHistory.Result(System.currentTimeMillis(), SpeedTest.SOURCE, down, ping,
                         n.ethernet, n.name), SpeedHistory.MAX);
                 SpeedHistory.save(ctx, speedResults);
                 refreshRows();

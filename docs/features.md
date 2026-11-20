@@ -197,14 +197,10 @@ The screen above Running apps (**Up** on its first row) plays Indonesian free-to
 
 ## Speed test
 
-**Settings → Speed test** (under Running apps) measures the TV's download speed and latency. It needs no USB debugging — it's plain HTTP from the launcher — and keeps the last 10 results so they can be compared.
+**Settings → Speed test** (under Running apps) measures the TV's download speed and latency against **fast.com** (Netflix). On an Indonesian line fast.com's servers often sit inside the ISP (a Netflix cache), so the result reflects streaming speed. It needs no USB debugging — it's plain HTTP from the launcher — and keeps the last 10 results so they can be compared.
 
-- **Test from:** pick the source in the row at the top:
-  - **Cloudflare** — the nearest Cloudflare edge (Jakarta or Singapore for most Indonesian connections); a good "internet" baseline.
-  - **Netflix** — fast.com's servers, which on an Indonesian line often sit inside the ISP (a Netflix cache), so it reflects streaming.
 - **Run speed test:** a few quick latency round-trips, then a ~10-second download over a few connections. The speed climbs live as it runs; the latency is the quickest round-trip (shown below the Run row). If audio or video is playing when you start, it asks first (press OK again) rather than stutter it.
-- **History:** the last 10 runs, newest first, each as "93.1 Mbps · 5 ms" tagged with its source and the network it ran on (Wi-Fi name, or Ethernet) and how long ago. **Clear history** (press OK twice) empties the list.
-- On an Indonesian connection, for example, Cloudflare's Jakarta edge usually answers in a few milliseconds and Netflix's in-ISP cache can be faster; the download speeds are both close to the line's capacity.
+- **History:** the last 10 runs, newest first, each as "93.1 Mbps · 5 ms" tagged **fast.com**, with the network it ran on (Wi-Fi name, or Ethernet) and how long ago. **Clear history** (press OK twice) empties the list.
 - **No phone remote:** like Net traffic, the speed test is on the TV only.
 
 ## Settings (gear)
@@ -239,7 +235,7 @@ The gear at the end of the top bar opens the launcher's Settings: categories on 
 | Button Mapper | The buttons with new actions, Add a button (press it), Add the Back button, long-press time (Short / Medium / Long), double-press time (Fast / Medium / Slow); see [Button Mapper](#button-mapper) |
 | Running apps | Apps hidden from the running-apps screen; OK shows one again |
 | Live TV | The Live TV screen on/off; each Indonesian station on/off (all on by default). The phone remote has the same switches |
-| Speed test | Test from (Cloudflare / Netflix), Run speed test (download + latency, live while it runs), the last run's latency, and the last 10 results tagged with their source. See [Speed test](#speed-test) |
+| Speed test | Test from fast.com, Run speed test (download + latency, live while it runs), the last run's latency, and the last 10 results. See [Speed test](#speed-test) |
 | About | Version, install time, APK size, Check for updates (shows the last check's answer, from here or the bell's daily check: "You have the latest version", or the row becomes "Update to x.y.z" to download and install it, settings kept), TV settings |
 
 ## Button Mapper

@@ -11,7 +11,7 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 public class TvGuideTimelineTest {
-    private static final ZoneId MALAYSIA = ZoneId.of("Asia/Kuala_Lumpur");
+    private static final ZoneId JAKARTA = ZoneId.of("Asia/Jakarta");
     private static final long NOW = at("2026-11-17T12:05:00Z"), MINUTE = 60_000L;
     private static long at(String iso) { return Instant.parse(iso).toEpochMilli(); }
     private static LiveChannels.Programme p(int start, int end) {
@@ -20,7 +20,7 @@ public class TvGuideTimelineTest {
     }
 
     @Test public void opensOnLiveProgrammeInCurrentLocalHour() {
-        TvGuideTimeline t = new TvGuideTimeline(NOW, MALAYSIA);
+        TvGuideTimeline t = new TvGuideTimeline(NOW, JAKARTA);
         assertEquals(at("2026-11-17T12:00:00Z"), t.hour());
         assertEquals(NOW, t.cursor());
         LiveChannels.Programme live = p(0, 15);
@@ -28,7 +28,7 @@ public class TvGuideTimelineTest {
     }
 
     @Test public void visitsEveryShortProgrammeWithinTheSameHourInBothDirections() {
-        TvGuideTimeline t = new TvGuideTimeline(NOW, MALAYSIA);
+        TvGuideTimeline t = new TvGuideTimeline(NOW, JAKARTA);
         List<LiveChannels.Programme> list = Arrays.asList(p(0, 15), p(15, 30), p(30, 45), p(45, 60));
         for (int i = 1; i < list.size(); i++) {
             t.move(1, list);
@@ -42,7 +42,7 @@ public class TvGuideTimelineTest {
     }
 
     @Test public void skipsAcrossLongProgrammeInOnePress() {
-        TvGuideTimeline t = new TvGuideTimeline(NOW, MALAYSIA);
+        TvGuideTimeline t = new TvGuideTimeline(NOW, JAKARTA);
         List<LiveChannels.Programme> list = Arrays.asList(p(-30, 180), p(180, 210));
         t.move(1, list);
         assertSame(list.get(1), t.programme(list));
@@ -51,7 +51,7 @@ public class TvGuideTimelineTest {
     }
 
     @Test public void doesNotWrapAtFirstOrLastProgramme() {
-        TvGuideTimeline t = new TvGuideTimeline(NOW, MALAYSIA);
+        TvGuideTimeline t = new TvGuideTimeline(NOW, JAKARTA);
         List<LiveChannels.Programme> list = Arrays.asList(p(0, 15), p(15, 30));
         t.move(-1, list);
         assertSame(list.get(0), t.programme(list));
@@ -61,7 +61,7 @@ public class TvGuideTimelineTest {
     }
 
     @Test public void crossesGapsAndUsesTheSameTimeWhenChangingChannels() {
-        TvGuideTimeline t = new TvGuideTimeline(NOW, MALAYSIA);
+        TvGuideTimeline t = new TvGuideTimeline(NOW, JAKARTA);
         List<LiveChannels.Programme> a = Arrays.asList(p(0, 15), p(45, 60));
         List<LiveChannels.Programme> b = Arrays.asList(p(0, 30), p(30, 75));
         t.move(1, a);
@@ -73,21 +73,21 @@ public class TvGuideTimelineTest {
     }
 
     @Test public void gapsSelectNextListingAndAfterLastSelectsLastListing() {
-        TvGuideTimeline t = new TvGuideTimeline(NOW, MALAYSIA);
+        TvGuideTimeline t = new TvGuideTimeline(NOW, JAKARTA);
         List<LiveChannels.Programme> list = Arrays.asList(p(-60, -15), p(15, 30));
         assertSame(list.get(1), t.programme(list));
         assertSame(list.get(0), t.programme(Collections.singletonList(list.get(0))));
     }
 
     @Test public void refreshedListingsKeepTheSameFocusedTime() {
-        TvGuideTimeline t = new TvGuideTimeline(NOW, MALAYSIA);
+        TvGuideTimeline t = new TvGuideTimeline(NOW, JAKARTA);
         t.move(1, Arrays.asList(p(0, 15), p(15, 30)));
         List<LiveChannels.Programme> refreshed = Arrays.asList(p(0, 15), p(15, 30));
         assertSame(refreshed.get(1), t.programme(refreshed));
     }
 
     @Test public void overlappingListingsCanEachBeSelectedWithoutGettingStuck() {
-        TvGuideTimeline t = new TvGuideTimeline(NOW, MALAYSIA);
+        TvGuideTimeline t = new TvGuideTimeline(NOW, JAKARTA);
         List<LiveChannels.Programme> list = Arrays.asList(p(0, 60), p(15, 30), p(30, 90));
         t.move(1, list);
         assertSame(list.get(1), t.programme(list));
@@ -98,7 +98,7 @@ public class TvGuideTimelineTest {
     }
 
     @Test public void ignoresProgrammesOutsideTheDownloadedWindow() {
-        TvGuideTimeline t = new TvGuideTimeline(NOW, MALAYSIA);
+        TvGuideTimeline t = new TvGuideTimeline(NOW, JAKARTA);
         List<LiveChannels.Programme> list = Arrays.asList(p(-180, -120), p(0, 15), p(15, 30), p(2200, 2300));
         t.move(-1, list);
         assertSame(list.get(1), t.programme(list));
@@ -108,7 +108,7 @@ public class TvGuideTimelineTest {
     }
 
     @Test public void emptyScheduleStillScrollsWithinTheDownloadedWindow() {
-        TvGuideTimeline t = new TvGuideTimeline(NOW, MALAYSIA);
+        TvGuideTimeline t = new TvGuideTimeline(NOW, JAKARTA);
         assertNull(t.programme(null));
         assertNull(t.programme(Collections.emptyList()));
         t.move(1, null);
@@ -120,7 +120,7 @@ public class TvGuideTimelineTest {
     }
 
     @Test public void movingBetweenVisibleCardsDoesNotScroll() {
-        TvGuideTimeline t = new TvGuideTimeline(NOW, MALAYSIA);
+        TvGuideTimeline t = new TvGuideTimeline(NOW, JAKARTA);
         List<LiveChannels.Programme> list = Arrays.asList(p(0, 15), p(15, 30), p(30, 45));
         long start = t.hour();
         assertEquals(start, t.windowStart(start, TvGuideTimeline.HOUR, list));
@@ -131,7 +131,7 @@ public class TvGuideTimelineTest {
     }
 
     @Test public void scrollsOnlyEnoughToRevealOffscreenCardInEitherDirection() {
-        TvGuideTimeline t = new TvGuideTimeline(NOW, MALAYSIA);
+        TvGuideTimeline t = new TvGuideTimeline(NOW, JAKARTA);
         List<LiveChannels.Programme> list = Arrays.asList(p(0, 15), p(45, 75));
         long start = t.hour();
         t.move(1, list);
@@ -142,7 +142,7 @@ public class TvGuideTimelineTest {
     }
 
     @Test public void longCardsShowTheirStartOnEntryButDoNotScrollWhenAlreadyVisible() {
-        TvGuideTimeline t = new TvGuideTimeline(NOW, MALAYSIA);
+        TvGuideTimeline t = new TvGuideTimeline(NOW, JAKARTA);
         long start = t.hour();
         List<LiveChannels.Programme> list = Arrays.asList(p(0, 15), p(15, 180));
         t.move(1, list);
@@ -152,7 +152,7 @@ public class TvGuideTimelineTest {
     }
 
     @Test public void viewportDoesNotScrollBeyondEitherEndOfTheRuler() {
-        TvGuideTimeline t = new TvGuideTimeline(NOW, MALAYSIA);
+        TvGuideTimeline t = new TvGuideTimeline(NOW, JAKARTA);
         assertTrue(t.windowStart(Long.MIN_VALUE / 2, TvGuideTimeline.HOUR, null) >= t.first);
         assertTrue(t.windowStart(Long.MAX_VALUE / 2, TvGuideTimeline.HOUR, null) <= t.last);
     }

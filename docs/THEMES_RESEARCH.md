@@ -1,24 +1,24 @@
 # Riset Struktur Tema CleanYourTV
 
-Halo! Ini hasil aku bedah dua config tema aslinya: `/tmp/clean/themes/default/config.json` dan `/tmp/clean/themes/aurora/config.json`. Di SwadayaTV, struktur ini yang kita pakai buat tiga tema kita sendiri.
+Halo! Ini hasil saya membedah dua config tema aslinya: `/tmp/clean/themes/default/config.json` dan `/tmp/clean/themes/aurora/config.json`. Di SwadayaTV, struktur ini yang kita pakai untuk tiga tema kita sendiri.
 
 ## Struktur `config.json`
 
-Tema itu folder berisi **`config.json`** dan opsional **`wallpaper.jpg`** (atau folder `wallpapers/` buat koleksi). Isi `config.json` adalah JSON object dengan key-key opsional. Key yang nggak ada = ngikutin nilai bawaan di `launcher/.../res/values/config.xml`. Key yang nggak dikenal atau salah tipe = diabaikan. File yang nggak bisa di-parse = diabaikan seluruhnya — jadi tema rusak nggak bakal merusak Home.
+Tema itu folder berisi **`config.json`** dan opsional **`wallpaper.jpg`** (atau folder `wallpapers/` untuk koleksi). Isi `config.json` adalah JSON object dengan key-key opsional. Key yang tidak ada = mengikuti nilai bawaan di `launcher/.../res/values/config.xml`. Key yang tidak dikenal atau salah tipe = diabaikan. File yang tidak bisa di-parse = diabaikan seluruhnya — jadi tema rusak tidak akan merusak Home.
 
 ### Field yang penting (dari `themes/README.md`)
 
 | Key | Tipe | Artinya |
 |---|---|---|
-| `dock_apps` | list package name | Urutan aplikasi di baris dock paling bawah. Aplikasi yang nggak terinstall di-skip. |
-| `hidden_apps` | list package name | Aplikasi yang nggak pernah ditampilin sebagai tile. |
-| `columns` | 1–8 | Jumlah tile per baris; di atas 5 tile-nya mengecil biar muat. |
-| `rows_below_dock` | 0–3 | Berapa baris grid tetap kelihatan di bawah dock. |
+| `dock_apps` | list package name | Urutan aplikasi di baris dock paling bawah. Aplikasi yang tidak terpasang dilewati. |
+| `hidden_apps` | list package name | Aplikasi yang tidak pernah ditampilkan sebagai tile. |
+| `columns` | 1–8 | Jumlah tile per baris; di atas 5 tile-nya mengecil agar muat. |
+| `rows_below_dock` | 0–3 | Berapa baris grid tetap terlihat di bawah dock. |
 | `background_color` | `#RRGGBB` | Warna di belakang semuanya; default hitam. |
-| `wallpaper` | bool | `true` = nampilin gambar tema, `false` = gambar diabaikan, cuma warna. |
-| `reduced_motion` | bool | Gerak lebih kalem buat GPU lemah (highlight geser tanpa pantulan, animasi ≤90 ms). |
+| `wallpaper` | bool | `true` = menampilkan gambar tema, `false` = gambar diabaikan, hanya warna. |
+| `reduced_motion` | bool | Gerak lebih tenang untuk GPU lemah (highlight geser tanpa pantulan, animasi ≤90 ms). |
 
-Key tambahan kayak `dock_title`, `dock_band`, `fill_dock`, `sky_intensity`, `icon_only_buttons`, dll. ada di tabel lengkap `themes/README.md` — buat tema Swadaya kita cukup pakai yang tujuh di atas biar sederhana.
+Key tambahan seperti `dock_title`, `dock_band`, `fill_dock`, `sky_intensity`, `icon_only_buttons`, dll. ada di tabel lengkap `themes/README.md` — untuk tema Swadaya kita cukup pakai yang tujuh di atas agar sederhana.
 
 ### Contoh nyata: `themes/default/config.json`
 
@@ -34,7 +34,7 @@ Key tambahan kayak `dock_title`, `dock_band`, `fill_dock`, `sky_intensity`, `ico
 }
 ```
 
-Ini tulisan persis nilai bawaan `config.xml` — titik mulai paling gampang buat tema kamu sendiri. Empat dock: Netflix, Prime Video, YouTube TV, Hotstar. Dua hidden: TV Center MediaTek dan Galeri MiTV.
+Ini tulisan persis nilai bawaan `config.xml` — titik awal paling mudah untuk tema Anda sendiri. Empat dock: Netflix, Prime Video, YouTube TV, Hotstar. Dua hidden: TV Center MediaTek dan Galeri MiTV.
 
 ### Contoh nyata: `themes/aurora/config.json`
 
@@ -45,18 +45,18 @@ Ini tulisan persis nilai bawaan `config.xml` — titik mulai paling gampang buat
 }
 ```
 
-Aurora cuma ngeset dua key: warna navy pekat `#070A14` dan wallpaper `true`, sisanya (dock, kolom, dsb.) ikut bawaan. Folder aurora sendiri ngebawa wallpaper aurora (teal + violet di atas navy, lebih gelap di bawah). Pelajaran dari sini: tema minimal bisa cuma 2 baris kayak gini.
+Aurora hanya mengatur dua key: warna navy pekat `#070A14` dan wallpaper `true`, sisanya (dock, kolom, dsb.) mengikuti bawaan. Folder aurora sendiri membawa wallpaper aurora (teal + violet di atas navy, lebih gelap di bawah). Pelajaran dari sini: tema minimal bisa hanya 2 baris seperti ini.
 
 ## Ganti tema tanpa rebuild
 
-Kamu **nggak perlu rebuild APK** buat ganti tema. Cukup push folder temanya ke TV:
+Anda **tidak perlu rebuild APK** untuk ganti tema. Cukup push folder temanya ke TV:
 
 ```bash
 TV_HOST=192.168.1.50 tools/theme.sh themes/swadaya          # push + restart Home
-TV_HOST=192.168.1.50 tools/theme.sh --reset                 # hapus overlay, balik ke config.xml
+TV_HOST=192.168.1.50 tools/theme.sh --reset                 # hapus overlay, kembali ke config.xml
 ```
 
-Cara kerjanya: `theme.sh` upload `config.json` (+ wallpaper kalau ada) ke folder data launcher di TV lewat provider, terus restart Home. Launcher baca overlay itu pas start, di atas `config.xml` bawaan. Push tema (atau `--reset`) juga menghapus pilihan kolom/motion yang kamu set manual di TV, biar nggak bentrok sama tema baru. Di SwadayaTV, tiga folder tema kita sudah siap:
+Cara kerjanya: `theme.sh` upload `config.json` (+ wallpaper jika ada) ke folder data launcher di TV lewat provider, lalu restart Home. Launcher membaca overlay itu saat start, di atas `config.xml` bawaan. Push tema (atau `--reset`) juga menghapus pilihan kolom/motion yang Anda set manual di TV, agar tidak bentrok dengan tema baru. Di SwadayaTV, tiga folder tema kita sudah siap:
 
 ```bash
 TV_HOST=192.168.1.50 tools/theme.sh themes/swadaya          # hijau-abu minimal (default)
@@ -83,20 +83,20 @@ Versi terang-hijau Swadaya: background hijau-abu gelap tegas, tanpa wallpaper, g
 
 ### 2. `themes/swadaya-malam` — hijau-abu malam
 
-Buat nonton malam, bener-bener gelap biar nggak silau: background hampir hitam kehijauan, wallpaper dimatiin di JSON default-nya (tambah `wallpaper.jpg` + set `wallpaper: true` kalau kamu mau gambar di belakang). Palet:
+Untuk menonton malam, benar-benar gelap agar tidak silau: background hampir hitam kehijauan, wallpaper dimatikan di JSON default-nya (tambah `wallpaper.jpg` + set `wallpaper: true` jika Anda ingin gambar di belakang). Palet:
 
 | Elemen | Hex |
 |---|---|
 | Background utama | `#060A08` (hijau-abu malam) |
 | Teks utama | `#E8F0EB` |
 | Teks redup | `#7A8F84` |
-| Aksen | `#1F7A5C` (hijau lebih kalem) |
+| Aksen | `#1F7A5C` (hijau lebih tenang) |
 | Pill glass normal | `#E6080F0C` |
 | Pill glass fokus | `#FF12201A` |
 
 ### 3. `themes/swadaya-terang` — terang
 
-Versi siang yang bersih buat ruangan terang: background krem terang, wallpaper mati, teks gelap. Palet:
+Versi siang yang bersih untuk ruangan terang: background krem terang, wallpaper mati, teks gelap. Palet:
 
 | Elemen | Hex |
 |---|---|
@@ -107,4 +107,4 @@ Versi siang yang bersih buat ruangan terang: background krem terang, wallpaper m
 | Pill glass normal | `#FFF7F5F0` |
 | Pill glass fokus | `#FFFFFFFF` dengan bayangan lembut |
 
-Ketiga JSON-nya valid dan pakai paket dock yang sama (Netflix, YouTube TV, Prime Video, Disney+) biar konsisten. File-nya ada di `themes/swadaya/config.json`, `themes/swadaya-malam/config.json`, `themes/swadaya-terang/config.json` — masing-masing punya `README.md` singkat. Kalau mau ganti warna, edit `background_color`-nya aja, push ulang, beres.
+Ketiga JSON-nya valid dan pakai paket dock yang sama (Netflix, YouTube TV, Prime Video, Disney+) agar konsisten. File-nya ada di `themes/swadaya/config.json`, `themes/swadaya-malam/config.json`, `themes/swadaya-terang/config.json` — masing-masing punya `README.md` singkat. Jika ingin mengganti warna, edit `background_color`-nya saja, push ulang, selesai.

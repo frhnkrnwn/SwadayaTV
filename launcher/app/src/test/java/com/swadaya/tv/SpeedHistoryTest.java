@@ -10,7 +10,7 @@ import java.util.List;
 
 public class SpeedHistoryTest {
     private static SpeedHistory.Result r(long t, double down) {
-        return new SpeedHistory.Result(t, "Cloudflare", down, 20, false, "Home");
+        return new SpeedHistory.Result(t, "fast.com", down, 20, false, "Home");
     }
 
     @Test
@@ -42,13 +42,5 @@ public class SpeedHistoryTest {
         assertTrue(SpeedHistory.fromJson("not json").isEmpty());
         assertTrue(SpeedHistory.fromJson("").isEmpty());
         assertTrue(SpeedHistory.fromJson(null).isEmpty());
-    }
-
-    @Test
-    public void sourceEnumMapsByIndex() {
-        assertEquals(SpeedTest.Source.CLOUDFLARE, SpeedTest.Source.of(0));
-        assertEquals(SpeedTest.Source.NETFLIX, SpeedTest.Source.of(1));
-        assertEquals(SpeedTest.Source.CLOUDFLARE, SpeedTest.Source.of(2)); // old third value: safe default
-        assertEquals(SpeedTest.Source.CLOUDFLARE, SpeedTest.Source.of(99)); // out of range: safe default
     }
 }
