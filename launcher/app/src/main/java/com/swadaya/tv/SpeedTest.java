@@ -19,26 +19,26 @@ import java.util.concurrent.atomic.AtomicLong;
  * Settings → Speed test: measures download speed and latency with plain HTTP, so it needs no USB
  * debugging. The source is chosen in Settings:
  * <ul>
- *   <li>Cloudflare — the nearest Cloudflare edge (usually Kuala Lumpur).</li>
- *   <li>Unifi Malaysia — TM's own Klang speedtest server, over HTTPS on 8080.</li>
- *   <li>Netflix — fast.com's servers, which on a Malaysian line sit inside the ISP (a Netflix
- *       cache), so it reflects streaming speed.</li>
+ *   <li>Cloudflare — the nearest Cloudflare edge (Jakarta or Singapore for most Indonesian
+ *       connections).</li>
+ *   <li>Netflix — fast.com's servers, which on an Indonesian line often sit inside the ISP
+ *       (a Netflix cache), so it reflects streaming speed.</li>
  * </ul>
  * It downloads over a few connections for ~10 s, reporting the running speed; latency is the
  * quickest of a few tiny requests. Only byte counts leave the TV. Callbacks come on the main thread.
  */
 final class SpeedTest {
     enum Source {
-        CLOUDFLARE("Cloudflare"), NETFLIX("Netflix"), UNIFI("Unifi Malaysia");
+        CLOUDFLARE("Cloudflare"), NETFLIX("Netflix");
         final String label;
 
         Source(String label) {
             this.label = label;
         }
 
+        /** Saved indexes: 0 Cloudflare, 1 Netflix (the old 2, Unifi Malaysia, falls back). */
         static Source of(int i) {
-            Source[] v = values();
-            return i >= 0 && i < v.length ? v[i] : CLOUDFLARE;
+            return i == 1 ? NETFLIX : CLOUDFLARE;
         }
     }
 
@@ -57,9 +57,6 @@ final class SpeedTest {
     }
 
     private static final String CF = "https://speed.cloudflare.com/__down?bytes=";
-    /** Unifi's own Ookla server list; the nearest (smallest distance) is used. */
-    private static final String TM_SERVERS = "https://unifi-my.speedtestcustom.com/api/js/servers?engine=js";
-    private static final String TM_FALLBACK = "speedtest-klg.tm.com.my:8080"; // if the list can't be fetched
     private static final String FAST = "https://api.fast.com/netflix/speedtest/v2?https=true&urlCount=5"
             + "&token=YXNkZmFzZGxmbnNkYWZoYXNkZmhrYWxm"; // fast.com's long-standing public token
     private static final int STREAMS = 3, TIMEOUT_MS = 15_000;
@@ -82,13 +79,7 @@ final class SpeedTest {
         try {
             String pingUrl;
             String[] down;
-            long nc = System.currentTimeMillis();
             switch (src) {
-                case UNIFI:
-                    String host = nearestTmHost();
-                    pingUrl = "https://" + host + "/hello";
-                    down = new String[] {"https://" + host + "/download?nocache=" + nc + "&size=50000000"};
-                    break;
                 case NETFLIX:
                     down = netflixTargets();
                     pingUrl = down[0];
@@ -117,34 +108,13 @@ final class SpeedTest {
         if (!cancelled) main.post(() -> l.onError(msg));
     }
 
-    /** fast.com's measurement URLs (Netflix servers, inside the ISP on a Malaysian line). */
+    /** fast.com's measurement URLs (Netflix servers, often inside the ISP on an Indonesian line). */
     private String[] netflixTargets() throws Exception {
         JSONArray t = new JSONObject(readBody(open(FAST))).getJSONArray("targets");
         List<String> urls = new ArrayList<>();
         for (int i = 0; i < t.length(); i++) urls.add(t.getJSONObject(i).getString("url"));
         if (urls.isEmpty()) throw new java.io.IOException("no targets");
         return urls.toArray(new String[0]);
-    }
-
-    /** The nearest TM server's host:port from Unifi's list (smallest distance), else the Klang one. */
-    private String nearestTmHost() {
-        try {
-            JSONArray a = new JSONArray(readBody(open(TM_SERVERS)));
-            String best = null;
-            double bestD = Double.MAX_VALUE;
-            for (int i = 0; i < a.length(); i++) {
-                JSONObject s = a.getJSONObject(i);
-                String h = s.optString("host", "");
-                double d = s.optDouble("distance", Double.MAX_VALUE);
-                if (!h.isEmpty() && d < bestD) {
-                    bestD = d;
-                    best = h;
-                }
-            }
-            if (best != null) return best;
-        } catch (Exception ignored) {
-        }
-        return TM_FALLBACK;
     }
 
     /** Reads a small response body (capped at 1 MB) as a UTF-8 string, then disconnects. */

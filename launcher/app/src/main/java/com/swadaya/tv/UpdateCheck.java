@@ -119,7 +119,7 @@ final class UpdateCheck {
         String current = installedVersion(ctx);
         if (current == null) throw new IllegalStateException("no version");
         JSONObject r = new JSONObject(get(LATEST));
-        String version = r.optString("tag_name").replaceFirst("^[vV]", "");
+        String version = versionFromTag(r.optString("tag_name"));
         if (version.isEmpty()) throw new IllegalStateException("no release");
         if (compare(version, current) <= 0) return null;
         JSONArray assets = r.optJSONArray("assets");
@@ -132,6 +132,11 @@ final class UpdateCheck {
             return new Release(version, a.optString("browser_download_url"), a.optLong("size"), sha);
         }
         return null; // a newer release without its APK yet (CI still building): nothing to install
+    }
+
+    /** Releases are tagged v<version>-build<run>; the app compares and shows just the version. */
+    static String versionFromTag(String tag) {
+        return tag.replaceFirst("^[vV]", "").replaceFirst("-build\\d+$", "");
     }
 
     static String installedVersion(Context ctx) {

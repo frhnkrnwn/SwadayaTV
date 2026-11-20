@@ -25,12 +25,12 @@ public class SpeedHistoryTest {
     @Test
     public void jsonRoundTrip() {
         List<SpeedHistory.Result> list = new ArrayList<>();
-        SpeedHistory.add(list, new SpeedHistory.Result(1000, "Unifi Malaysia", 42.5, 18, true, "Ethernet"), 10);
+        SpeedHistory.add(list, new SpeedHistory.Result(1000, "Netflix", 42.5, 18, true, "Ethernet"), 10);
         List<SpeedHistory.Result> back = SpeedHistory.fromJson(SpeedHistory.toJson(list).toString());
         assertEquals(1, back.size());
         SpeedHistory.Result b = back.get(0);
         assertEquals(1000, b.timeMs);
-        assertEquals("Unifi Malaysia", b.source);
+        assertEquals("Netflix", b.source);
         assertEquals(42.5, b.downMbps, 1e-9);
         assertEquals(18, b.pingMs);
         assertTrue(b.ethernet);
@@ -48,7 +48,7 @@ public class SpeedHistoryTest {
     public void sourceEnumMapsByIndex() {
         assertEquals(SpeedTest.Source.CLOUDFLARE, SpeedTest.Source.of(0));
         assertEquals(SpeedTest.Source.NETFLIX, SpeedTest.Source.of(1));
-        assertEquals(SpeedTest.Source.UNIFI, SpeedTest.Source.of(2));
+        assertEquals(SpeedTest.Source.CLOUDFLARE, SpeedTest.Source.of(2)); // old Unifi value: safe default
         assertEquals(SpeedTest.Source.CLOUDFLARE, SpeedTest.Source.of(99)); // out of range: safe default
     }
 }

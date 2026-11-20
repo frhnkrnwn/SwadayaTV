@@ -35,8 +35,8 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 
 /**
- * The Live TV screen (Up from the top of Running apps): RTMKlik's and Tonton's channels on the left, the
- * selected one playing on the right with what's on now and next, and full screen on OK.
+ * The Live TV screen (Up from the top of Running apps): TVRI's and Metro TV's Indonesian channels on
+ * the left, the selected one playing on the right, and full screen on OK.
  * MainActivity hands it the remote's keys while it has focus. Nothing plays or downloads while
  * it is closed.
  */
@@ -115,7 +115,7 @@ final class TvScreen {
         title.setText("Live TV");
         head.addView(title);
         TextView source = text(12, 500, FAINT);
-        source.setText("RTMKLIK  ·  TONTON");
+        source.setText("TVRI  ·  METRO TV");
         source.setLetterSpacing(0.12f);
         LinearLayout.LayoutParams sp = wrap();
         sp.setMarginStart(px(14));
@@ -289,11 +289,6 @@ final class TvScreen {
     /** The last channel watched, by slug (once saved by list index: read that once). */
     private int savedIndex() {
         String slug = prefs.getString("channel_slug", null);
-        if (slug == null && prefs.contains("channel")) {
-            int old = prefs.getInt("channel", 0);
-            slug = LiveChannels.legacyChannelSlug(old);
-            prefs.edit().remove("channel").putString("channel_slug", slug).apply();
-        }
         for (int i = 0; i < channels.size(); i++) if (channels.get(i).slug.equals(slug)) return i;
         return 0;
     }
@@ -332,7 +327,7 @@ final class TvScreen {
         refresh();
         loadGuide(false);
         loadLogos(); // nothing plays until OK
-        main.post(() -> { if (shown) player.prepare(); }); // warm WebView without loading a station
+        main.post(() -> { if (shown) player.prepare(); }); // ready without loading a station
         scheduleTick();
     }
 
@@ -488,8 +483,6 @@ final class TvScreen {
                 cover.animate().alpha(0f).setDuration(250).withEndAction(() -> cover.setVisibility(View.GONE)).start();
             } else if (state == TvPlayer.FAILED) {
                 showCover(c, message, false, TEXT);
-            } else if (state == TvPlayer.SIGN_IN) {
-                showCover(c, "Sign in to Tonton in Settings → Live TV to watch " + c.name, false, TEXT);
             } else {
                 showCover(c, message != null ? message : TvStartupProgress.tuningLabel(c.name), true, DIM);
             }
@@ -657,7 +650,7 @@ final class TvScreen {
             set(nowTitle, c.name);
             nowBar.setVisibility(View.INVISIBLE);
             set(nowDesc, guide == null ? (guideLoading ? "Loading the programme guide…" : "Programme guide unavailable")
-                    : c.path.startsWith("live/khas/") ? "Live when Parliament is sitting" : "No schedule for this channel right now");
+                    : "Live now");
         }
         nextLabel.setVisibility(next.isEmpty() ? View.INVISIBLE : View.VISIBLE);
         for (int i = 0; i < nextTitle.length; i++) {
@@ -864,8 +857,7 @@ final class TvScreen {
 
     /**
      * Rounds the video's corners by painting the screen's own background over them. Clipping the
-     * WebView and the loading cover to a rounded outline anti-aliased each layer separately, so
-     * the RTMKlik page (white while it loads) showed through the cover's edge as a light fringe.
+     * video and the loading cover to a rounded outline anti-aliased each layer separately.
      * A mask on top rounds everything under it as one layer, video overlays included.
      */
     private static final class CornerMask extends View {
@@ -941,12 +933,9 @@ final class TvScreen {
 
     // ---------------------------------------------------------------- helpers
 
-    /**
-     * A channel's logo into a card: RTMKlik's logos are white 16:9 cards (the card matches them
-     * before they load); Tonton's are transparent, made for a dark background.
-     */
+    /** A channel's logo into its dark card (the logos are transparent). */
     private void logo(ImageView v, LiveChannels.Channel c) {
-        ((GradientDrawable) v.getBackground()).setColor(c.site == LiveChannels.Site.TONTON ? 0xFF1C2433 : Color.WHITE);
+        ((GradientDrawable) v.getBackground()).setColor(0xFF1C2433);
         setLogo(v, logos.get(c.slug));
     }
 

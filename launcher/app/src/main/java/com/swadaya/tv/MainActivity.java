@@ -2216,7 +2216,7 @@ public class MainActivity extends Activity {
         }
         resumed = true;
         if (section == LIVE) liveTv().show(); // back from another app with Live TV still open
-        if (section == SETTINGS) settingsScreen.refreshRows(); // e.g. back from signing in to Tonton
+        if (section == SETTINGS) settingsScreen.refreshRows(); // e.g. after changing Live TV stations
         hiddenSinceResume = false;
         IntentFilter tf = new IntentFilter(Intent.ACTION_TIME_TICK);
         tf.addAction(Intent.ACTION_TIME_CHANGED);

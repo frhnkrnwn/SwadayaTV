@@ -54,7 +54,7 @@ final class SettingsScreen {
             "Where the TV's apps connect", "What the bell tells you",
             "Speed, uptime and clock over apps", "Control the TV from your phone",
             "New actions for the remote's buttons", "Apps hidden from the list",
-            "Channels and Tonton sign-in", "Download speed and latency", "Compatibility and accessibility", "Version and TV settings"};
+            "Channels and stations", "Download speed and latency", "Compatibility and accessibility", "Version and TV settings"};
     private static final int[] CAT_ICONS = {R.drawable.ic_tv, R.drawable.ic_crescent, R.drawable.ic_storm,
             R.drawable.ic_chart, R.drawable.ic_screensaver, R.drawable.ic_signal, R.drawable.ic_bell,
             R.drawable.ic_status_bar, R.drawable.ic_phone, R.drawable.ic_remote_buttons, R.drawable.ic_ram,
@@ -629,8 +629,8 @@ final class SettingsScreen {
 
     // ---------------------------------------------------------------- Speed test
 
-    private static final int[] SPEED_SOURCES = {0, 1, 2};
-    private static final String[] SPEED_SOURCE_NAMES = {"Cloudflare", "Netflix", "Unifi Malaysia"};
+    private static final int[] SPEED_SOURCES = {0, 1};
+    private static final String[] SPEED_SOURCE_NAMES = {"Cloudflare", "Netflix"};
 
     /**
      * Settings → Speed test (SpeedTest): a source to test from, a Run row with the live download
@@ -641,7 +641,7 @@ final class SettingsScreen {
         SpeedHistory.Result last = speedResults.isEmpty() ? null : speedResults.get(0);
 
         out.add(choice(LauncherSettings.SPEED_SOURCE, "Test from",
-                "Cloudflare (nearest edge), Netflix (streaming) or Unifi (TM's nearest server)", SPEED_SOURCES, SPEED_SOURCE_NAMES));
+                "Cloudflare (nearest edge) or Netflix (streaming)", SPEED_SOURCES, SPEED_SOURCE_NAMES));
 
         Row run = new Row(ACTION, speedRunning ? "Testing…" : "Run speed test");
         if (speedRunning) {
@@ -1315,28 +1315,10 @@ final class SettingsScreen {
         }
     }
 
-    /** Live TV: the screen on or off, Tonton's sign-in, and each station on or off. */
+    /** Live TV: the screen on or off, and each Indonesian station on or off. */
     private void liveRows(List<Row> out) {
         out.add(toggle(LauncherSettings.LIVE_TV, "Live TV screen",
                 "Up from the first app on the running-apps screen"));
-        boolean signedIn = TontonAccount.signedIn(ctx);
-        Row account = new Row(ACTION, signedIn ? "Tonton account" : "Sign in to Tonton");
-        account.heading = "Tonton";
-        account.sub = signedIn ? "TV3, NTV7, 8TV, TV9 and Tonton's other channels play with it"
-                : "For TV3, NTV7, 8TV, TV9 and Tonton's other channels. You sign in on Tonton's own page";
-        account.value = () -> TontonAccount.signedIn(ctx) ? "Signed in" : null;
-        account.action = () -> ctx.startActivity(new android.content.Intent(ctx, TontonSignInActivity.class));
-        out.add(account);
-        if (signedIn) {
-            Row out1 = new Row(ACTION, "Sign out of Tonton");
-            out1.sub = "Forgets the Tonton session on this TV";
-            out1.action = () -> {
-                row = 1; // back on the account row when the sign-out screen closes (this row goes)
-                ctx.startActivity(new android.content.Intent(ctx, TontonSignInActivity.class)
-                        .putExtra(TontonSignInActivity.SIGN_OUT, true));
-            };
-            out.add(out1);
-        }
         boolean first = true;
         for (LiveChannels.Channel c : LiveChannels.ALL) {
             Row r = toggle(LauncherSettings.stationKey(c.slug), c.name, c.site.label);

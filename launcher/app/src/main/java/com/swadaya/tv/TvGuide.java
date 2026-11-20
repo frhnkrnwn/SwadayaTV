@@ -259,7 +259,7 @@ final class TvGuide extends FrameLayout {
                 Bitmap logo = logos == null ? null : logos.get(c.slug);
                 if (logo != null) {
                     box(canvas, px(8), top + px(11), px(64), top + px(43),
-                            c.site == LiveChannels.Site.TONTON ? 0xFF1C2433 : 0xFFFFFFFF);
+                            0xFF1C2433);
                     float scale = Math.min(px(56) / (float) logo.getWidth(), px(32) / (float) logo.getHeight());
                     float lw = logo.getWidth() * scale, lh = logo.getHeight() * scale;
                     rect.set(px(36) - lw / 2, top + rowH / 2 - lh / 2, px(36) + lw / 2, top + rowH / 2 + lh / 2);

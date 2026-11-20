@@ -23,7 +23,7 @@ final class SpeedHistory {
     /** One run: when, the source, download speed, latency and the network it ran on. */
     static final class Result {
         final long timeMs;
-        final String source;    // "Cloudflare", "Unifi Malaysia", "Netflix"
+        final String source;    // "Cloudflare", "Netflix"
         final double downMbps;
         final int pingMs;
         final boolean ethernet;
