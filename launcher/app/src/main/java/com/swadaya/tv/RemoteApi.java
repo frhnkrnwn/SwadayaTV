@@ -211,7 +211,7 @@ final class RemoteApi {
                 JSONObject list = files.list(query.get("path"));
                 if (list == null) Http.json(out, 403, Http.err(FileApi.hasAllFilesAccess()
                         ? "That folder isn't available."
-                        : "On Android 11+, run scripts/build-and-install.sh to grant All files access."));
+                        : "Turn on All files access in Settings → About, then try again."));
                 else Http.json(out, 200, list);
                 return;
             }

@@ -27,8 +27,8 @@ import java.util.Map;
 /**
  * "Most used" card: the top apps this week (Monday or Sunday start, Settings), from UsageScores.
  *
- * Needs Usage access: build-and-install.sh grants it with
- * {@code appops set com.swadaya.tv GET_USAGE_STATS allow}.
+ * Needs Usage access: Settings → About → Usage access opens Android's toggle for it (or
+ * build-and-install.sh grants it with {@code appops set com.swadaya.tv GET_USAGE_STATS allow}).
  */
 final class UsagePanel {
     private static final int TOP = 5;
@@ -117,8 +117,7 @@ final class UsagePanel {
     /** Shows the top apps among {@code all} (the launchable apps, dock included). */
     void render(List<AppEntry> all, Map<String, Long> scores) {
         if (!granted()) {
-            showMessage("Needs Usage access. Run: adb shell appops set " + ctx.getPackageName()
-                    + " GET_USAGE_STATS allow");
+            showMessage("Needs Usage access. Turn it on in Settings → About → Usage access.");
             return;
         }
         List<AppEntry> ranked = new ArrayList<>();
