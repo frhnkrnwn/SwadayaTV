@@ -1,7 +1,7 @@
 {
-  "versionCode": 4,
-  "versionName": "1.1.2",
-  "apkUrl": "https://github.com/frhnkrnwn/SwadayaTV/releases/latest/download/tvhome-1.1.2.apk",
-  "changelog": "Live TV Indonesia (TVRI/Metro), data BMKG/Kemenag, speed test fast.com, pembaruan OTA dengan kunci rilis tetap",
+  "versionCode": 5,
+  "versionName": "1.1.3",
+  "apkUrl": "https://github.com/frhnkrnwn/SwadayaTV/releases/latest/download/tvhome-1.1.3.apk",
+  "changelog": "Net traffic monitor bisa dipakai tanpa ADB (mesin VPN-nya ikut diunduh dari rilis), Live TV Indonesia (TVRI/Metro), data BMKG/Kemenag, speed test fast.com, pembaruan OTA dengan kunci rilis tetap",
   "releaseDate": "2026-11-20"
 }
