@@ -156,11 +156,11 @@ Everything location-based uses Indonesian sources and settings:
 
 ## Install
 
-You need an Android TV or Google TV running Android 8.0 or newer, and a computer on the same Wi-Fi. The scripts build the launcher, install it over network ADB and make it the home screen; they work with any TV brand.
+You need an Android TV or Google TV running Android 8.0 or newer. The APK installs from a USB drive or the Downloader app, so the simplest way needs no computer, no adb and no Developer options.
 
-- Easiest: the **setup app** ([docs/tui.md](docs/tui.md)). One download for Windows, macOS, Linux or an Android phone (in Termux), nothing else to install. It finds your TV on the Wi-Fi, installs TV Home, cleans up the TV, tweaks animations, HDMI-CEC and surround sound, and can undo everything, explaining each step before it runs. It also shows what the TV is, how it's doing (memory, storage, CPU) and what it can play (video formats, Widevine level, Netflix).
-- Step by step: [Windows](docs/install-windows.md) · [macOS](docs/install-macos.md) · [Linux](docs/install-linux.md)
-- No build tools? Download the ready-made APK from [Releases](https://github.com/nullifye/SwadayaTV-TV-Launcher/releases/latest) and install it with only adb: [Windows](docs/install-windows.md#install-the-ready-made-apk-instead-no-building) · [macOS](docs/install-macos.md#install-the-ready-made-apk-instead-no-building) · [Linux](docs/install-linux.md#install-the-ready-made-apk-instead-no-building)
+- **Easiest (no computer):** download the ready-made APK from [Releases](https://github.com/frhnkrnwn/SwadayaTV/releases/latest) — under **Assets**, `tvhome-<version>.apk` — copy it to the TV, allow installing from that app, and install it. Then pick SwadayaTV as Home in the TV's own settings. The same release carries the Net traffic engine's files, which the app downloads by itself when the monitor first starts; later updates are in **Settings → About** or the bell.
+- **With a computer and adb:** install that same APK over the network: [Windows](docs/install-windows.md#install-the-ready-made-apk-instead-no-building) · [macOS](docs/install-macos.md#install-the-ready-made-apk-instead-no-building) · [Linux](docs/install-linux.md#install-the-ready-made-apk-instead-no-building)
+- **Build it yourself:** [Windows](docs/install-windows.md) · [macOS](docs/install-macos.md) · [Linux](docs/install-linux.md) build the launcher from source and install it over network ADB.
 - Let an AI coding agent do it: [Install with an AI agent](docs/install-with-ai-agent.md)
 - Debloat the TV too, from scratch: give an AI agent [PROMPT.md](PROMPT.md)
 

@@ -4,7 +4,6 @@ This guide builds the launcher on a Linux computer and installs it on your TV ov
 
 Other guides: [macOS](install-macos.md) · [Windows](install-windows.md) · [with an AI agent](install-with-ai-agent.md)
 
-**Prefer an app that guides you?** The [setup app](tui.md) finds the TV, installs TV Home, cleans up the TV and can undo everything. One download, nothing else to install.
 
 **No build tools?** Skip the building and [install the ready-made APK](#install-the-ready-made-apk-instead-no-building) from GitHub Releases instead: only adb is needed.
 
@@ -12,7 +11,7 @@ Other guides: [macOS](install-macos.md) · [Windows](install-windows.md) · [wit
 
 The TV must run **Android TV or Google TV 8.0 or newer**. It was developed and tested on a Xiaomi Mi TV; other Android TV brands should work (see [TV brands](#tv-brands)).
 
-1. **Check the Android version:** Settings → Device Preferences (or System) → About → *Android TV OS version*. It must be 10 or higher.
+1. **Check the Android version:** Settings → Device Preferences (or System) → About → *Android TV OS version*. It must be 8.0 (API 26) or higher.
 2. **Turn on Developer options:** on the same About screen, press OK on **Build** (Google TV: *Android TV OS build*) seven times, until it says you're a developer.
 3. **Turn on debugging:** Settings → Device Preferences (or System) → Developer options → **USB debugging** on. Some TVs call it *Network debugging*.
 4. **Note the TV's IP address:** Settings → Network & Internet → your Wi-Fi network (e.g. `192.168.1.50`).
@@ -61,8 +60,8 @@ adb version && java -version && echo "$ANDROID_HOME"
 ## 3. Get the code
 
 ```bash
-git clone https://github.com/nullifye/RFHN-TV-Launcher.git
-cd RFHN-TV-Launcher
+git clone https://github.com/frhnkrnwn/SwadayaTV.git
+cd SwadayaTV
 ```
 
 ## 4. Connect to the TV
@@ -119,17 +118,17 @@ adb version
 
 ### Step 2. Download the APK
 
-1. Open [github.com/nullifye/RFHN-TV-Launcher/releases/latest](https://github.com/nullifye/RFHN-TV-Launcher/releases/latest). No GitHub account needed.
-2. Under **Assets**, click **`tvhome-<version>.apk`** (for example `tvhome-2.0.2.apk`). It downloads to your **Downloads** folder.
+1. Open [github.com/frhnkrnwn/SwadayaTV/releases/latest](https://github.com/frhnkrnwn/SwadayaTV/releases/latest). No GitHub account needed.
+2. Under **Assets**, click **`tvhome-<version>.apk`** (for example `tvhome-1.1.3.apk`). It downloads to your **Downloads** folder.
 
 ### Step 3. Go to the APK
 
 ```bash
 cd ~/Downloads
-ls tvhome-*.apk       # shows the file's exact name, e.g. tvhome-2.0.2.apk
+ls tvhome-*.apk       # shows the file's exact name, e.g. tvhome-1.1.3.apk
 ```
 
-In the commands below, replace `tvhome-2.0.2.apk` with your file's exact name.
+In the commands below, replace `tvhome-1.1.3.apk` with your file's exact name.
 
 ### Step 4. Connect to the TV
 
@@ -148,7 +147,7 @@ Check the TV is new enough:
 adb shell getprop ro.build.version.sdk
 ```
 
-The number must be **29 or higher** (29 = Android 10).
+The number must be **26 or higher** (26 = Android 8.0).
 
 ### Step 5. Write down the TV's own launcher
 
@@ -163,15 +162,15 @@ The **last line** is the TV's own home screen, for example `com.google.android.a
 ### Step 6. Install the APK
 
 ```bash
-adb install -r tvhome-2.0.2.apk
+adb install -r tvhome-1.1.3.apk
 ```
 
 Wait for `Success`.
 - **It seems stuck?** Look at the TV: some ask you to confirm the install on screen.
 - **`INSTALL_FAILED_UPDATE_INCOMPATIBLE`?** A copy you built yourself is installed (a different signing key). Remove it first (its settings are lost), then install again:
   ```bash
-  adb uninstall my.rafhan.app.tvhome
-  adb install tvhome-2.0.2.apk
+  adb uninstall com.swadaya.tv
+  adb install tvhome-1.1.3.apk
   ```
 
 ### Step 7. Give it its permissions
@@ -179,18 +178,18 @@ Wait for `Success`.
 Run these one by one, **right after installing and before pressing Home** (Android 10 only applies storage access when the app starts). A command that prints an error just means that TV refuses it: carry on, only that feature is limited.
 
 ```bash
-adb shell pm grant my.rafhan.app.tvhome android.permission.READ_EXTERNAL_STORAGE
-adb shell pm grant my.rafhan.app.tvhome android.permission.WRITE_EXTERNAL_STORAGE
-adb shell appops set my.rafhan.app.tvhome MANAGE_EXTERNAL_STORAGE allow
-adb shell pm grant my.rafhan.app.tvhome android.permission.ACCESS_FINE_LOCATION
-adb shell appops set my.rafhan.app.tvhome GET_USAGE_STATS allow
-adb shell appops set my.rafhan.app.tvhome SYSTEM_ALERT_WINDOW allow
-adb shell pm grant my.rafhan.app.tvhome android.permission.DUMP
-adb shell pm grant my.rafhan.app.tvhome android.permission.PACKAGE_USAGE_STATS
-adb shell pm grant my.rafhan.app.tvhome android.permission.BLUETOOTH_CONNECT
-adb shell pm grant my.rafhan.app.tvhome android.permission.WRITE_SECURE_SETTINGS
-adb shell pm grant my.rafhan.app.tvhome android.permission.READ_LOGS
-adb shell appops set my.rafhan.app.tvhome REQUEST_INSTALL_PACKAGES allow
+adb shell pm grant com.swadaya.tv android.permission.READ_EXTERNAL_STORAGE
+adb shell pm grant com.swadaya.tv android.permission.WRITE_EXTERNAL_STORAGE
+adb shell appops set com.swadaya.tv MANAGE_EXTERNAL_STORAGE allow
+adb shell pm grant com.swadaya.tv android.permission.ACCESS_FINE_LOCATION
+adb shell appops set com.swadaya.tv GET_USAGE_STATS allow
+adb shell appops set com.swadaya.tv SYSTEM_ALERT_WINDOW allow
+adb shell pm grant com.swadaya.tv android.permission.DUMP
+adb shell pm grant com.swadaya.tv android.permission.PACKAGE_USAGE_STATS
+adb shell pm grant com.swadaya.tv android.permission.BLUETOOTH_CONNECT
+adb shell pm grant com.swadaya.tv android.permission.WRITE_SECURE_SETTINGS
+adb shell pm grant com.swadaya.tv android.permission.READ_LOGS
+adb shell appops set com.swadaya.tv REQUEST_INSTALL_PACKAGES allow
 ```
 
 | Command | What it's for |
@@ -217,11 +216,11 @@ adb shell settings get secure enabled_accessibility_services
 
 - It prints **`null`** (or nothing): run
   ```bash
-  adb shell settings put secure enabled_accessibility_services my.rafhan.app.tvhome/my.rafhan.app.tvhome.RemoteAccessibilityService
+  adb shell settings put secure enabled_accessibility_services com.swadaya.tv/com.swadaya.tv.RemoteAccessibilityService
   ```
 - It prints something else, e.g. `flar2.homebutton/flar2.homebutton.a.MyService`: **copy that text, keep it in your note**, and put it in front, joined with a `:`:
   ```bash
-  adb shell settings put secure enabled_accessibility_services "flar2.homebutton/flar2.homebutton.a.MyService:my.rafhan.app.tvhome/my.rafhan.app.tvhome.RemoteAccessibilityService"
+  adb shell settings put secure enabled_accessibility_services "flar2.homebutton/flar2.homebutton.a.MyService:com.swadaya.tv/com.swadaya.tv.RemoteAccessibilityService"
   ```
 
 Then switch accessibility on:
@@ -233,7 +232,7 @@ adb shell settings put secure accessibility_enabled 1
 ### Step 9. Make it the home screen
 
 ```bash
-adb shell cmd package set-home-activity my.rafhan.app.tvhome/.MainActivity
+adb shell cmd package set-home-activity com.swadaya.tv/.MainActivity
 ```
 
 Now press **Home** on the TV remote. You should see the new launcher. Done!
@@ -244,7 +243,7 @@ Now press **Home** on the TV remote. You should see the new launcher. Done!
    ```bash
    adb shell pm disable-user --user 0 com.google.android.tungsten.setupwraith
    adb shell pm disable-user --user 0 com.google.android.apps.tv.launcherx
-   adb shell cmd package set-home-activity my.rafhan.app.tvhome/.MainActivity
+   adb shell cmd package set-home-activity com.swadaya.tv/.MainActivity
    ```
 2. Press **Home**.
 
@@ -261,7 +260,7 @@ adb shell pm enable --user 0 com.google.android.apps.tv.launcherx
 Download the newer APK (Step 2), go to it (Step 3), connect (Step 4), then:
 
 ```bash
-adb install -r tvhome-1.17.4.apk
+adb install -r tvhome-<version>.apk
 ```
 
 That's all: your settings, permissions and Home choice are kept.
@@ -274,7 +273,7 @@ Using what you wrote down in Steps 5 and 8:
 adb shell pm enable --user 0 com.google.android.tungsten.setupwraith
 adb shell pm enable --user 0 com.google.android.apps.tv.launcherx
 adb shell cmd package set-home-activity com.google.android.apps.tv.launcherx/.home.HomeActivity
-adb uninstall my.rafhan.app.tvhome
+adb uninstall com.swadaya.tv
 ```
 
 - Use **your** launcher from Step 5 in the `pm enable` and `set-home-activity` lines. The first line is only for Google TV; elsewhere it prints an error, which is fine.

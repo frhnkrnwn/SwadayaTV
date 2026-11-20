@@ -50,7 +50,7 @@ Then press Home.
 - **Background-restricted apps:** Vidio, iQIYI, Viu, M3U IPTV and PatchWall can't run services or boot tasks while you're not using them. PatchWall's scheduled jobs used to wake it mid-film (40 % CPU for a few seconds); its input popup still opens. They work normally when you open them, but the first launch is a cold start. The list is in `backup/<serial>/bg-restricted.txt`, and `restore.sh` lifts the restriction.
   ```bash
   scripts/restrict.sh com.vidio.android                                       # restrict one more app (and record it)
-  scripts/restrict.sh --recommended                                            # PatchWall, as the setup app does
+  scripts/restrict.sh --recommended                                            # PatchWall, as disable.sh --recommended does
   adb shell cmd appops set com.vidio.android RUN_ANY_IN_BACKGROUND allow      # undo for one app
   ```
 - **Wi-Fi background scanning is off** (`wifi_scan_always_enabled 0`). Wi-Fi works normally. To undo: Settings → Network & Internet → Scanning always available.
@@ -58,7 +58,7 @@ Then press Home.
   - **Animations 0.5×:** Developer options → Window/Transition/Animator scale. Makes menus and app launches feel snappier.
   - **Weekly reboot:** after a few days the TV collects lost RAM and swap.
   - **Turn off Play Store auto-update.**
-  - **Disable Mi TV+** (`com.mitv.tvhome.mitvplus`, Xiaomi's ad-funded live channels) if you don't watch it. It's now in the recommended list: ticked for you in the setup app's **Clean up the TV**, and in `scripts/disable.sh --recommended`.
+  - **Disable Mi TV+** (`com.mitv.tvhome.mitvplus`, Xiaomi's ad-funded live channels) if you don't watch it. It's now in the recommended list in `scripts/disable.sh --recommended`.
   - **Disable Android TV Remote Service** (`com.google.android.tv.remote.service`) if you never control the TV from your phone.
   - **Time NetSpeed** (`visnkmr.apps.timenetspeed`) has since been uninstalled.
   - **Task killer** "Background Apps & Process List" (`io.github.visnkmr.bapl`) only runs a moment at boot and when opened. It's optional to remove. Using it to kill apps tends to make the TV slower, because killed apps restart from scratch; TV Manager's Memory boost has the same effect.
