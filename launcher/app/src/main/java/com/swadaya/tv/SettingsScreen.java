@@ -947,8 +947,8 @@ final class SettingsScreen {
         w.action = this::openWallpaperPicker;
         out.add(w);
         out.add(toggle(LauncherSettings.WEATHER_FX, "Weather effects", "Rain, lightning and haze, as it is outside"));
-        Row rw = new Row(ACTION, "Remote Wallpaper");
-        rw.sub = "Upload a wallpaper from your phone via QR code / IP";
+        Row rw = new Row(ACTION, "Wallpaper from phone");
+        rw.sub = "Scan the QR code and enter the code shown on the TV";
         rw.action = () -> ctx.startActivity(new android.content.Intent(ctx, RemoteWallpaperActivity.class)
                 .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK));
         out.add(rw);

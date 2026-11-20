@@ -254,19 +254,25 @@ final class RemoteServer {
 
     // ---------------------------------------------------------------- helpers
 
-    /** e.g. http://192.168.0.44:8486, for the PIN card. */
-    static String lanUrl(Context ctx) {
+    /** The TV's address on the network phones can reach (not a VPN's), or null when it has none. */
+    static String lanIp(Context ctx) {
         ConnectivityManager cm = ctx.getSystemService(ConnectivityManager.class);
-        Network net = NetState.physical(cm); // the address phones can reach, not a VPN's
+        Network net = NetState.physical(cm);
         LinkProperties lp = net == null ? null : cm.getLinkProperties(net);
         if (lp != null) {
             for (LinkAddress la : lp.getLinkAddresses()) {
                 if (la.getAddress() instanceof Inet4Address && !la.getAddress().isLoopbackAddress()) {
-                    return "http://" + la.getAddress().getHostAddress() + ":" + PORT;
+                    return la.getAddress().getHostAddress();
                 }
             }
         }
-        return "port " + PORT;
+        return null;
+    }
+
+    /** e.g. http://192.168.0.44:8486, for the PIN card. */
+    static String lanUrl(Context ctx) {
+        String ip = lanIp(ctx);
+        return ip == null ? "port " + PORT : "http://" + ip + ":" + PORT;
     }
 
     /** Settings → Forget all paired phones: every phone has to pair with a PIN again. */
