@@ -33,7 +33,7 @@ public class LiveChannelsTest {
         LiveChannels.Channel first = LiveChannels.ALL.get(0);
         assertEquals(first, LiveChannels.byPage(first.page()));
         assertTrue(LiveChannels.isChannelPage(first.page()));
-        assertNull(LiveChannels.byPage("https://rtmklik.rtm.gov.my/live/tv/tv1"));
+        assertNull(LiveChannels.byPage("https://example.com/live/tv1.m3u8"));
         assertFalse(LiveChannels.isChannelPage("https://example.com/live.m3u8"));
     }
 

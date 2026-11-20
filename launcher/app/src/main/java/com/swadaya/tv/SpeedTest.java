@@ -36,7 +36,7 @@ final class SpeedTest {
             this.label = label;
         }
 
-        /** Saved indexes: 0 Cloudflare, 1 Netflix (the old 2, Unifi Malaysia, falls back). */
+        /** Saved indexes: 0 Cloudflare, 1 Netflix (an older build's third value falls back). */
         static Source of(int i) {
             return i == 1 ? NETFLIX : CLOUDFLARE;
         }

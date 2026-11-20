@@ -199,7 +199,7 @@ final class LauncherSettings {
         String z = prefs(ctx).getString(ZONE, ZONE_AUTO);
         if (!ZONE_AUTO.equals(z)) {
             if (knownCity(ctx, z)) return z;
-            // An upgrade from the old Malaysian zone list: that code isn't a city here, so Auto.
+            // An upgrade from an older zone list: that code isn't a city here, so Auto.
             prefs(ctx).edit().putString(ZONE, ZONE_AUTO).apply();
         }
         return prefs(ctx).getString(ZONE_FOUND, ctx.getString(R.string.prayer_zone));

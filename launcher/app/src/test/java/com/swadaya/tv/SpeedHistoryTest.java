@@ -48,7 +48,7 @@ public class SpeedHistoryTest {
     public void sourceEnumMapsByIndex() {
         assertEquals(SpeedTest.Source.CLOUDFLARE, SpeedTest.Source.of(0));
         assertEquals(SpeedTest.Source.NETFLIX, SpeedTest.Source.of(1));
-        assertEquals(SpeedTest.Source.CLOUDFLARE, SpeedTest.Source.of(2)); // old Unifi value: safe default
+        assertEquals(SpeedTest.Source.CLOUDFLARE, SpeedTest.Source.of(2)); // old third value: safe default
         assertEquals(SpeedTest.Source.CLOUDFLARE, SpeedTest.Source.of(99)); // out of range: safe default
     }
 }
