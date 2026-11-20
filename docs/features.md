@@ -492,6 +492,7 @@ Moving the focus through the list previews each one behind Settings; **OK** sets
 
 **Your own pictures** go in the **Wallpapers** folder on the TV's internal storage (`/sdcard/Wallpapers`). Any JPG, PNG or WebP there shows up at the end of the Wallpaper list under its file name, with a thumbnail; preview and set it like the built-in ones. Ideally 1920×1080 or larger; big photos are scaled down when loaded.
 - **Phone remote:** Settings tab → Wallpaper → **Your photo** uploads a photo and sets it in one go. Or Files tab → **Wallpapers** (the shortcut under the storage list) → Upload, then pick it on the TV.
+- **QR code on the TV:** Settings → Home screen → **Wallpaper from phone** shows a QR code and a 6-digit code, no pairing needed. Scan the code (or type the address) on a phone on the same network, enter the code, pick a picture: it lands in the `Wallpapers` folder and becomes the wallpaper at once. Five wrong codes put a new one on the TV, and pressing OK makes a fresh code. Needs **All files access** (Settings → About).
 - **ADB:** `adb push mypicture.jpg /sdcard/Wallpapers/`
 
 Deleting a picture that's in use switches back to the default. The folder survives a launcher uninstall; the downloaded built-in photos don't. (An older picture pushed to `Android/data/com.swadaya.tv/files/wallpaper.jpg` still appears as **Your picture**.)
