@@ -143,7 +143,7 @@ def fill_badges(teams, overrides, limit=40):
     done = 0
     for tid, e in teams.items():
         if tid in overrides: e.update(overrides[tid])
-        if e.get("badge") is not None: continue          # sudah dicari (boleh kosong)
+        if e.get("badge") is not None: continue          # sudah dicari (bisa kosong)
         if done >= limit: break
         e["badge"] = find_badge(e.get("full") or e.get("name", ""))
         done += 1

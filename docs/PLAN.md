@@ -18,15 +18,15 @@ Repo referensi: ~/ref/ (lihat CREDITS.md untuk atribusi)
 | Repo | Lisensi | Fitur khas |
 |---|---|---|
 | aura-tv-home | MIT (Gathin) | Sudah sama basisnya |
-| arsyan-tv-launcher | MIT | Azan overlay + service + audio focus, screensaver DreamView dengan jam sholat, PrayerTimes Kemenag |
+| arsyan-tv-launcher | MIT | Azan overlay + service + audio focus, screensaver DreamView dengan jam salat, PrayerTimes Kemenag |
 | cleanyourtv | MIT | Addon ecosystem, cuaca, koin, kapasitas |
 | weatherglass-tv | MIT | Cuaca glass UI, wallpaper hidup |
 | SwadayaTV-TV-Launcher | MIT | DrmInfo, app grid reorder |
 
 ### 1.3 Kesimpulan
-- Semua referensi **MIT license** → boleh salin dengan atribusi.
+- Semua referensi **MIT license** → bisa disalin dengan atribusi.
 - **arsyan-tv-launcher** punya implementasi azan yang lebih baik (overlay + foreground service + audio focus) → akan diintegrasikan.
-- **arsyan-tv-launcher** screensaver `DreamView` punya jam sholat di layar → akan diintegrasikan.
+- **arsyan-tv-launcher** screensaver `DreamView` punya jam salat di layar → akan diintegrasikan.
 - **KemenagPrayer** di SwadayaTV sudah ada, tinggal tambah Subuh +8 menit (Muhammadiyah).
 - **Kalender Hijriyah KHGT** → SwadayaTV sudah punya `getHijriDate()` dengan `java.time.chrono.HijrahDate`, tinggal diadaptasi.
 
@@ -34,14 +34,14 @@ Repo referensi: ~/ref/ (lihat CREDITS.md untuk atribusi)
 
 ## 2. Urutan Pengerjaan
 
-1. Jam/tanggal/salam (sudah ada, tinggal polish)
+1. Jam/tanggal/salam (sudah ada, tinggal dipoles)
 2. Info sistem (sudah ada di CapacityStatsActivity, tinggal polish)
-3. Cuaca (sudah ada, tinggal polish)
-4. Jadwal sholat + hitung mundur (tambah Subuh +8 menit Muhammadiyah)
+3. Cuaca (sudah ada, tinggal dipoles)
+4. Jadwal salat + hitung mundur (tambah Subuh +8 menit Muhammadiyah)
 5. Kalender Hijriyah KHGT + hitung mundur Hari Raya Islam
 6. Adzan + screensaver (integrasikan dari arsyan-tv-launcher)
-7. Klasemen liga (sudah ada, tinggal polish)
-8. Baris aplikasi & pengaturan (sudah ada, tinggal polish)
+7. Klasemen liga (sudah ada, tinggal dipoles)
+8. Baris aplikasi & pengaturan (sudah ada, tinggal dipoles)
 9. Polesan tampilan
 
 ---

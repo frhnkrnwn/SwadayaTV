@@ -1,7 +1,7 @@
-# Swadaya Addon: Sholat
+# Swadaya Addon: Salat
 
-Status: **placeholder**. Fitur waktu sholat SwadayaTV ini belum dibuat — folder ini cuma nampung rencana & acuan buat nanti.
+Status: **placeholder**. Fitur waktu salat SwadayaTV ini belum dibuat — folder ini hanya menampung rencana dan acuan untuk nanti.
 
-Plan datanya dihitung **offline pakai rumus Kemenag** (metode 20) dari koordinat kota yang kamu set, bukan nge-pull Aladhan terus-menerus. Yang ditampilin: 5 waktu sholat + sunrise, sholat berikutnya di-highlight dengan countdown, plus tanggal Masehi dan Hijriah.
+Rencana datanya dihitung **offline memakai rumus Kemenag** (metode 20) dari koordinat kota yang Anda set, bukan menarik data Aladhan terus-menerus. Yang ditampilkan: 5 waktu salat + matahari terbit, salat berikutnya disorot dengan hitung mundur, plus tanggal Masehi dan Hijriah.
 
-Addon ini bakal **auto on-off mandiri**: nggak ada background service yang jalan terus. Perhitungan jalan saat layar addon dibuka, dan hasil terakhir tetap ditampilin kalau TV lagi offline. Jadi nggak bentrok sama launcher SwadayaTV — pasang APK-nya, setuju "Show card" sekali, tile Sholat muncul di Home.
+Addon ini akan **aktif-mati mandiri**: tidak ada layanan latar belakang yang berjalan terus. Perhitungan berjalan saat layar addon dibuka, dan hasil terakhir tetap ditampilkan jika TV sedang offline. Jadi tidak bentrok dengan launcher SwadayaTV — pasang APK-nya, setujui "Show card" sekali, dan kartu Salat muncul di Home.

@@ -1,7 +1,7 @@
 {
-  "versionCode": 2,
-  "versionName": "1.1.0",
-  "apkUrl": "https://github.com/frhnkrnwn/SwadayaTV/releases/latest/download/tvhome-1.1.0.apk",
-  "changelog": "Indonesian Live TV (TVRI/Metro), BMKG/Kemenag data, OTA updates",
+  "versionCode": 3,
+  "versionName": "1.1.1",
+  "apkUrl": "https://github.com/frhnkrnwn/SwadayaTV/releases/latest/download/tvhome-1.1.1.apk",
+  "changelog": "Live TV Indonesia (TVRI/Metro), data BMKG/Kemenag, speed test fast.com, pembaruan OTA",
   "releaseDate": "2026-11-20"
 }

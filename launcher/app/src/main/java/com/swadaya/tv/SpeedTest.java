@@ -16,31 +16,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Settings → Speed test: measures download speed and latency with plain HTTP, so it needs no USB
- * debugging. The source is chosen in Settings:
- * <ul>
- *   <li>Cloudflare — the nearest Cloudflare edge (Jakarta or Singapore for most Indonesian
- *       connections).</li>
- *   <li>Netflix — fast.com's servers, which on an Indonesian line often sit inside the ISP
- *       (a Netflix cache), so it reflects streaming speed.</li>
- * </ul>
- * It downloads over a few connections for ~10 s, reporting the running speed; latency is the
+ * Settings → Speed test: measures download speed and latency with plain HTTP against fast.com's
+ * servers (Netflix), which on an Indonesian line often sit inside the ISP (a Netflix cache), so it
+ * reflects streaming speed. There is no source choice.
+ *
+ * <p>It downloads over a few connections for ~10 s, reporting the running speed; latency is the
  * quickest of a few tiny requests. Only byte counts leave the TV. Callbacks come on the main thread.
  */
 final class SpeedTest {
-    enum Source {
-        CLOUDFLARE("Cloudflare"), NETFLIX("Netflix");
-        final String label;
-
-        Source(String label) {
-            this.label = label;
-        }
-
-        /** Saved indexes: 0 Cloudflare, 1 Netflix (an older build's third value falls back). */
-        static Source of(int i) {
-            return i == 1 ? NETFLIX : CLOUDFLARE;
-        }
-    }
+    /** Shown in Settings and saved with each history entry. */
+    static final String SOURCE = "fast.com";
 
     interface Listener {
         /** Latency measured (ms), before the download phase begins. */
@@ -56,11 +41,10 @@ final class SpeedTest {
         void onError(String message);
     }
 
-    private static final String CF = "https://speed.cloudflare.com/__down?bytes=";
     private static final String FAST = "https://api.fast.com/netflix/speedtest/v2?https=true&urlCount=5"
             + "&token=YXNkZmFzZGxmbnNkYWZoYXNkZmhrYWxm"; // fast.com's long-standing public token
     private static final int STREAMS = 3, TIMEOUT_MS = 15_000;
-    private static final long DOWN_MS = 10_000, WARMUP_MS = 1_500, CF_BYTES = 50_000_000; // Cloudflare caps under 1e8
+    private static final long DOWN_MS = 10_000, WARMUP_MS = 1_500;
 
     private final Handler main = new Handler(Looper.getMainLooper());
     private volatile boolean cancelled;
@@ -69,27 +53,16 @@ final class SpeedTest {
         cancelled = true;
     }
 
-    void start(Source src, Listener l) {
-        Thread t = new Thread(() -> runAll(src, l), "speedtest");
+    void start(Listener l) {
+        Thread t = new Thread(() -> runAll(l), "speedtest");
         t.setDaemon(true);
         t.start();
     }
 
-    private void runAll(Source src, Listener l) {
+    private void runAll(Listener l) {
         try {
-            String pingUrl;
-            String[] down;
-            switch (src) {
-                case NETFLIX:
-                    down = netflixTargets();
-                    pingUrl = down[0];
-                    break;
-                case CLOUDFLARE:
-                default:
-                    pingUrl = CF + "0";
-                    down = new String[] {CF + CF_BYTES};
-            }
-            int ping = measurePing(pingUrl);
+            String[] down = netflixTargets();
+            int ping = measurePing(down[0]);
             if (cancelled) return;
             main.post(() -> l.onLatency(ping));
             double mbps = measureDown(down, l);

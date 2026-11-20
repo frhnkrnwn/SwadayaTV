@@ -1,7 +1,7 @@
 # Swadaya Addon: Cuaca
 
-Status: **placeholder**. Fitur cuaca SwadayaTV ini belum dibuat — folder ini cuma nampung rencana & acuan buat nanti.
+Status: **placeholder**. Fitur cuaca SwadayaTV ini belum dibuat — folder ini hanya menampung rencana dan acuan untuk nanti.
 
-Plan datanya dari **Open-Meteo** (tanpa API key): cuaca sekarang (suhu, feels-like, kondisi), AQI, dan prakiraan beberapa hari ke depan buat satu kota. Kotanya dipilih sekali pakai keyboard TV lalu disimpan.
+Rencana datanya dari **Open-Meteo** (tanpa API key): cuaca sekarang (suhu, suhu terasa, kondisi), AQI, dan prakiraan beberapa hari ke depan untuk satu kota. Kota dipilih sekali memakai keyboard TV lalu disimpan.
 
-Addon ini bakal **auto on-off mandiri**: dia baca Open-Meteo cuma pas layarnya lagi kebuka (misal tiap 30 menit), dan nggak jalan di background. Jadi nggak bentrok sama launcher SwadayaTV — cukup pasang APK-nya, setuju "Show card" sekali, dan tile Cuaca muncul di Home.
+Addon ini akan **aktif-mati mandiri**: ia membaca Open-Meteo hanya saat layarnya terbuka (misalnya tiap 30 menit), dan tidak berjalan di latar belakang. Jadi tidak bentrok dengan launcher SwadayaTV — cukup pasang APK-nya, setujui "Show card" sekali, dan kartu Cuaca muncul di Home.

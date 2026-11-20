@@ -559,7 +559,7 @@ final class SoccerParse {
         return s == null ? "" : s.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "");
     }
 
-    /** Nama tim cocok (abaikan huruf besar/spasi/tanda baca; boleh singkatan yang terkandung). */
+    /** Nama tim cocok (abaikan huruf besar/spasi/tanda baca; bisa singkatan yang terkandung). */
     static boolean samaTim(String a, String b) {
         String x = normal(a), y = normal(b);
         if (x.isEmpty() || y.isEmpty()) return false;
