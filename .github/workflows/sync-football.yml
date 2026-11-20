@@ -1,0 +1,24 @@
+name: Sync football data
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Sync cached JSON from TheSportsDB (fallback: football-data.org)
+        run: |
+          echo "Football sync placeholder: update data/football/*.json here."
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add data/football/
+          if git diff --cached --quiet; then echo "No changes"; else git commit -m "chore: sync football data"; git push; fi

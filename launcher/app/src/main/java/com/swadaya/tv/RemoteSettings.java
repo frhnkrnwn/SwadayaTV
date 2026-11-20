@@ -68,7 +68,8 @@ final class RemoteSettings {
         String[] z = zoneEntry(ctx, zone);
         cats.put(category("Prayer times", "Card, zone and azan",
                 toggle(LauncherSettings.SHOW_PRAYER, "Prayer card", "Today's five prayer times on the home screen"),
-                row("zone", LauncherSettings.ZONE, "Zone", z != null ? z[0] + " · " + z[2] : "JAKIM e-solat zone")
+                toggle(LauncherSettings.SHOW_DAILY, "Daily card", "A daily Quran verse and dua on the home screen"),
+                row("zone", LauncherSettings.ZONE, "City", z != null ? z[0] + " · " + z[2] : "Kemenag prayer times (Aladhan)")
                         // "auto" with Auto (its text names the zone found), else the zone code
                         .put("value", LauncherSettings.zoneAuto(ctx) ? LauncherSettings.ZONE_AUTO : zone)
                         .put("text", LauncherSettings.zoneAuto(ctx) ? "Auto (" + zone + ")" : zone),
