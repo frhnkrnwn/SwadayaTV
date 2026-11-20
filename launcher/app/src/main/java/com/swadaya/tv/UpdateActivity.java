@@ -184,7 +184,7 @@ public class UpdateActivity extends Activity {
                     try {
                         if (confirm != null) startActivity(confirm.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
                     } catch (ActivityNotFoundException | SecurityException e) {
-                        fail("This TV can't install updates itself. Update SwadayaTV with the setup app on a computer.");
+                        fail("This TV can't install updates itself. Install the newer APK from the releases page instead.");
                     }
                     break;
                 case PackageInstaller.STATUS_SUCCESS:
@@ -200,7 +200,7 @@ public class UpdateActivity extends Activity {
                 case PackageInstaller.STATUS_FAILURE_INCOMPATIBLE:
                     fail(msg.contains("UPDATE_INCOMPATIBLE") || msg.contains("signatures")
                             ? "This SwadayaTV was installed from a computer build, so it can't take this update. "
-                              + "Update it with the setup app on the computer."
+                              + "Install a release APK (or build and install it the same way as this copy)."
                             : "The update couldn't be installed: " + msg);
                     break;
                 default:

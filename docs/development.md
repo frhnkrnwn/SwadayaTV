@@ -23,15 +23,11 @@ SwadayaTV/
 │   ├── getprop.txt, settings-{global,secure,system}.txt
 │   ├── stock-home.txt           the TV's own launcher, recorded by build-and-install.sh (restore.sh returns to it)
 │   ├── home-default.txt, home-candidates.txt, accessibility.txt, accessibility-enabled-before.txt, private-dns-before.txt
-│   ├── settings-before.txt      settings the TUI's Tweaks changed, with their old values (`<ns> <key> <value|null>`)
 │   └── dumpsys/                 activities/services of every manufacturer package that was checked
 ├── launcher/                    the launcher source (Java, AndroidX RecyclerView, minSdk 26, targetSdk 36), incl. the phone remote
 │   ├── app/src/main/            the launcher, the phone remote page (assets/remote.html) and its resources
 │   └── app/src/test/            unit tests for the pure logic (no TV or emulator needed)
-├── tui/                         the terminal app (Rust, ratatui): connect, install from Releases, debloat, tweaks, restore
-│   ├── src/                     adb runner, parsers, plans (command preview), flows mirroring the scripts, UI
-│   └── catalog.toml             notes and advice for the Debloat menu (safe / caution / keep / never)
-├── .github/workflows/ci.yml     GitHub Actions: lint, unit tests and the release build on every push; the TUI for 4 platforms
+├── .github/workflows/ci.yml     GitHub Actions: lint, unit tests and the release build on every push
 ├── scripts/
 │   ├── build-and-install.sh     check the computer and TV, build the launcher (R8 release, ~0.6 MB APK), install it, make it the home screen
 │   ├── benchmark.sh             measure a launcher's memory, CPU, start-up and smoothness
@@ -58,7 +54,7 @@ Notes on the install:
 - It uses `cmd package set-home-activity`, because several apps claim HOME on this TV: the factory test, tvusage and FallbackHome.
 - While the stock launcher is enabled, it always wins (its priority is 2). That's why it has to be disabled.
 - **New TV IP:** run `TV=<new-ip> scripts/build-and-install.sh` once; the new address is saved in `.tv` for every script.
-- **Adding a permission:** adding a permission like INTERNET to an already-installed app doesn't reach the network firewall on Android 10, so the app gets `EPERM` on sockets. If you ever add one, reinstall cleanly: `adb shell pm uninstall my.rafhan.app.tvhome && scripts/build-and-install.sh`.
+- **Adding a permission:** adding a permission like INTERNET to an already-installed app doesn't reach the network firewall on Android 10, so the app gets `EPERM` on sockets. If you ever add one, reinstall cleanly: `adb shell pm uninstall com.swadaya.tv && scripts/build-and-install.sh`.
 - **Signing:** every release build is signed with the project's release key (`launcher/tvhome-release.jks` and `launcher/keystore.properties`, both committed; see [Release signing and GitHub Releases](#release-signing-and-github-releases)), so any build upgrades any other in place. Replacing that key needs one uninstall (`adb shell pm uninstall com.swadaya.tv`), which loses the launcher's settings and the paired phones.
 
 ## Release signing and GitHub Releases
@@ -78,56 +74,13 @@ Check a build's signature with `apksigner verify --print-certs launcher/app/buil
 ### Publishing a version
 
 1. Bump `versionCode` (by 1) and `versionName` in `launcher/app/build.gradle`, and commit.
-2. Tag the commit with `v` + the versionName and push the tag:
-   ```bash
-   git tag v1.9
-   git push origin master v1.9
-   ```
-3. CI builds and tests it, then creates the release **TV Home 1.9** with `tvhome-1.9.apk` and notes generated from the commits.
+2. Push it to `main`. The Build workflow (`.github/workflows/build.yml`) runs the tests, builds the release APK and publishes the release `v<versionName>-build<number>` with `tvhome-<versionName>.apk` and the eight `netengine-*.so` files.
+3. CI (`.github/workflows/ci.yml`) runs lint and the unit tests on the push and on pull requests.
 
-TVs running TV Home 1.10.2 or newer see the release in the bell within a day and can update from there; the setup app shows its own newer version in its header.
+TVs running 1.1.2 or newer see the release in the bell within a day and can update from there; **Settings → About** checks on demand.
 
-The release tag is `v<versionName>-build<number>`, and the APK asset is named `tvhome-<versionName>.apk` so the in-app updater finds it. The number is the count of releases already published plus one (26, 27, 28…), so it runs on without gaps whatever happens to the CI runs; a push that is still building holds the next one back (the workflow has a concurrency group). Without the signing secrets the workflow still publishes, but signs with the runner's throwaway debug key: that APK cannot update an earlier build in place, and the Build job shows a warning. Configure the secrets before relying on OTA updates.
+The release tag is `v<versionName>-build<number>`, and the APK asset is named `tvhome-<versionName>.apk` so the in-app updater finds it. The number is the count of releases already published plus one (26, 27, 28…), so it runs on without gaps whatever happens to the CI runs; a push that is still building holds the next one back (the workflow has a concurrency group). Every build signs with the committed release key (`launcher/tvhome-release.jks` and `launcher/keystore.properties`), so a downloaded release updates the previous one in place, settings kept. `SIGNING_*` secrets only override that key when it is rotated.
 
-## The terminal app (tui/)
-
-A Rust ([ratatui](https://ratatui.rs)) front end to everything the scripts do, without bash. User guide: [tui.md](tui.md).
-
-- **Guided for non-technical people:** each screen (`screens.rs`) is a few plain sentences and a list of choices; `ui.rs` draws them all the same way, and keys and mouse clicks pick them.
-  - If adb isn't installed, it offers to download Google's Platform Tools into its own folder (`setup.rs`).
-  - It finds TVs from `adb mdns services` (Wireless debugging, including TVs waiting to pair) and by scanning the /24 network for port 5555. It waits for "Allow USB debugging?" by itself and supports pairing codes.
-  - *Set up my TV* (`flows::setup_all`) is install, the recommended clean-up and optionally Private DNS, as one plan with one Home check at the end.
-  - Quitting while connected offers `flows::debugging_off`.
-  - *Overview*, *Health* and *Playback* are read-only. Each is one batched `adb shell` read (`Worker::read_batch`, split on a marker line). The parsers are pure: `health.rs` (`/proc/stat`, `/proc/net/dev` and every `/proc/<pid>/stat` sampled 2 s apart, before the heavier reads, with names from `ps`; `/proc/meminfo`, `df`, `thermalservice`, `hardware_properties`, `dumpsys meminfo`) and `media.rs` (codec XML, `dumpsys display`, `dumpsys audio`, surround settings, DRM). Their tests run on output captured from a Mi TV in `src/testdata/`.
-  - The shell can't read the Widevine level (`dumpsys media.drm` is empty on Android 10), so Playback runs a tiny Java reader as the shell user. Its source is `tui/drminfo/DrmInfo.java`; `tui/drminfo/build.sh` (JDK 17 + Android SDK) compiles it into `drminfo.jar` (2 KB, committed, embedded with `include_bytes!`, so building the app needs no Android SDK). The app pushes it to `/data/local/tmp`, runs `app_process -cp <jar> /system/bin tvhome.DrmInfo`, which prints `key=value` lines from `MediaDrm`, and deletes it. It works on any TV, with or without TV Home. After changing `DrmInfo.java`, run `build.sh` and commit both.
-  - *Tweaks* changes Android settings through `flows::set_settings`, which records each old value (`null` if unset) in `backup/<serial>/settings-before.txt` (first value wins), then runs `settings put`. Undo puts each back, or deletes it if it was unset; `restore.sh` reads the same file.
-  - *Save a support report* (`report.rs`) writes the TV's details, its records and the end of the log (pairing codes masked) to Downloads.
-  - `--ascii` (automatic in Windows' classic console) and `NO_COLOR`/`--no-color` rewrite the finished frame (`ui::plain`), so screens don't need to know about either. A test checks every non-ASCII symbol in the screens has a stand-in.
-- **Runs `adb` directly** (no shell), so Windows shells can't rewrite paths. Every call is pinned with `-s <serial>`.
-- **Plans:** `flows.rs` builds each action from read-only checks (logged), so the preview shows the real commands with the real values. `plan.rs` runs them: a required step that fails stops the plan, an optional one is noted, and `pm install`'s signature mismatch offers uninstall-then-install.
-  - **Health check with rollback:** install, Set up and disabling end in an `Action::VerifyHome` step. After an install it polls the focused window for TV Home (giving up early on Google TV's setup screen). After disabling, it checks HOME still resolves to something other than `FallbackHome` or the setup app. On failure it re-enables what that plan disabled and, after an install, sets the recorded stock launcher as Home.
-- **Shares `backup/` and `.tv` with the scripts** when run inside the repository, in the same file formats. `scripts/restore.sh` undoes the TUI and the other way round.
-  - **Per-TV records** in `backup/<serial>/`: `Store::use_tv` in the TUI and `tv_backup` in `scripts/env.sh` follow the same rules. The serial is `ro.serialno`, then `ro.boot.serialno`, else the TV's IP, with anything other than letters, digits, `-` and `_` turned into `_`. A `tv.txt` inside names the TV.
-  - Loose records from before this move once into the folder of the TV that `backup/getprop.txt` names, or of the first TV seen when there's none. The TUI writes nothing until a TV has been chosen.
-- **Mirrors the scripts:**
-  - Install is `build-and-install.sh` without the build. It records the stock launcher once, pushes and runs `pm install -r`, grants the same permissions (plus `BLUETOOTH_CONNECT` on Android 12+), appends the accessibility service and sets Home, with the optional Google TV handover. Then it checks what's in front.
-  - Disable/enable is `disable.sh`.
-  - Restore follows `restore.sh` step by step.
-- **Debloat notes:**
-  - `catalog.toml` is this project's own reviewed notes. *never* matches `AppManager.PROTECTED` in the launcher, and a test keeps the two in step.
-  - `catalog-cleanyourtv.toml` is generated from [cleanyourtv](https://github.com/Gathin23/cleanyourtv)'s 420+ per-model lists (MIT) by `tools/import_cleanyourtv.py`. It pre-ticks only ads, tracking and promos that owners of at least two TVs disabled, and never anything that looks like a system part (a test checks this).
-  - Ours wins for any package in both. To refresh it, clone cleanyourtv and run `python3 -I tui/tools/import_cleanyourtv.py <clone> tui/catalog-cleanyourtv.toml`.
-
-```bash
-cd tui
-cargo test                                  # parsers, backups, plans, install/restore flows (fake adb)
-cargo clippy --all-targets -- -D warnings
-cargo run -- --dry-run                      # try it against a TV without changing anything
-```
-
-CI checks and builds it for Linux, Windows, both kinds of Mac, and Android phones (Termux, 64- and 32-bit ARM, built with the runner's Android NDK at API 24); a version tag attaches the six archives to the GitHub Release next to the APK. To build the phone version locally: `rustup target add aarch64-linux-android`, then point `CC_aarch64_linux_android` and `CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER` at the NDK's `aarch64-linux-android24-clang` (and `AR_aarch64_linux_android` at `llvm-ar`) and `cargo build --release --target aarch64-linux-android`. Inside Termux it's just `pkg install rust clang && cargo build --release`.
-
-Release builds use size optimization, fat LTO, one codegen unit and symbol stripping. CI also strips the finished binaries before upload: GNU `strip` on Linux, the Android NDK's `llvm-strip` for Termux, macOS `strip`, and Rust's `llvm-strip` component on Windows. For a local Rust toolchain warning about missing `libLLVM.dylib` during stripping, install `rustup component add llvm-tools-preview` and rebuild.
 
 ## Tests and CI
 
