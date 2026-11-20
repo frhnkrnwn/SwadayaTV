@@ -25,7 +25,7 @@ SwadayaTV is a fast, minimal home screen for **Android TV and Google TV** (Andro
 
 https://github.com/user-attachments/assets/8c54b279-a93a-4732-a06b-bfd6f9cd3b32
 
-Recorded on the TV (2 minutes, no sound): the dock's name and glow following focus, Now Playing, the running-apps screen and its hold-OK menu, Settings with wallpapers previewed as you move, the prayer zone list, and moving an app in the dock.
+Recorded on the TV (2 minutes, no sound): the dock's name and glow following focus, Now Playing, the running-apps screen and its hold-OK menu, Settings with wallpapers previewed as you move, the prayer city list, and moving an app in the dock.
 
 https://github.com/user-attachments/assets/fefd8d49-178f-4e7a-b011-14a44a562c13
 
@@ -39,7 +39,7 @@ The Globe screen saver (21 seconds, no sound): Settings → Screen saver → **S
     <td width="50%"><img src="docs/app-grid.jpg" width="100%" alt="All apps grid"></td>
   </tr>
   <tr>
-    <td valign="top"><b>Home</b>: big clock with the date and Hijri date, today's prayer times with a countdown, your most used apps this week, today's weather and air quality (BMKG, APIMS and Copernicus) with rain, lightning and haze on the glass as the weather is now, a system card (CPU, RAM, storage, network, USB debugging), Now Playing with cover art and controls, and an app dock you arrange yourself.</td>
+    <td valign="top"><b>Home</b>: big clock with the date and Hijri date, today's prayer times with a countdown, your most used apps this week, today's weather and air quality (BMKG and Copernicus) with rain, lightning and haze on the glass as the weather is now, a system card (CPU, RAM, storage, network, USB debugging), Now Playing with cover art and controls, and an app dock you arrange yourself.</td>
     <td valign="top"><b>All apps</b> (Down from the dock): 5 per row (6 or 7 in Settings, the dock follows), most used first (all time), with a glass focus highlight that springs from tile to tile. Hold OK on any app to add it to the dock.</td>
   </tr>
   <tr>
@@ -48,7 +48,7 @@ The Globe screen saver (21 seconds, no sound): Settings → Screen saver → **S
   </tr>
   <tr>
     <td valign="top"><b>Running apps</b> (Up from the top bar): what's running, how much memory each app uses and what it's doing. OK force-closes; hold OK to hide an app from the list.</td>
-    <td valign="top"><b>Settings</b> (the gear): prayer zone (found from the TV's location, or any Indonesian city for Kemenag prayer times), azan and prayer reminders, which cards show, 12/24-hour clock, wallpaper, the Most used week, apps per row, the screen saver, what the bell tells you, the phone remote, and more. Changes apply straight away.</td>
+    <td valign="top"><b>Settings</b> (the gear): prayer city (found from the TV's location, or any of the 58 Indonesian cities for Kemenag prayer times), azan and prayer reminders, which cards show, 12/24-hour clock, wallpaper, the Most used week, apps per row, the screen saver, what the bell tells you, the phone remote, and more. Changes apply straight away.</td>
   </tr>
   <tr>
     <td width="50%"><img src="docs/dock-reorder.jpg" width="100%" alt="Hold OK on a dock app: Move, Remove from dock, Open"></td>
@@ -71,11 +71,11 @@ The Globe screen saver (21 seconds, no sound): Settings → Screen saver → **S
     <td width="50%"><img src="docs/net-traffic-detail.jpg" width="100%" alt="One connection's details: app, package, server, address, protocol, request, country, time and data"></td>
   </tr>
   <tr>
-    <td valign="top"><b>Net traffic</b> (new in 1.15, optional): see where the TV's apps connect. Start capture in Settings → Net traffic and it lists each connection, newest first: "RadioStream → United States", the server's name (<code>27223.live.streamtheworld.com</code>), how often and how much. The routes also arc across the Globe screen saver, from your zone to each country.</td>
+    <td valign="top"><b>Net traffic</b> (new in 1.15, optional): see where the TV's apps connect. Start capture in Settings → Net traffic and it lists each connection, newest first: "RadioStream → United States", the server's name (<code>27223.live.streamtheworld.com</code>), how often and how much. The routes also arc across the Globe screen saver, from your city to each country.</td>
     <td valign="top"><b>Connection details</b>: OK on a connection shows its app and package, server name, address and port, protocol (HTTPS asking for h2, HTTP, QUIC, DNS…), the request where it's visible, country, when, and data. It works as a local VPN on the TV: no outside server, nothing decrypted, the last 30 minutes kept in memory only. The home screen's IP shows a <b>VPN</b> badge while it runs.</td>
   </tr>
   <tr>
-    <td colspan="2"><img src="docs/net-traffic-globe.jpg" width="100%" alt="Globe screen saver with cyan dotted routes arcing from Malaysia to Europe, the United States and Australia"></td>
+    <td colspan="2"><img src="docs/net-traffic-globe.jpg" width="100%" alt="Globe screen saver with cyan dotted routes arcing from Indonesia to Europe, the United States and Australia"></td>
   </tr>
   <tr>
     <td colspan="2" valign="top"><b>Net traffic on the Globe</b>: each connection arcs from your prayer zone to its country, a glowing dot hopping along the newest ones; older routes fade in steps over 30 minutes. The Globe's <b>Internet connections</b> layer (Settings → Screen saver) turns them on or off.</td>
@@ -103,7 +103,7 @@ The Globe screen saver (21 seconds, no sound): Settings → Screen saver → **S
     <td colspan="2"><img src="docs/screensaver-globe.jpg" width="100%" alt="Globe screen saver with about two-thirds of Earth in daylight over South America, the Atlantic and western Africa, with night across eastern Africa and Arabia"></td>
   </tr>
   <tr>
-    <td colspan="2" valign="top"><b>Screen saver: Globe</b>: the Earth as it sits in space right now, lit by the real sun, turning once every 2 minutes. On it: where it's Maghrib and Fajr right now, Makkah and the qibla from your zone, city lights, the sun's glint on the sea, snow and sea ice, the aurora, map edits as people save them, the day's earthquakes, and the ISS, Tiangong and Hubble where they are now. Clouds and moving wind can be switched on too. The remote's arrows turn it (<a href="docs/features.md#globe">more</a>).</td>
+    <td colspan="2" valign="top"><b>Screen saver: Globe</b>: the Earth as it sits in space right now, lit by the real sun, turning once every 2 minutes. On it: where it's Maghrib and Fajr right now, Makkah and the qibla from your city, city lights, the sun's glint on the sea, snow and sea ice, the aurora, map edits as people save them, the day's earthquakes, and the ISS, Tiangong and Hubble where they are now. Clouds and moving wind can be switched on too. The remote's arrows turn it (<a href="docs/features.md#globe">more</a>).</td>
   </tr>
   <tr>
     <td colspan="2" valign="top">
@@ -137,6 +137,21 @@ The Globe screen saver (21 seconds, no sound): Settings → Screen saver → **S
     <td colspan="3" align="center"><b>Phone remote</b> in the phone's browser, no app to install: swipe to move, type into any app, open and manage apps, see what's playing, prayer times and the bell, send a message or a link to the TV, change Settings and the wallpaper, a sleep timer, and send files to the TV. See <a href="docs/features.md#phone-remote">Phone remote</a>.</td>
   </tr>
 </table>
+
+## Indonesian data
+
+Everything location-based uses Indonesian sources and settings:
+
+| What | How it works now |
+| --- | --- |
+| **Prayer times** | Kemenag's method (20), through Aladhan, computed for the chosen city's coordinates. The card shows **Subuh, Dzuhur, Ashar, Maghrib and Isya**, the next prayer in gold with a countdown, and tomorrow's Subuh after Isya. The month is cached on the TV for offline use. |
+| **Prayer city** | **Auto** by default: the nearest of **58 Indonesian cities** to the TV's network location, matched offline (nothing is sent anywhere). Pick any city in **Settings → Prayer times → Zone**, grouped by province. Until one is found the default is **Jakarta**. Upgrading from the old Malaysian build resets an unknown zone code to Auto. |
+| **Hijri date** | Indonesian month names (Muharram, Safar, … Jumadil Awal, … Zulhijjah) beside the clock. |
+| **Azan & reminders** | The azan and the silent "Maghrib in 5 min" banner use the same city's cached times. The optional **Subuh +8 min** (Muhammadiyah approximation) is **off by default**; Kemenag's own times are shown unless you turn it on. |
+| **Weather** | **BMKG**'s open forecast (api.bmkg.go.id) for the city: today's low/high, morning/afternoon/night outlook, and the nearest slot's temperature and **feels-like** (heat index from BMKG temperature and humidity). Auto picks the city nearest the TV; or choose one in **Settings → Weather → Location**. |
+| **Air quality** | **Copernicus** (through Open-Meteo) for the same city: **US AQI** and **PM2.5**, with bands and the reading's hour. The card's rain, lightning and haze effects follow BMKG's weather code and the AQI. |
+| **Time zone** | Data is requested in **Asia/Jakarta**; the clock and dates follow the TV's own time zone (WIB, WITA or WIT). |
+| **Globe** | The qibla arc, prayer lines and "your country" card use the same Indonesian city (Fajr line at Kemenag's −20°); Indonesia is shown as home. |
 
 ## Install
 
@@ -196,7 +211,7 @@ This setup is meant for a TV on your own network, and it deliberately makes the 
 - **USB debugging stays on** (port 5555): anyone on your Wi-Fi can connect with `adb` and control the TV. The launcher uses the same loopback connection for the remote's D-pad and keyboard inside apps, screenshots, sleep/restart and disabling apps. Turn it off in Developer options when you don't need those — the rest of the phone remote keeps working.
 - **What the launcher is granted over ADB:** "draw over other apps" (the pairing PIN and messages over any app), an accessibility service (Back and Home from the phone remote, and the remote's Input button), `DUMP` (Now Playing without USB debugging), `WRITE_SECURE_SETTINGS` (choosing and switching the screen saver from TV Home's Settings), `READ_LOGS` below Android 13 (the Live log screen saver and Play Store updates in the bell; it can read the whole system log, which stays on the TV) and All files access (the Files tab and the `Wallpapers` folder). The accessibility service could see what's on screen, but doesn't ask to; it sends Back and Home, and filters one key, the Input button, letting every other key through untouched.
 - **Keep accessibility enabled (optional, off by default):** Settings → Misc can restore TV Home's accessibility service if firmware clears it, including while another app is open or after TV Home starts at boot. It uses the existing background service and `WRITE_SECURE_SETTINGS`, preserves other accessibility services and backs off during repeated resets. While enabled it also undoes a manual disable in Android Settings: **turn this option off in TV Home first**. Restore tools switch it off before removing access. Emergency opt-out: `adb shell settings put secure tvhome_keep_accessibility_enabled 0`. It cannot work while TV Home is force-stopped or the permission has been revoked.
-- **The Weather card fetches public data** while TV Home is open (and keeps it for offline use): BMKG's forecast for the place set in Settings (api.bmkg.go.id), the DOE's APIMS readings, and ECMWF's feels-like temperature and Copernicus air quality for the chosen station's spot (Open-Meteo). Like the Globe, the requests carry nothing about you beyond the TV's address and the `TvHome/1.0` user agent.
+- **The Weather card fetches public data** while TV Home is open (and keeps it for offline use): BMKG's forecast for the city set in Settings (api.bmkg.go.id) and Copernicus air quality (US AQI, PM2.5 and haze) for the same city (Open-Meteo). Like the Globe, the requests carry nothing about you beyond the TV's address and the `TvHome/1.0` user agent.
 - **The Globe screen saver fetches public data while it's on screen** (and keeps it for offline use): NASA's Earth maps (once, from Wikimedia Commons), OpenStreetMap's edits, USGS's earthquakes, CelesTrak's satellite orbits, NOAA's aurora and wind, NASA's snow and ice, the cloud map, and Natural Earth's countries (once) with each country's flag from Flagpedia (the first time it pops up), each only if its layer is switched on. The requests carry nothing about you or the TV beyond what any web request does (its address and a `TvHome/1.0` user agent).
 - **Net traffic (optional, off until you start it) is a local VPN.** Android asks before it runs, and a "VPN" badge shows on the home screen while it does. It forwards the TV's traffic on the TV itself (no outside VPN server) and reads only each connection's first outgoing bytes, for the server's name (the TLS hello's SNI or HTTP Host), a plain-HTTP request line or a plain-DNS name. Nothing is decrypted or stored beyond a 30-minute, in-memory list. Countries come from an offline IP list downloaded once, so no address is sent to a lookup service. The first start downloads its small engine (checked against fingerprints in the APK) and the country data (about 30 MB).
 - **The phone remote is plain HTTP on port 8486.** Pairing needs a six-digit PIN shown on the TV (five tries, then a lockout that grows to 15 minutes), and the server refuses requests whose `Host` isn't an IP address and any cross-site request, so a web page can't drive the TV. Traffic isn't encrypted though: keep the TV on a trusted WPA2/WPA3 network, never forward the port from your router, and use Settings → Phone remote → Forget all phones if you lose a phone.
