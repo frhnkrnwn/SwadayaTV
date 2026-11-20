@@ -1,7 +1,7 @@
 {
-  "versionCode": 56,
-  "versionName": "4.1.1",
-  "apkUrl": "https://github.com/frhnkrnwn/SwadayaTV/releases/latest/download/SwadayaTV.apk",
-  "changelog": "style: replace app icon with new emerald theme icon",
-  "releaseDate": "2026-11-19"
+  "versionCode": 2,
+  "versionName": "1.1.0",
+  "apkUrl": "https://github.com/frhnkrnwn/SwadayaTV/releases/latest/download/tvhome-1.1.0.apk",
+  "changelog": "Indonesian Live TV (TVRI/Metro), BMKG/Kemenag data, OTA updates",
+  "releaseDate": "2026-11-20"
 }
