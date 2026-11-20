@@ -39,6 +39,7 @@ RFHN-TV-Launcher/
 │   ├── disable.sh               disable packages, or --recommended (and log them so restore.sh can undo)
 │   ├── restrict.sh              stop apps running in the background, or --recommended (logged the same way)
 │   ├── key.sh / shot.sh         send remote keys / pull a screenshot (for testing)
+│   ├── setup-signing.sh         create the release key and store the four CI signing secrets, in one command
 │   └── env.sh                   TV address: TV=<ip> once, then remembered in .tv (not in the repo)
 └── shots/                       screenshots taken during the work
 ```
@@ -90,7 +91,11 @@ You need the JDK's `keytool` (from step 2 of the install guide) and the GitHub C
    keyPassword=your-password
    ```
 
+The four commands of step 2 are also one command, `scripts/setup-signing.sh`: it creates the key (or uses the one you point `KEY` at), asks for the password once and stores all four secrets.
+
 Check it worked: the next CI run's *Release signing key* step runs instead of being skipped. On your computer, `apksigner verify --print-certs launcher/app/build/outputs/apk/release/app-release.apk` shows `CN=TV Home`.
+
+**Switching to the key costs one manual install.** An app installed from an earlier release was signed with the runner's throwaway debug key, and Android refuses an APK with a different signature. Uninstall it once (`adb shell pm uninstall com.swadaya.tv`) and install the first signed build; settings and paired phones are lost that once. Every update after that installs over it from the bell, and the settings stay.
 
 ### Publishing a version
 
@@ -104,7 +109,7 @@ Check it worked: the next CI run's *Release signing key* step runs instead of be
 
 TVs running TV Home 1.10.2 or newer see the release in the bell within a day and can update from there; the setup app shows its own newer version in its header.
 
-The release tag is `v<versionName>-build<run number>`, and the APK asset is named `tvhome-<versionName>.apk` so the in-app updater finds it. Without the signing secrets the workflow still publishes, but signs with the runner's throwaway debug key: that APK cannot update an earlier build in place, and the Build job shows a warning. Configure the secrets before relying on OTA updates.
+The release tag is `v<versionName>-build<number>`, and the APK asset is named `tvhome-<versionName>.apk` so the in-app updater finds it. The number is the count of releases already published plus one (26, 27, 28…), so it runs on without gaps whatever happens to the CI runs; a push that is still building holds the next one back (the workflow has a concurrency group). Without the signing secrets the workflow still publishes, but signs with the runner's throwaway debug key: that APK cannot update an earlier build in place, and the Build job shows a warning. Configure the secrets before relying on OTA updates.
 
 ## The terminal app (tui/)
 
