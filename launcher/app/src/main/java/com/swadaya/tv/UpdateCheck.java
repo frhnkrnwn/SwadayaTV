@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 final class UpdateCheck {
     static final String REPO = "frhnkrnwn/SwadayaTV";
     private static final String LATEST = "https://api.github.com/repos/" + REPO + "/releases/latest";
+    private static final String RELEASES = "https://api.github.com/repos/" + REPO + "/releases?per_page=30";
 
     /** A release newer than the installed app. */
     static final class Release {
@@ -137,6 +138,31 @@ final class UpdateCheck {
     /** Releases are tagged v<version>-build<run>; the app compares and shows just the version. */
     static String versionFromTag(String tag) {
         return tag.replaceFirst("^[vV]", "").replaceFirst("-build\\d+$", "");
+    }
+
+    /**
+     * The tag of the newest release a build of {@code version} came from ("v1.1.3-build31"), for
+     * the files that release carries beside its APK, or null. Drafts and pre-releases are skipped
+     * like GitHub's own "latest"; {@code releases} is the array from the releases API. Blocks only
+     * in {@link #releaseTag}.
+     */
+    static String tagFor(JSONArray releases, String version) {
+        for (int i = 0; releases != null && i < releases.length(); i++) {
+            JSONObject r = releases.optJSONObject(i);
+            if (r == null || r.optBoolean("draft") || r.optBoolean("prerelease")) continue;
+            String tag = r.optString("tag_name");
+            if (version.equals(versionFromTag(tag))) return tag;
+        }
+        return null;
+    }
+
+    /** The release tag for {@code version}, from GitHub (null when offline or not released). Blocks. */
+    static String releaseTag(String version) {
+        try {
+            return tagFor(new JSONArray(get(RELEASES)), version);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     static String installedVersion(Context ctx) {

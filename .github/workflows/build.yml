@@ -85,6 +85,8 @@ jobs:
 
       # The app checks the latest release on GitHub (UpdateCheck), so every push publishes one.
       # The build number keeps the tag unique while the version stays readable to the app.
+      # The Net traffic engine rides along: the APK leaves it out and TrafficEngine downloads the
+      # files for this TV's CPU from this same release, so an APK installed from here needs no ADB.
       - name: Create GitHub Release
         if: github.event_name == 'push'
         uses: softprops/action-gh-release@v2
@@ -92,5 +94,7 @@ jobs:
           tag_name: v${{ steps.version.outputs.name }}-build${{ steps.buildnum.outputs.number }}
           name: SwadayaTV ${{ steps.version.outputs.name }} build ${{ steps.buildnum.outputs.number }}
           make_latest: true
-          files: launcher/tvhome-*.apk
+          files: |
+            launcher/tvhome-*.apk
+            launcher/app/build/outputs/netengine/release/netengine-*.so
           token: ${{ secrets.GITHUB_TOKEN }}

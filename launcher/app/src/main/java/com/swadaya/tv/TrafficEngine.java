@@ -107,10 +107,12 @@ final class TrafficEngine {
         }
     }
 
-    /** This version's release asset: netengine-<abi>-<lib>. */
+    /** This version's release asset: netengine-<abi>-<lib>, under the tag that release really has. */
     private static byte[] download(Context ctx, String abi, String lib) throws IOException {
         String version = UpdateCheck.installedVersion(ctx);
-        String url = "https://github.com/" + UpdateCheck.REPO + "/releases/download/v" + version
+        String tag = version == null ? null : UpdateCheck.releaseTag(version);
+        if (tag == null) throw new IOException("this version's release wasn't found on GitHub");
+        String url = "https://github.com/" + UpdateCheck.REPO + "/releases/download/" + tag
                 + "/netengine-" + abi + "-" + lib;
         HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
         c.setConnectTimeout(15_000);
