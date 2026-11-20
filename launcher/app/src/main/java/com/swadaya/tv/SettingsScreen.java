@@ -1,14 +1,17 @@
 package com.swadaya.tv;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -19,6 +22,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.text.DateFormat;
@@ -1341,6 +1345,61 @@ final class SettingsScreen {
         tv.sub = "Android Settings: network, display, sound, apps";
         tv.action = host::openTvSettings;
         out.add(tv);
+        // The two permissions the launcher can't ask for with a dialog: a shortcut to Android's own
+        // toggle, so nobody has to hunt for it (or run appops over ADB) to turn them on.
+        Row usage = new Row(ACTION, "Usage access");
+        usage.heading = "Permissions";
+        usage.sub = UsageScores.granted(ctx)
+                ? "On: the Most used card and the app order"
+                : "Off: turn it on for the Most used card and the app order";
+        usage.action = this::openUsageAccess;
+        out.add(usage);
+        Row files = new Row(ACTION, "All files access");
+        files.sub = FileApi.hasAllFilesAccess()
+                ? "On: the Files tab and the Wallpapers folder"
+                : "Off: turn it on for the Files tab and the Wallpapers folder";
+        files.action = this::openAllFilesAccess;
+        out.add(files);
+    }
+
+    /** Settings → About → Usage access: Android's Usage access list, where this app is turned on. */
+    private void openUsageAccess() {
+        if (!openSetting(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))) {
+            Toast.makeText(ctx, "This TV has no Usage access screen. Look for \"Usage access\" in the TV's settings.",
+                    Toast.LENGTH_LONG).show();
+            openAppDetails();
+        }
+    }
+
+    /**
+     * Settings → About → All files access: this app's own page (Android 11+), the whole list if the
+     * TV's Settings has no per-app page, and the app's page as the last resort.
+     */
+    private void openAllFilesAccess() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            // Before Android 11 the Files tab only needs the storage permission Android asks for.
+            openAppDetails();
+            return;
+        }
+        if (openSetting(new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+                Uri.parse("package:" + ctx.getPackageName())))) return;
+        if (openSetting(new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION))) return;
+        openAppDetails();
+    }
+
+    private void openAppDetails() {
+        openSetting(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                Uri.parse("package:" + ctx.getPackageName())));
+    }
+
+    /** Starts a Settings screen; false when this TV has no activity for it. */
+    private boolean openSetting(Intent intent) {
+        try {
+            ctx.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            return true;
+        } catch (RuntimeException e) {
+            return false;
+        }
     }
 
     // Settings → About → Check for updates: a check running from here (the result is UpdateCheck's,
