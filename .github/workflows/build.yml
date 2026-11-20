@@ -12,6 +12,9 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # The same key as CI, so the released APK can install over the app the TV already has.
+      SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
     steps:
       - uses: actions/checkout@v4
 
@@ -30,21 +33,45 @@ jobs:
         working-directory: launcher
         run: chmod +x gradlew
 
-      - name: Run assembleDebug
+      - name: Read the version
+        id: version
         working-directory: launcher
-        run: ./gradlew --no-daemon assembleDebug
+        run: echo "name=$(sed -n "s/.*versionName '\([^']*\)'.*/\1/p" app/build.gradle)" >> "$GITHUB_OUTPUT"
+
+      # The keystore lives only in the runner's temp folder, for this job.
+      - name: Release signing key
+        if: env.SIGNING_KEYSTORE_BASE64 != ''
+        run: |
+          echo "$SIGNING_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          echo "SIGNING_STORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+
+      - name: Build the release APK
+        working-directory: launcher
+        env:
+          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        run: ./gradlew --no-daemon assembleRelease
+
+      # UpdateCheck looks for tvhome-<something>.apk in the latest release: name it that way.
+      - name: Name the OTA APK
+        working-directory: launcher
+        run: cp app/build/outputs/apk/release/app-release.apk "tvhome-${{ steps.version.outputs.name }}.apk"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug
-          path: launcher/app/build/outputs/apk/debug/*.apk
+          name: app-release
+          path: launcher/tvhome-*.apk
 
+      # The app checks the latest release on GitHub (UpdateCheck), so every push publishes one.
+      # The build number keeps the tag unique while the version stays readable to the app.
       - name: Create GitHub Release
         if: github.event_name == 'push'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: build-${{ github.run_number }}
-          name: SwadayaTV build ${{ github.run_number }}
-          files: launcher/app/build/outputs/apk/debug/*.apk
+          tag_name: v${{ steps.version.outputs.name }}-build${{ github.run_number }}
+          name: SwadayaTV ${{ steps.version.outputs.name }} build ${{ github.run_number }}
+          make_latest: true
+          files: launcher/tvhome-*.apk
           token: ${{ secrets.GITHUB_TOKEN }}
