@@ -104,7 +104,7 @@ Check it worked: the next CI run's *Release signing key* step runs instead of be
 
 TVs running TV Home 1.10.2 or newer see the release in the bell within a day and can update from there; the setup app shows its own newer version in its header.
 
-The release job refuses to publish if the tag doesn't match `versionName`, or if the signing secrets are missing (a debug-signed release couldn't be updated later without losing settings).
+The release tag is `v<versionName>-build<run number>`, and the APK asset is named `tvhome-<versionName>.apk` so the in-app updater finds it. Without the signing secrets the workflow still publishes, but signs with the runner's throwaway debug key: that APK cannot update an earlier build in place, and the Build job shows a warning. Configure the secrets before relying on OTA updates.
 
 ## The terminal app (tui/)
 
