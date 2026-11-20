@@ -1,33 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Indonesian cities/kabupaten for Kemenag prayer times (Settings → Prayer times → City). Format: "Province|City|City". -->
+<!-- Indonesian cities for Kemenag prayer times (Settings → Prayer times → Zone).
+     Format: "Province|City|City". The city is the zone key and matches places.json. -->
 <resources>
     <string-array name="prayer_zones" translatable="false">
-        <item>DKI Jakarta|Jakarta|Jakarta</item>
-        <item>Jawa Barat|Bandung|Bandung</item>
-        <item>Jawa Barat|Bekasi|Bekasi</item>
-        <item>Jawa Barat|Bogor|Bogor</item>
-        <item>Jawa Barat|Depok|Depok</item>
-        <item>Jawa Barat|Cirebon|Cirebon</item>
-        <item>Jawa Tengah|Semarang|Semarang</item>
-        <item>Jawa Tengah|Surakarta|Surakarta</item>
-        <item>Jawa Tengah|Yogyakarta|Yogyakarta</item>
-        <item>Jawa Timur|Surabaya|Surabaya</item>
-        <item>Jawa Timur|Malang|Malang</item>
-        <item>Banten|Serang|Serang</item>
-        <item>Banten|Tangerang|Tangerang</item>
+        <item>Aceh|Banda Aceh|Banda Aceh</item>
         <item>Sumatera Utara|Medan|Medan</item>
         <item>Sumatera Barat|Padang|Padang</item>
         <item>Riau|Pekanbaru|Pekanbaru</item>
-        <item>Kepulauan Riau|Batam|Batam</item>
+        <item>Jambi|Jambi|Jambi</item>
         <item>Sumatera Selatan|Palembang|Palembang</item>
+        <item>Bengkulu|Bengkulu|Bengkulu</item>
         <item>Lampung|Bandar Lampung|Bandar Lampung</item>
+        <item>Kepulauan Bangka Belitung|Pangkal Pinang|Pangkal Pinang</item>
+        <item>Kepulauan Riau|Batam|Batam</item>
+        <item>Kepulauan Riau|Tanjung Pinang|Tanjung Pinang</item>
+        <item>DKI Jakarta|Jakarta|Jakarta</item>
+        <item>Jawa Barat|Bogor|Bogor</item>
+        <item>Jawa Barat|Sukabumi|Sukabumi</item>
+        <item>Jawa Barat|Bandung|Bandung</item>
+        <item>Jawa Barat|Cirebon|Cirebon</item>
+        <item>Jawa Barat|Bekasi|Bekasi</item>
+        <item>Jawa Barat|Depok|Depok</item>
+        <item>Jawa Tengah|Magelang|Magelang</item>
+        <item>Jawa Tengah|Surakarta|Surakarta</item>
+        <item>Jawa Tengah|Semarang|Semarang</item>
+        <item>DI Yogyakarta|Yogyakarta|Yogyakarta</item>
+        <item>Jawa Timur|Kediri|Kediri</item>
+        <item>Jawa Timur|Malang|Malang</item>
+        <item>Jawa Timur|Surabaya|Surabaya</item>
+        <item>Banten|Tangerang|Tangerang</item>
+        <item>Banten|Cilegon|Cilegon</item>
+        <item>Banten|Serang|Serang</item>
+        <item>Banten|Tangerang Selatan|Tangerang Selatan</item>
         <item>Bali|Denpasar|Denpasar</item>
-        <item>Kalimantan Timur|Samarinda|Samarinda</item>
-        <item>Kalimantan Timur|Balikpapan|Balikpapan</item>
-        <item>Sulawesi Selatan|Makassar|Makassar</item>
-        <item>Papua|Jayapura|Jayapura</item>
         <item>Nusa Tenggara Barat|Mataram|Mataram</item>
         <item>Nusa Tenggara Timur|Kupang|Kupang</item>
-        <item>Aceh|Banda Aceh|Banda Aceh</item>
+        <item>Kalimantan Barat|Pontianak|Pontianak</item>
+        <item>Kalimantan Barat|Singkawang|Singkawang</item>
+        <item>Kalimantan Tengah|Palangka Raya|Palangka Raya</item>
+        <item>Kalimantan Selatan|Banjarmasin|Banjarmasin</item>
+        <item>Kalimantan Selatan|Banjarbaru|Banjarbaru</item>
+        <item>Kalimantan Timur|Balikpapan|Balikpapan</item>
+        <item>Kalimantan Timur|Samarinda|Samarinda</item>
+        <item>Kalimantan Timur|Bontang|Bontang</item>
+        <item>Kalimantan Utara|Tarakan|Tarakan</item>
+        <item>Kalimantan Utara|Tanjung Selor|Tanjung Selor</item>
+        <item>Sulawesi Utara|Manado|Manado</item>
+        <item>Sulawesi Utara|Bitung|Bitung</item>
+        <item>Sulawesi Utara|Tomohon|Tomohon</item>
+        <item>Sulawesi Tengah|Palu|Palu</item>
+        <item>Sulawesi Selatan|Makassar|Makassar</item>
+        <item>Sulawesi Selatan|Palopo|Palopo</item>
+        <item>Sulawesi Tenggara|Kendari|Kendari</item>
+        <item>Sulawesi Tenggara|Baubau|Baubau</item>
+        <item>Gorontalo|Gorontalo|Gorontalo</item>
+        <item>Sulawesi Barat|Mamuju|Mamuju</item>
+        <item>Maluku|Ambon|Ambon</item>
+        <item>Maluku|Tual|Tual</item>
+        <item>Maluku Utara|Ternate|Ternate</item>
+        <item>Papua|Jayapura|Jayapura</item>
+        <item>Papua Barat|Manokwari|Manokwari</item>
+        <item>Papua Barat Daya|Sorong|Sorong</item>
     </string-array>
 </resources>

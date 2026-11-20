@@ -23,7 +23,7 @@ import java.util.Random;
 /**
  * The home screen's weather, between the wallpaper and the cards, as it is now (ECMWF's weather
  * code, from WeatherPanel): rain on the glass, a misty glass for drizzle or fog, lightning for a
- * thunderstorm (or a MET thunderstorm warning) and a warm haze when the API is unhealthy.
+ * thunderstorm (BMKG's code 95–99) and a warm haze when the air is unhealthy.
  *
  * It plays, then settles: for PLAY_MS after home comes to the front (or the weather changes),
  * small drops land and stay, and big ones run down the glass, wiping a clear trail, and off the

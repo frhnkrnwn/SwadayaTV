@@ -1563,7 +1563,7 @@ final class GlobeView extends GLSurfaceView {
         // 10–20 s) and 1.5 s after the arrows stop; about 7 s each, a different one each time.
         private static final long POPUP_MS = 7_000, FADE_IN_MS = 600, FADE_OUT_MS = 800, AFTER_TURN_MS = 1_500;
         private static final int POPUP_EVERY_MS = 10_000, POPUP_SPREAD_MS = 10_000;
-        private static final String HOME = "my"; // the prayer zones' country: shown warm
+        private static final String HOME = "id"; // the prayer cities' country: shown warm
         private static final int HOME_TINT = 0xFFCC9440, CARD = 0xB3121214, EDGE = 0x26FFFFFF, NAME = 0xFFA6A6A6;
         private final GlobeView globe;
         private List<Countries.Country> countries = java.util.Collections.emptyList();
@@ -1595,7 +1595,7 @@ final class GlobeView extends GLSurfaceView {
             small.setTextSize(8 * sd);
             cell = Math.round(text.getTextSize() * 1.5f);
             icons = icons(cell);
-            zone = "Your zone: " + LauncherSettings.zone(ctx); // the code (SGR03): a zone's first place can be long
+            zone = "Your city: " + LauncherSettings.zone(ctx); // the city name
             hint.setTypeface(Fonts.outfit(ctx, 400));
             hint.setTextSize(12 * sd);
             hint.setColor(DIM);

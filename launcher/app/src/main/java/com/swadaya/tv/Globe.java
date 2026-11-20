@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 
 /**
  * The Globe screen saver's arithmetic and feed parsing, kept free of Android so it can be unit
- * tested: where the sun is overhead right now, how high it stands anywhere, the JAKIM zones'
+ * tested: where the sun is overhead right now, how high it stands anywhere, the prayer cities'
  * map positions, the two live feeds (OpenStreetMap edits, USGS earthquakes), and the aurora,
  * snow and sea-ice maps. Satellites: Orbit.
  *
@@ -20,9 +20,9 @@ final class Globe {
     static final double MAKKAH_LAT = 21.4225, MAKKAH_LON = 39.8262;
     /**
      * Sun altitudes (degrees) of the two prayer lines: sunset (Maghrib), and dawn at the angle
-     * JAKIM's Subuh times use (they put the sun at about 18° below the horizon).
+     * Kemenag's Subuh times use (they put the sun 20° below the horizon).
      */
-    static final double MAGHRIB_ALT = -0.833, FAJR_ALT = -18;
+    static final double MAGHRIB_ALT = -0.833, FAJR_ALT = -20;
 
     private Globe() {}
 
@@ -116,7 +116,7 @@ final class Globe {
         return Math.max(-1, Math.min(1, v));
     }
 
-    // Each JAKIM zone's main town: where the globe marks "you" and starts the qibla arc.
+    // Each Indonesian city: where the globe marks "you" and starts the qibla arc.
     private static final Map<String, double[]> ZONES = new HashMap<>();
 
     private static void zone(String code, double lat, double lon) {
@@ -124,72 +124,70 @@ final class Globe {
     }
 
     static {
-        zone("JHR01", 2.45, 104.52);  // Pulau Aur
-        zone("JHR02", 1.49, 103.74);  // Johor Bahru
-        zone("JHR03", 2.03, 103.32);  // Kluang
-        zone("JHR04", 1.85, 102.93);  // Batu Pahat
-        zone("KDH01", 6.12, 100.37);  // Alor Setar
-        zone("KDH02", 5.65, 100.49);  // Sungai Petani
-        zone("KDH03", 6.25, 100.61);  // Kuala Nerang
-        zone("KDH04", 5.68, 100.92);  // Baling
-        zone("KDH05", 5.37, 100.56);  // Kulim
-        zone("KDH06", 6.35, 99.80);   // Langkawi
-        zone("KDH07", 5.79, 100.43);  // Gunung Jerai
-        zone("KTN01", 6.13, 102.24);  // Kota Bharu
-        zone("KTN02", 4.88, 101.97);  // Gua Musang
-        zone("MLK01", 2.19, 102.25);  // Melaka
-        zone("NGS01", 2.47, 102.23);  // Tampin
-        zone("NGS02", 2.74, 102.25);  // Kuala Pilah
-        zone("NGS03", 2.73, 101.94);  // Seremban
-        zone("PHG01", 2.79, 104.17);  // Tioman
-        zone("PHG02", 3.81, 103.33);  // Kuantan
-        zone("PHG03", 3.45, 102.42);  // Temerloh
-        zone("PHG04", 3.79, 101.86);  // Raub
-        zone("PHG05", 3.33, 101.86);  // Janda Baik
-        zone("PHG06", 4.47, 101.38);  // Cameron Highlands
-        zone("PHG07", 2.80, 103.49);  // Rompin
-        zone("PLS01", 6.44, 100.20);  // Kangar
-        zone("PNG01", 5.41, 100.33);  // George Town
-        zone("PRK01", 4.20, 101.26);  // Tapah
-        zone("PRK02", 4.60, 101.08);  // Ipoh
-        zone("PRK03", 5.43, 101.13);  // Gerik
-        zone("PRK04", 5.55, 101.35);  // Temengor
-        zone("PRK05", 4.02, 101.02);  // Teluk Intan
-        zone("PRK06", 4.85, 100.74);  // Taiping
-        zone("PRK07", 4.86, 100.80);  // Bukit Larut
-        zone("SBH01", 5.84, 118.12);  // Sandakan
-        zone("SBH02", 5.89, 117.56);  // Beluran
-        zone("SBH03", 5.03, 118.33);  // Lahad Datu
-        zone("SBH04", 4.24, 117.89);  // Tawau
-        zone("SBH05", 6.88, 116.85);  // Kudat
-        zone("SBH06", 6.08, 116.56);  // Gunung Kinabalu
-        zone("SBH07", 5.98, 116.07);  // Kota Kinabalu
-        zone("SBH08", 5.34, 116.16);  // Keningau
-        zone("SBH09", 5.35, 115.75);  // Beaufort
-        zone("SGR01", 3.07, 101.52);  // Shah Alam
-        zone("SGR02", 3.34, 101.25);  // Kuala Selangor
-        zone("SGR03", 3.04, 101.45);  // Klang
-        zone("SWK01", 4.75, 115.01);  // Limbang
-        zone("SWK02", 4.40, 113.99);  // Miri
-        zone("SWK03", 3.17, 113.04);  // Bintulu
-        zone("SWK04", 2.29, 111.83);  // Sibu
-        zone("SWK05", 2.13, 111.52);  // Sarikei
-        zone("SWK06", 1.24, 111.46);  // Sri Aman
-        zone("SWK07", 1.17, 110.57);  // Serian
-        zone("SWK08", 1.55, 110.35);  // Kuching
-        zone("SWK09", 1.75, 109.65);  // Kampung Patarikan
-        zone("TRG01", 5.33, 103.14);  // Kuala Terengganu
-        zone("TRG02", 5.74, 102.49);  // Jerteh
-        zone("TRG03", 5.07, 103.01);  // Kuala Berang
-        zone("TRG04", 4.50, 103.42);  // Dungun, Kemaman
-        zone("WLY01", 3.14, 101.69);  // Kuala Lumpur
-        zone("WLY02", 5.28, 115.24);  // Labuan
+        zone("Banda Aceh", 5.55237, 95.31703);
+        zone("Medan", 3.58399, 98.68474);
+        zone("Padang", -0.95565, 100.36246);
+        zone("Pekanbaru", 0.514, 101.44499);
+        zone("Jambi", -1.61557, 103.57677);
+        zone("Palembang", -3.00802, 104.7436);
+        zone("Bengkulu", -3.84067, 102.32073);
+        zone("Bandar Lampung", -5.38335, 105.26349);
+        zone("Pangkal Pinang", -2.13281, 106.12902);
+        zone("Batam", 1.14145, 104.01986);
+        zone("Tanjung Pinang", 0.91587, 104.44221);
+        zone("Jakarta", -6.17638, 106.82671);
+        zone("Bogor", -6.62161, 106.80873);
+        zone("Sukabumi", -6.91431, 106.91672);
+        zone("Bandung", -6.87423, 107.5854);
+        zone("Cirebon", -6.71251, 108.5582);
+        zone("Bekasi", -6.23336, 107.01356);
+        zone("Depok", -6.39895, 106.82347);
+        zone("Magelang", -7.49209, 110.22448);
+        zone("Surakarta", -7.56714, 110.78626);
+        zone("Semarang", -6.98371, 110.41869);
+        zone("Yogyakarta", -7.7736, 110.35719);
+        zone("Kediri", -7.81866, 112.0034);
+        zone("Malang", -7.92252, 112.65017);
+        zone("Surabaya", -7.34058, 112.68994);
+        zone("Tangerang", -6.17288, 106.63185);
+        zone("Cilegon", -6.03311, 106.06966);
+        zone("Serang", -6.12797, 106.14685);
+        zone("Tangerang Selatan", -6.32231, 106.69429);
+        zone("Denpasar", -8.73626, 115.23211);
+        zone("Mataram", -8.58085, 116.07551);
+        zone("Kupang", -10.17566, 123.55335);
+        zone("Pontianak", -0.03565, 109.34885);
+        zone("Singkawang", 0.90897, 109.01413);
+        zone("Palangka Raya", -2.19975, 113.95033);
+        zone("Banjarmasin", -3.35646, 114.54687);
+        zone("Banjarbaru", -3.47016, 114.74147);
+        zone("Balikpapan", -1.21442, 116.93774);
+        zone("Samarinda", -0.57219, 117.1775);
+        zone("Bontang", 0.13358, 117.50849);
+        zone("Tarakan", 3.32551, 117.58456);
+        zone("Tanjung Selor", 2.82501, 117.36969);
+        zone("Manado", 1.54438, 124.84174);
+        zone("Bitung", 1.40216, 125.18515);
+        zone("Tomohon", 1.29108, 124.7909);
+        zone("Palu", -0.88924, 119.86583);
+        zone("Makassar", -5.16218, 119.40425);
+        zone("Palopo", -3.00891, 120.19936);
+        zone("Kendari", -3.9673, 122.51365);
+        zone("Baubau", -5.48177, 122.57375);
+        zone("Gorontalo", 0.54691, 123.00509);
+        zone("Mamuju", -2.74919, 118.96735);
+        zone("Ambon", -3.7793, 128.11045);
+        zone("Tual", -5.59097, 132.76836);
+        zone("Ternate", 0.76141, 127.31969);
+        zone("Jayapura", -2.52644, 140.65689);
+        zone("Manokwari", -0.8535, 134.06195);
+        zone("Sorong", -0.87645, 131.28333);
     }
 
-    /** A zone's {latitude, longitude}; Kuala Lumpur for one this list doesn't know. */
+    /** A city's {latitude, longitude}; Jakarta for one this list doesn't know. */
     static double[] zonePlace(String code) {
         double[] p = code == null ? null : ZONES.get(code);
-        return (p != null ? p : ZONES.get("WLY01")).clone();
+        return (p != null ? p : ZONES.get("Jakarta")).clone();
     }
 
     static boolean knowsZone(String code) {

@@ -1314,7 +1314,7 @@ $("wallInput").onchange = async () => {
   } catch (e) { flash(e.message); }
 };
 
-// Prayer zone: a searchable list of the 60 JAKIM zones.
+// Prayer city: a searchable list of the 58 Indonesian cities.
 async function openZones() {
   buzz();
   try { const d = await api("/api/settings/zones"); zonesData = d.zones; zonesCurrent = d.current; zonesAuto = d.auto; }

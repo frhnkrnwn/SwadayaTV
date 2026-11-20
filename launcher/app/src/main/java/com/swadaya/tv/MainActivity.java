@@ -1805,11 +1805,10 @@ public class MainActivity extends Activity {
         switch (key) {
             case LauncherSettings.ZONE:
                 prayer.setZone(LauncherSettings.zone(this));
-                weather.settingsChanged(); // Auto place and Nearest station follow the zone
+                weather.settingsChanged(); // the weather's Auto city follows the prayer city
                 if (section == SETTINGS) settingsScreen.refreshRows(); // "Auto (…)" once it's found
                 break;
             case LauncherSettings.WEATHER_PLACE:
-            case LauncherSettings.WEATHER_STATION:
                 weather.settingsChanged();
                 break;
             case LauncherSettings.CLOCK:

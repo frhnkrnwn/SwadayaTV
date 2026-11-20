@@ -2,7 +2,6 @@ package com.swadaya.tv;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -15,267 +14,126 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/** The Weather card's parsing and choices, on real responses captured on 31 October 2026. */
+/** The Weather card's parsing and choices, on a real BMKG response captured on 20 November 2026. */
 public class WeatherTest {
+    private static final String FORECAST = "31.71.03.1001"; // Kemayoran, from the captured response
+    private static final String JAKARTA = "31.71.01.1001"; // Gambir, the city's entry in places.json
+
     @Test
-    public void picksTodaysForecastWhateverTheOrder() throws Exception {
-        String json = resource("weather-forecast-Tn181.json"); // Klang, 7 days, not in date order
-        Weather.Day d = Weather.parseForecast(json, "Tn181", LocalDate.of(2026, 10, 31));
+    public void picksTodaysForecastFromBmkg() throws Exception {
+        String json = resource("weather-bmkg.json");
+        Weather.Day d = Weather.parseForecast(json, FORECAST, LocalDate.of(2026, 11, 20));
         assertNotNull(d);
-        assertEquals(24, d.min);
-        assertEquals(32, d.max);
-        assertEquals("No rain", Weather.outlook(d));
-        assertEquals(Weather.SUN, Weather.kind(d.summary));
-        Weather.Day later = Weather.parseForecast(json, "Tn181", LocalDate.of(2026, 11, 6));
-        assertEquals("Thunderstorms, afternoon", Weather.outlook(later));
-        assertEquals("Storms pm", Weather.shortOutlook(later));
-        // Morning, afternoon (MET's "petang") and night, each with its own icon on the card.
-        assertEquals("No rain", Weather.word(later.morning));
-        assertEquals("Storms", Weather.word(later.afternoon));
-        assertEquals(Weather.STORM, Weather.kind(later.afternoon));
-        assertEquals(Weather.SUN, Weather.kind(later.night));
-        assertNull(Weather.parseForecast(json, "Tn181", LocalDate.of(2026, 12, 1))); // out of range
-        assertNull(Weather.parseForecast(json, "Ds054", LocalDate.of(2026, 10, 31))); // another place
+        // The day's four slots (13:00, 16:00, 19:00, 22:00 WIB): 25–30°C, rain in the afternoon.
+        assertEquals(25, d.min);
+        assertEquals(30, d.max);
+        assertEquals("Light Rain", Weather.outlook(d));
+        assertEquals("Light Rain", d.afternoon);
+        assertEquals("Mostly Cloudy", d.night);
+        assertEquals(Weather.RAIN, Weather.kind(d.summary));
+        assertNull(Weather.parseForecast(json, "31.71.01.1001", LocalDate.of(2026, 11, 20))); // another place
+        assertNull(Weather.parseForecast(json, FORECAST, LocalDate.of(2026, 12, 1))); // out of range
     }
 
     @Test
-    public void readsEveryApimsStation() throws Exception {
-        List<Weather.Station> all = Weather.parseStations(resource("weather-stations.json"));
-        assertEquals(68, all.size());
-        Weather.Station klang = Weather.station(all, "CA21B");
-        assertNotNull(klang);
-        assertEquals("Klang", klang.place);
-        assertEquals("Selangor", klang.state);
-        assertEquals(74, klang.api);
-        assertEquals("Moderate", Weather.apiBand(klang.api));
-        assertEquals("PM2.5", Weather.pollutant(klang.pollutant));
-        // The reading's hour is Malaysian time, stored as if it were UTC.
-        assertEquals(LocalDateTime.of(2026, 10, 31, 15, 0), klang.time);
+    public void readsTheIndonesianCityList() throws Exception {
+        List<Weather.Place> all = Weather.parsePlaces(resource("weather-places.json"));
+        assertEquals(58, all.size());
+        Weather.Place jakarta = Weather.place(all, JAKARTA);
+        assertNotNull(jakarta);
+        assertEquals("Jakarta", jakarta.name);
+        assertEquals("DKI Jakarta", jakarta.type());
+        assertEquals(-6.17638, jakarta.lat, 1e-4);
+        assertEquals(106.82671, jakarta.lon, 1e-4);
+        assertNull(Weather.place(all, "nope"));
+        // Sorted by name, so Settings lists them alphabetically.
+        assertEquals("Ambon", all.get(0).name);
     }
 
     @Test
-    public void nearestStationToTheZonesTown() throws Exception {
-        List<Weather.Station> all = Weather.parseStations(resource("weather-stations.json"));
-        double[] klang = Globe.zonePlace("SGR03");
-        assertEquals("CA21B", Weather.nearest(all, klang[0], klang[1]).id);
-        double[] kl = Globe.zonePlace("WLY01");
-        assertEquals("CA16W", Weather.nearest(all, kl[0], kl[1]).id); // Cheras, Kuala Lumpur
-        assertNull(Weather.nearest(java.util.Collections.emptyList(), 3, 101));
-    }
-
-    @Test
-    public void autoPlaceFollowsThePrayerZone() throws Exception {
-        List<Weather.Place> places = Weather.parsePlaces(resource("weather-places.json"));
-        assertEquals("Tn181", Weather.autoPlace("Selangor", "Klang, Kuala Langat", places).id); // town before district
-        assertEquals("Tn079", Weather.autoPlace("Wilayah Persekutuan", "Kuala Lumpur, Putrajaya", places).id);
-        assertEquals("St012", Weather.autoPlace("Melaka", "Seluruh Negeri Melaka", places).id); // the state
-        assertEquals("Rc024", Weather.autoPlace("Pahang", "Pulau Tioman", places).id);
-        assertEquals("St013", Weather.autoPlace("Johor", "Pulau Aur dan Pulau Pemanggil", places).id);
-        assertEquals("Town", Weather.place(places, "Tn181").type());
-    }
-
-    @Test
-    public void autoPlaceIsTheTownNearestTheTv() {
-        // MET's own ids (5 November 2026).
-        List<Weather.Place> places = java.util.Arrays.asList(new Weather.Place("Tn181", "Klang"),
-                new Weather.Place("Tn147", "Meru"), new Weather.Place("Tn066", "Pelabuhan Klang"),
-                new Weather.Place("Tn084", "Banting"), new Weather.Place("Tn033", "Kota Bharu"),
-                new Weather.Place("Tn187", "Kuching"), new Weather.Place("St010", "Selangor"));
-        assertEquals("Meru", Weather.nearestTown(places, 3.1326, 101.4175).name); // this TV, north of Klang
-        assertEquals("Klang", Weather.nearestTown(places, 3.04, 101.45).name);
-        assertEquals("Banting", Weather.nearestTown(places, 2.815, 101.502).name); // Kuala Langat: SGR03 too
-        assertEquals("Kota Bharu", Weather.nearestTown(places, 6.125, 102.24).name);
-        assertEquals("Kuching", Weather.nearestTown(places, 1.55, 110.35).name);
-        assertNull(Weather.nearestTown(places, 4.0, 106.0)); // the South China Sea: the zone decides
-        assertNull(Weather.nearestTown(places, 5.98, 116.07)); // Kota Kinabalu isn't in this list
-        assertNull(Weather.nearestTown(java.util.Collections.emptyList(), 3.13, 101.42)); // places not loaded yet
-    }
-
-    @Test
-    public void autoPlaceIsTheAirStationsTownWhenTheZoneHasIt() {
-        // MET's own ids (31 October 2026).
-        List<Weather.Place> places = java.util.Arrays.asList(new Weather.Place("Tn037", "Bachok"),
-                new Weather.Place("Tn033", "Kota Bharu"), new Weather.Place("Ds024", "Kota Bharu"),
-                new Weather.Place("Tn035", "Kuala Kangsar"), new Weather.Place("Tn041", "Ipoh"),
-                new Weather.Place("Tn105", "Port Dickson"), new Weather.Place("Tn104", "Seremban"),
-                new Weather.Place("Tn181", "Klang"), new Weather.Place("Ds004", "Kota Setar"));
-        String ktn = "Bachok, Kota Bharu, Machang, Pasir Mas, Pasir Puteh, Tanah Merah, Tumpat, Kuala Krai, Mukim Chiku";
-        assertEquals("Tn033", Weather.autoPlace("Kelantan", ktn, places, "Kota Bharu").id); // not Bachok
-        assertEquals("Tn037", Weather.autoPlace("Kelantan", ktn, places, null).id); // no stations yet: first area
-        assertEquals("Tn041", Weather.autoPlace("Perak", "Kuala Kangsar, Sg. Siput, Ipoh, Batu Gajah, Kampar",
-                places, "Pegoh Ipoh").id); // the station's town inside its name
-        assertEquals("Tn104", Weather.autoPlace("Negeri Sembilan", "Port Dickson, Seremban", places, "Seremban").id);
-        assertEquals("Tn181", Weather.autoPlace("Selangor", "Klang, Kuala Langat", places, "Klang").id);
-        // Kedah's station is "Alor Setar", not one of KDH01's areas: the first area as before.
-        assertEquals("Ds004", Weather.autoPlace("Kedah", "Kota Setar, Kubang Pasu, Pokok Sena (Daerah Kecil)",
-                places, "Alor Setar").id);
-    }
-
-    @Test
-    public void copernicusAirQuality() {
-        String json = "{\"latitude\":3.0,\"longitude\":101.399994,\"current\":{\"time\":\"2026-10-31T15:00\","
-                + "\"interval\":3600,\"us_aqi\":144,\"pm2_5\":32.2,\"pm10\":32.5,\"aerosol_optical_depth\":0.78}}";
-        Weather.Air a = Weather.parseAir(json);
-        assertNotNull(a);
-        assertEquals(144, a.aqi);
-        assertEquals(32.2, a.pm25, 1e-9);
-        assertEquals(0.78, a.haze, 1e-9); // aerosol optical depth: hazy
-        assertEquals(LocalDateTime.of(2026, 10, 31, 15, 0), a.time); // shown as Copernicus's reading time
-        assertEquals("Unhealthy for sensitive groups", Weather.usAqiBand(a.aqi));
-    }
-
-    @Test
-    public void ecmwfNow() {
-        String json = "{\"latitude\":3.0,\"longitude\":101.5,\"utc_offset_seconds\":28800,\"current\":"
-                + "{\"time\":\"2026-11-01T16:00\",\"interval\":900,\"temperature_2m\":29.7,\"apparent_temperature\":35.1,\"weather_code\":53}}";
-        Weather.Now n = Weather.parseNow(json);
+    public void nowIsTheNearestBmkgSlot() throws Exception {
+        Weather.Now n = Weather.parseNow(resource("weather-bmkg.json"), LocalDateTime.of(2026, 11, 20, 13, 10));
         assertNotNull(n);
-        assertEquals(29.7, n.temp, 1e-9);
-        assertEquals(35.1, n.feels, 1e-9);
-        assertEquals(LocalDateTime.of(2026, 11, 1, 16, 0), n.time);
-        assertEquals(53, n.code);
-        Weather.Now noFeels = Weather.parseNow("{\"current\":{\"time\":\"x\",\"temperature_2m\":30}}");
-        assertNotNull(noFeels); // a bad time or missing feels-like still shows the temperature
-        assertTrue(Double.isNaN(noFeels.feels));
-        assertEquals(-1, noFeels.code);
-        assertNull(Weather.parseNow("{\"current\":{\"temperature_2m\":null}}"));
+        assertEquals(30, n.temp, 1e-9);
+        assertEquals(2, n.code); // partly cloudy
+        assertEquals(LocalDateTime.of(2026, 11, 20, 13, 0), n.time);
+        assertTrue("feels warmer than it is", n.feels > n.temp);
+        assertNull(Weather.parseNow(resource("weather-bmkg.json"), LocalDateTime.of(2026, 11, 25, 12, 0)));
     }
 
     @Test
-    public void homeScreenEffects() {
-        assertEquals(Weather.FX_NONE, Weather.rainEffect(2)); // partly cloudy
-        assertEquals(Weather.FX_NONE, Weather.rainEffect(-1)); // no code yet
-        assertEquals(Weather.FX_MIST, Weather.rainEffect(53)); // drizzle
+    public void feelsLikeIsTheHeatIndex() {
+        assertEquals(30, Weather.feels(30, Double.NaN), 1e-9); // no humidity: the temperature itself
+        assertEquals(20, Weather.feels(20, 90), 1e-9);         // cool: no heat index
+        assertTrue(Weather.feels(32, 80) > 32);
+        assertTrue(Weather.feels(35, 90) > Weather.feels(35, 60));
+    }
+
+    @Test
+    public void readsCopernicusAirQuality() throws Exception {
+        Weather.Air a = Weather.parseAir(resource("weather-air.json"));
+        assertNotNull(a);
+        assertEquals(153, a.aqi);
+        assertEquals(36.6, a.pm25, 1e-9);
+        assertEquals(1.03, a.haze, 1e-9);
+        assertEquals(LocalDateTime.of(2026, 11, 20, 13, 0), a.time);
+        assertTrue(Weather.usAqiBand(a.aqi).contains("Unhealthy"));
+        assertEquals(2, Weather.pm25Band(a.pm25)); // "Sensitive": 35.4 < 36.6 ≤ 55.4
+    }
+
+    @Test
+    public void hourlyReadingsAreDueOncePerHour() {
+        LocalDateTime now = LocalDateTime.of(2026, 11, 20, 13, 5);
+        assertTrue(Weather.hourlyDue(null, now, 1, 600_000, 300_000));
+        assertTrue(Weather.hourlyDue(LocalDateTime.of(2026, 11, 20, 11, 0), now, 1, 600_000, 300_000));
+        assertTrue(Weather.hourlyDue(LocalDateTime.of(2026, 11, 20, 12, 0), now, 1, 600_000, 300_000)); // 13:00 is out
+        assertFalse(Weather.hourlyDue(LocalDateTime.of(2026, 11, 20, 13, 0), now, 1, 600_000, 300_000));
+        assertFalse(Weather.hourlyDue(null, now, 1, 60_000, 300_000)); // tried a minute ago: wait
+    }
+
+    @Test
+    public void rainAndLightningFollowTheWeatherCode() {
         assertEquals(Weather.FX_MIST, Weather.rainEffect(45)); // fog
-        assertEquals(Weather.FX_LIGHT, Weather.rainEffect(80));
-        assertEquals(Weather.FX_RAIN, Weather.rainEffect(95));
-        assertEquals(Weather.FX_HEAVY, Weather.rainEffect(82));
-        assertTrue(Weather.thunder(95, null));
-        assertFalse(Weather.thunder(63, null));
-        LocalDateTime t = LocalDateTime.of(2026, 11, 1, 15, 0);
-        assertTrue(Weather.thunder(1, new Weather.Warning("THUNDERSTORMS WARNING", "", t, t.plusHours(3))));
-        assertTrue(Weather.thunder(1, new Weather.Warning("Amaran Ribut Petir", "", t, t.plusHours(3))));
-        assertFalse(Weather.thunder(1, new Weather.Warning("CONTINUOUS RAIN WARNING", "", t, t.plusHours(3))));
+        assertEquals(Weather.FX_LIGHT, Weather.rainEffect(61)); // light rain
+        assertEquals(Weather.FX_RAIN, Weather.rainEffect(63));
+        assertEquals(Weather.FX_HEAVY, Weather.rainEffect(65));
+        assertEquals(Weather.FX_NONE, Weather.rainEffect(2)); // partly cloudy
+        assertTrue(Weather.thunder(95));
+        assertFalse(Weather.thunder(61));
     }
 
     @Test
-    public void everyPhraseMetUsesHasEnglish() {
-        // Every summary and period seen across all 440 places over 7 days on 31 October 2026.
-        String[] phrases = {"Tiada Hujan", "Ribut petir", "Ribut petir di beberapa tempat", "Hujan di beberapa tempat",
-                "Hujan", "Ribut petir di kebanyakan tempat", "Ribut petir di beberapa tempat di kawasan pedalaman",
-                "Hujan di kebanyakan tempat", "Hujan di beberapa tempat di kawasan pedalaman", "Mendung",
-                "Ribut petir menyeluruh", "Hujan di beberapa tempat di kawasan pantai", "Hujan menyeluruh",
-                "Ribut petir di kebanyakan tempat di kawasan pedalaman",
-                "Hujan di kebanyakan tempat di kawasan pedalaman"};
-        for (String p : phrases) assertNotEquals(p, Weather.english(p));
-        assertEquals("Thunderstorms in places, inland",
-                Weather.english("Ribut petir di beberapa tempat di kawasan pedalaman"));
-        assertEquals("Widespread rain", Weather.english("Hujan menyeluruh"));
-        assertEquals("Cloudy", Weather.english("Mendung"));
-        assertEquals("Something new", Weather.english("Something new")); // unknown: left as it is
-        String[] whens = {"Petang dan Malam", "Petang", "Sepanjang Hari", "Pagi dan Petang", "Pagi", "Malam", "Pagi dan Malam"};
-        for (String w : whens) assertNotEquals(w, Weather.englishWhen(w));
-        assertEquals("afternoon and night", Weather.englishWhen("Petang dan Malam"));
+    public void wordsCoverIndonesianAndEnglishDescriptions() {
+        assertEquals(Weather.SUN, Weather.kind("Cerah"));
+        assertEquals(Weather.SUN, Weather.kind("Clear"));
+        assertEquals(Weather.CLOUD, Weather.kind("Berawan"));
+        assertEquals(Weather.RAIN, Weather.kind("Hujan Lebat"));
+        assertEquals(Weather.RAIN, Weather.kind("Heavy Rain"));
+        assertEquals(Weather.STORM, Weather.kind("Hujan Petir"));
+        assertEquals(Weather.HAZE, Weather.kind("Asap"));
+        assertEquals(Weather.CLOUD, Weather.kind("Kabut"));
+        assertEquals("Storms", Weather.word("Hujan Petir"));
+        assertEquals("Fair", Weather.shortOutlook(new Weather.Day(20, 30, "Cerah", "", "", "")));
+        assertEquals("Hujan Lebat", Weather.worse("Berawan", "Hujan Lebat"));
     }
 
     @Test
-    public void hourlyReadingsAreFetchedWhenTheNextOneIsOut() {
-        long retry = 10 * 60_000L, long_ago = 60 * 60_000L;
-        LocalDateTime five = LocalDateTime.of(2026, 10, 31, 17, 0);
-        // APIMS (out at :10): at 17:05 the 17:00 reading isn't out yet, so 16:00 is still the newest.
-        assertTrue(!Weather.hourlyDue(LocalDateTime.of(2026, 10, 31, 16, 0), five.plusMinutes(5), 10, long_ago, retry));
-        // From 17:10 it should be: fetch.
-        assertTrue(Weather.hourlyDue(LocalDateTime.of(2026, 10, 31, 16, 0), five.plusMinutes(10), 10, long_ago, retry));
-        // Tried at 17:10 and it wasn't out: not again before 17:20.
-        assertTrue(!Weather.hourlyDue(LocalDateTime.of(2026, 10, 31, 16, 0), five.plusMinutes(15), 10, 5 * 60_000L, retry));
-        // Have 17:00: nothing more this hour.
-        assertTrue(!Weather.hourlyDue(five, five.plusMinutes(50), 10, long_ago, retry));
-        // Copernicus (out on the hour, give it a minute): a new hour, a new value.
-        assertTrue(Weather.hourlyDue(five, five.plusHours(1).plusMinutes(1), 1, long_ago, retry));
-        assertTrue(Weather.hourlyDue(null, five, 1, long_ago, retry)); // nothing kept yet
-    }
-
-    @Test
-    public void metWarningsInForceForThePlace() throws Exception {
-        // 31 October 2026: thunderstorms 14:00–20:00 over "Selangor (Sepang, Kuala Langat, Klang and
-        // Petaling)" and more; strong winds at sea 13:00–17:00; and a "No Advisory" with no times.
-        List<Weather.Warning> all = Weather.parseWarnings(resource("weather-warnings.json"));
-        assertEquals(2, all.size());
-        LocalDateTime evening = LocalDateTime.of(2026, 10, 31, 16, 30);
-        Weather.Warning w = Weather.activeWarning(all, evening, java.util.Arrays.asList("Klang"));
-        assertNotNull(w);
-        assertEquals("Thunderstorms warning", Weather.warningName(w));
-        assertEquals(LocalDateTime.of(2026, 10, 31, 20, 0), w.to);
-        assertNotNull(Weather.activeWarning(all, evening, java.util.Arrays.asList("Shah Alam", "Kuala Langat")));
-        // The state on its own matches too (warningPlaces adds it, for a warning that names no district).
-        assertNotNull(Weather.activeWarning(all, evening, java.util.Arrays.asList("Selangor")));
-        assertNull(Weather.activeWarning(all, evening, java.util.Arrays.asList("Kuching"))); // not named
-        assertNull(Weather.activeWarning(all, LocalDateTime.of(2026, 10, 31, 20, 30),
-                java.util.Arrays.asList("Klang"))); // over
-        assertNull(Weather.activeWarning(all, evening, java.util.Arrays.asList("Lang"))); // whole words only
-        // The sea warning (13:00–17:00, "the waters of East Johor • Pahang…") isn't shown.
-        assertNull(Weather.activeWarning(all, LocalDateTime.of(2026, 10, 31, 13, 30),
-                java.util.Arrays.asList("Pahang")));
-        assertTrue(Weather.parseWarnings("<html>").isEmpty());
-    }
-
-    @Test
-    public void bandEdges() {
-        assertEquals("Good", Weather.apiBand(50));
-        assertEquals("Moderate", Weather.apiBand(51));
-        assertEquals("Unhealthy", Weather.apiBand(101));
-        assertEquals("Very unhealthy", Weather.apiBand(201));
-        assertEquals("Hazardous", Weather.apiBand(301));
-        assertEquals("Moderate", Weather.usAqiBand(100));
-        assertEquals("Unhealthy", Weather.usAqiBand(151));
-        assertEquals("Hazardous", Weather.usAqiBand(301));
-        assertNotEquals(Weather.apiColor(50), Weather.apiColor(51));
-    }
-
-    @Test
-    public void bandColours() {
-        // The DOE's blue, green, yellow, orange, red, as pastels; the System card's green, amber, red.
-        assertEquals(0xFF6AAEF5, Weather.apiColor(30)); // Good, blue
-        assertEquals(0xFF63D489, Weather.apiColor(74)); // Moderate, green (the System card's)
-        assertEquals(0xFFF2DC6B, Weather.apiColor(150)); // Unhealthy, yellow
-        assertEquals(0xFFFFB340, Weather.apiColor(250)); // Very unhealthy, orange (the System card's amber)
-        assertEquals(0xFFFF6B5E, Weather.apiColor(400)); // Hazardous, red (the System card's)
-        assertEquals(0xFFFFB340, Weather.usAqiColor(144)); // Unhealthy for sensitive groups, orange
-    }
-
-    @Test
-    public void apimsTrendOverThreeHours() throws Exception {
-        // Klang's last 24 hours on 31 October 2026: 75 at 17:00, 74, 74, 73 at 14:00, 72, 71 at noon…
-        List<Weather.Reading> klang = Weather.parseHourly(resource("weather-hourly-CA21B.json"), "CA21B");
-        assertEquals(24, klang.size());
-        assertEquals(75, klang.get(0).api); // newest first
-        assertEquals(LocalDateTime.of(2026, 10, 31, 17, 0), klang.get(0).time);
-        assertEquals(Integer.valueOf(2), Weather.change(klang, null, 3)); // the newest: 73 at 14:00 → 75 at 17:00
-        // The reading the card shows may be an hour behind the table: 72 at 13:00 → 74 at 16:00.
-        assertEquals(Integer.valueOf(2), Weather.change(klang, LocalDateTime.of(2026, 10, 31, 16, 0), 3));
-        assertNull(Weather.change(klang, LocalDateTime.of(2026, 10, 31, 18, 0), 3)); // not in the table yet
-        assertEquals("↑ Rising · +2 in 3 h", Weather.trend(2, 3));
-        assertEquals("↓ Falling · −5 in 3 h", Weather.trend(-5, 3));
-        assertEquals("→ Steady", Weather.trend(1, 3));
-        assertEquals("", Weather.trend(null, 3)); // no history yet: nothing shown
-        assertTrue(Weather.parseHourly(resource("weather-hourly-CA21B.json"), "CA16W").isEmpty());
-        assertNull(Weather.change(java.util.Collections.emptyList(), null, 3));
-    }
-
-    @Test
-    public void brokenResponsesMeanNoData() {
-        for (String bad : new String[]{"", "<html>502</html>", "{}", "[]", "{\"error\":\"x\"}"}) {
-            assertNull(Weather.parseForecast(bad, "Tn181", LocalDate.of(2026, 10, 31)));
-            assertTrue(Weather.parsePlaces(bad).isEmpty());
-            assertTrue(Weather.parseStations(bad).isEmpty());
-            assertNull(Weather.parseAir(bad));
-            assertNull(Weather.parseNow(bad));
-        }
+    public void bandsFollowTheUsScale() {
+        assertEquals("Good", Weather.US_SHORT[Weather.band(40, Weather.US_TOP)]);
+        assertEquals("Moderate", Weather.US_SHORT[Weather.band(80, Weather.US_TOP)]);
+        assertEquals("Unhealthy", Weather.US_SHORT[Weather.band(180, Weather.US_TOP)]);
+        assertEquals("Hazardous", Weather.US_SHORT[Weather.band(900, Weather.US_TOP)]);
+        assertEquals("Good", Weather.US_SHORT[Weather.pm25Band(8)]);
+        assertEquals("Hazardous", Weather.US_SHORT[Weather.pm25Band(300)]);
     }
 
     private static String resource(String name) throws Exception {
         try (InputStream in = WeatherTest.class.getClassLoader().getResourceAsStream(name)) {
-            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+            if (in == null) throw new IllegalStateException("missing test resource: " + name);
+            java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+            byte[] b = new byte[8192];
+            for (int n; (n = in.read(b)) > 0; ) out.write(b, 0, n);
+            return new String(out.toByteArray(), StandardCharsets.UTF_8);
         }
     }
 }

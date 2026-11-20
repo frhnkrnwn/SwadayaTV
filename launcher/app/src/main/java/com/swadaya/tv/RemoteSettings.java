@@ -204,7 +204,7 @@ final class RemoteSettings {
         }
     }
 
-    /** The 60 JAKIM zones, for the phone's searchable list. */
+    /** The Indonesian cities, for the phone's searchable list. */
     JSONObject zones() throws JSONException {
         JSONArray out = new JSONArray();
         for (String e : ctx.getResources().getStringArray(R.array.prayer_zones)) {

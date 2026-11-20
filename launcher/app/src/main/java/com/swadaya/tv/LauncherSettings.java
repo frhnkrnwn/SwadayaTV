@@ -44,9 +44,9 @@ final class LauncherSettings {
         return "live_tv_ch_" + slug;
     }
 
-    // The Weather card (Settings → Weather): on/off, MET place id ("" = Auto), APIMS station id ("" = Nearest).
+    // The Weather card (Settings → Weather): on/off, BMKG place id ("" = Auto), effects on/off.
     static final String SHOW_WEATHER = "show_weather", WEATHER_PLACE = "weather_place",
-            WEATHER_STATION = "weather_station", WEATHER_FX = "weather_effects";
+            WEATHER_FX = "weather_effects";
     // The Globe screen saver's layers (Settings → Screen saver, when Globe is the one shown).
     static final String GLOBE_PRAYER_LINES = "globe_prayer_lines", GLOBE_MAKKAH = "globe_makkah",
             GLOBE_ZONE = "globe_zone", GLOBE_CITY_LIGHTS = "globe_city_lights", GLOBE_CLOUDS = "globe_clouds",
@@ -123,13 +123,15 @@ final class LauncherSettings {
     }
 
     /**
-     * Every switch starts on, except the info overlay (it would double up with an overlay app)
-     * and the Globe's clouds, wind and country popups (clouds cover much of the map; wind also
-     * takes more CPU; the popups are something to switch on if you like them).
+     * Every switch starts on, except the info overlay (it would double up with an overlay app),
+     * the Globe's clouds, wind and country popups (clouds cover much of the map; wind also takes
+     * more CPU; the popups are something to switch on if you like them), and the optional
+     * Muhammadiyah Subuh offset (Kemenag's own times are shown unless asked for).
      */
     private static boolean defaultFlag(String key) {
         return !STATUS_BAR.equals(key) && !GLOBE_CLOUDS.equals(key) && !GLOBE_WIND.equals(key)
-                && !GLOBE_COUNTRIES.equals(key) && !GLOBE_TRAFFIC.equals(key);
+                && !GLOBE_COUNTRIES.equals(key) && !GLOBE_TRAFFIC.equals(key)
+                && !PRAYER_SUBUH_OFFSET.equals(key);
     }
 
     static void setFlag(Context ctx, String key, boolean on) {
@@ -190,13 +192,26 @@ final class LauncherSettings {
     private static final String ZONE_FOUND = "prayer_zone_found", WHERE = "prayer_zone_where";
 
     /**
-     * The prayer zone in use: the one chosen, or with Auto the one found from the TV's location
-     * (ZoneDetect), and until one's found the default (SGR03).
+     * The prayer city in use: the one chosen, or with Auto the one found from the TV's location
+     * (ZoneDetect), and until one's found the default (Jakarta).
      */
     static String zone(Context ctx) {
         String z = prefs(ctx).getString(ZONE, ZONE_AUTO);
-        if (!ZONE_AUTO.equals(z)) return z;
+        if (!ZONE_AUTO.equals(z)) {
+            if (knownCity(ctx, z)) return z;
+            // An upgrade from the old Malaysian zone list: that code isn't a city here, so Auto.
+            prefs(ctx).edit().putString(ZONE, ZONE_AUTO).apply();
+        }
         return prefs(ctx).getString(ZONE_FOUND, ctx.getString(R.string.prayer_zone));
+    }
+
+    /** A city key in zones.xml (the list of Indonesian cities and their provinces). */
+    private static boolean knownCity(Context ctx, String key) {
+        for (String e : ctx.getResources().getStringArray(R.array.prayer_zones)) {
+            String[] z = e.split("\\|", 3);
+            if (z.length == 3 && z[1].equals(key)) return true;
+        }
+        return false;
     }
 
     /** Auto has found the TV's zone (it may not have yet: no location, or no network so far). */
@@ -249,7 +264,7 @@ final class LauncherSettings {
         ZoneDetect.locate(app, here -> {
             if (here == null || !zoneAuto(app)) return;
             String found = ZoneDetect.nearest(here[0], here[1]);
-            if (found == null) return; // outside Malaysia: keep what was found before
+            if (found == null) return; // outside Indonesia: keep what was found before
             String at = String.format(Locale.ROOT, "%.3f,%.3f", here[0], here[1]);
             boolean moved = !at.equals(prefs(app).getString(WHERE, ""));
             prefs(app).edit().putString(WHERE, at).apply();
@@ -259,7 +274,7 @@ final class LauncherSettings {
         });
     }
 
-    /** The MET forecast place's id ("Tn181"), or "" for Auto: the town nearest the TV (else the prayer zone's). */
+    /** The BMKG forecast place's id ("31.71.01.1001"), or "" for Auto: the city nearest the TV. */
     static String weatherPlace(Context ctx) {
         return prefs(ctx).getString(WEATHER_PLACE, "");
     }
@@ -267,16 +282,6 @@ final class LauncherSettings {
     static void setWeatherPlace(Context ctx, String id) {
         prefs(ctx).edit().putString(WEATHER_PLACE, id).apply();
         changed(WEATHER_PLACE);
-    }
-
-    /** The APIMS station's id ("CA21B"), or "" for Nearest: the one closest to the TV (else the prayer zone). */
-    static String weatherStation(Context ctx) {
-        return prefs(ctx).getString(WEATHER_STATION, "");
-    }
-
-    static void setWeatherStation(Context ctx, String id) {
-        prefs(ctx).edit().putString(WEATHER_STATION, id).apply();
-        changed(WEATHER_STATION);
     }
 
     /**
