@@ -2,7 +2,7 @@
 
 SwadayaTV is a fast, minimal home screen for **Android TV and Google TV** (Android 8.0 or newer), with prayer times, a live system card, Now Playing, a running-apps screen, a phone remote and a live globe screen saver. It was built on a Xiaomi Mi TV, which was also [debloated](docs/xiaomi-debloat.md).
 
-**Explore the launcher:** [Landing page](https://frhnkrnwn.github.io/SwadayaTV/) · [Bahasa Melayu](https://frhnkrnwn.github.io/SwadayaTV/ms.html) · [All features](docs/features.md)
+**Explore the launcher:** [Landing page](https://frhnkrnwn.github.io/SwadayaTV/) · [Bahasa Indonesia](https://frhnkrnwn.github.io/SwadayaTV/id.html) · [All features](docs/features.md)
 
 **Install it on your TV:** [Windows](docs/install-windows.md) · [macOS](docs/install-macos.md) · [Linux](docs/install-linux.md) · [with an AI agent](docs/install-with-ai-agent.md)
 
@@ -114,6 +114,7 @@ The Globe screen saver (21 seconds, no sound): Settings → Screen saver → **S
         <li><b>Notifications bell</b>: new TV Home versions (update from the bell in one click, or check any time in Settings → About), Play Store updates, new HDMI devices, Bluetooth devices and low memory.</li>
         <li><b>Connection status</b>: a banner over any app when Wi-Fi drops or loses internet.</li>
         <li><b>Info overlay</b> over apps (optional): network speed, uptime, a clock with seconds and time since you left the home screen; hidden on the home screen.</li>
+        <li><b>Live TV</b>: TVRI Nasional, TVRI World, TVRI's regional stations and Metro TV, played directly over HLS in Settings → Live TV.</li>
         <li><b>Inputs</b> menu for HDMI 1–3, AV and Live TV.</li>
         <li><b>Button Mapper</b>: give any remote button a new single, double or long press (open an app, the screen saver, sleep, the quick menu, mute, media keys and more), with USB debugging off.</li>
         <li>Light: a 0.53 MB app that starts about twice as fast as the stock launcher, uses about a third less memory after navigating, and has a sixth of its janky frames (<a href="#benchmark">benchmark</a>).</li>
@@ -145,7 +146,7 @@ Everything location-based uses Indonesian sources and settings:
 | What | How it works now |
 | --- | --- |
 | **Prayer times** | Kemenag's method (20), through Aladhan, computed for the chosen city's coordinates. The card shows **Subuh, Dzuhur, Ashar, Maghrib and Isya**, the next prayer in gold with a countdown, and tomorrow's Subuh after Isya. The month is cached on the TV for offline use. |
-| **Prayer city** | **Auto** by default: the nearest of **58 Indonesian cities** to the TV's network location, matched offline (nothing is sent anywhere). Pick any city in **Settings → Prayer times → Zone**, grouped by province. Until one is found the default is **Jakarta**. Upgrading from the old Malaysian build resets an unknown zone code to Auto. |
+| **Prayer city** | **Auto** by default: the nearest of **58 Indonesian cities** to the TV's network location, matched offline (nothing is sent anywhere). Pick any city in **Settings → Prayer times → Zone**, grouped by province. Until one is found the default is **Jakarta**. Upgrading from an older build resets an unknown zone code to Auto. |
 | **Hijri date** | Indonesian month names (Muharram, Safar, … Jumadil Awal, … Zulhijjah) beside the clock. |
 | **Azan & reminders** | The azan and the silent "Maghrib in 5 min" banner use the same city's cached times. The optional **Subuh +8 min** (Muhammadiyah approximation) is **off by default**; Kemenag's own times are shown unless you turn it on. |
 | **Weather** | **BMKG**'s open forecast (api.bmkg.go.id) for the city: today's low/high, morning/afternoon/night outlook, and the nearest slot's temperature and **feels-like** (heat index from BMKG temperature and humidity). Auto picks the city nearest the TV; or choose one in **Settings → Weather → Location**. |
@@ -175,7 +176,7 @@ You need an Android TV or Google TV running Android 8.0 or newer, and a computer
 | The gear | Settings: wallpaper, prayer zone, azan, cards, screen saver, notifications, phone remote |
 | Hold OK on the gear | Quick actions: start screen saver, sleep timer, sleep now, restart, shut down |
 | Settings → Net traffic | Start or stop the connection monitor; OK on a connection for its details |
-| Settings → Speed test | Download speed and latency from Cloudflare, Netflix or Unifi Malaysia, with the last 10 runs |
+| Settings → Speed test | Download speed and latency from Cloudflare or Netflix, with the last 10 runs |
 | Back / Home | Back to the dock |
 
 **Phone remote:** open `http://<TV IP>:8486` in your phone's browser on the same Wi-Fi and pair with the PIN shown on the TV. Settings → Phone remote shows the exact address. Five tabs:

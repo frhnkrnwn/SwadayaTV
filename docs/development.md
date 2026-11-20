@@ -148,11 +148,9 @@ Release builds use size optimization, fat LTO, one codegen unit and symbol strip
 
 ## Tests and CI
 
-For the Live TV startup scripts, `node scripts/test-tv-player.cjs` (Node 18+, no npm packages)
-exercises the exact JavaScript injected by `TvPlayer`: early preview-quality selection, throttled
-play/quality requests, full-screen quality, malformed-video fallback, sign-in/errors and rejecting
-the previous channel's still-playing document during navigation, and switching channel inside the page (RTMKlik's router, Tonton's history change) without taking the previous channel's video for the new one. These are provider stubs, not a
-replacement for testing real DRM playback on a TV.
+Live TV plays public HLS playlists in Android's media framework, so there are no injected player
+scripts to test on a computer. Check a channel on the TV itself and use `adb logcat -v time
+TvPlayer:I '*:S'` for its tune and playback timing.
 
 To inspect real startup timing, `adb -s <TV IP>:5555 logcat -v time TvPlayer:I '*:S'` shows browser
 preparation and each channel's elapsed time to page visibility, page load, player/video presence,

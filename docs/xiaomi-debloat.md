@@ -47,11 +47,11 @@ Then press Home.
 
 ## Speed tweaks
 
-- **Background-restricted apps:** tonton, iQIYI, Viu, iflix, M3U IPTV and PatchWall can't run services or boot tasks while you're not using them. PatchWall's scheduled jobs used to wake it mid-film (40 % CPU for a few seconds); its input popup still opens. They work normally when you open them, but the first launch is a cold start. The list is in `backup/<serial>/bg-restricted.txt`, and `restore.sh` lifts the restriction.
+- **Background-restricted apps:** Vidio, iQIYI, Viu, M3U IPTV and PatchWall can't run services or boot tasks while you're not using them. PatchWall's scheduled jobs used to wake it mid-film (40 % CPU for a few seconds); its input popup still opens. They work normally when you open them, but the first launch is a cold start. The list is in `backup/<serial>/bg-restricted.txt`, and `restore.sh` lifts the restriction.
   ```bash
-  scripts/restrict.sh my.com.tonton.screen                                     # restrict one more app (and record it)
+  scripts/restrict.sh com.vidio.android                                       # restrict one more app (and record it)
   scripts/restrict.sh --recommended                                            # PatchWall, as the setup app does
-  adb shell cmd appops set my.com.tonton.screen RUN_ANY_IN_BACKGROUND allow    # undo for one app
+  adb shell cmd appops set com.vidio.android RUN_ANY_IN_BACKGROUND allow      # undo for one app
   ```
 - **Wi-Fi background scanning is off** (`wifi_scan_always_enabled 0`). Wi-Fi works normally. To undo: Settings → Network & Internet → Scanning always available.
 - **Other suggestions, not applied:**
