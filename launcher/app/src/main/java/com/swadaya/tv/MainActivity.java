@@ -147,6 +147,7 @@ public class MainActivity extends Activity {
     private UsagePanel usage;
     private WeatherPanel weather;
     private SoccerPanel soccer;
+    private DailyPanel daily;
     private TextView greeting, holidayCountdown;
     private WeatherEffects weatherFx;
     /** This week (the Most used card) and all time (the grid order). */
@@ -321,7 +322,8 @@ public class MainActivity extends Activity {
         bellBadge.setTypeface(Fonts.outfit(this, 600));
         LinearLayout weatherCard = findViewById(R.id.weatherPanel), sysCard = findViewById(R.id.sysPanel),
                 prayerCard = findViewById(R.id.prayerPanel), usageCard = findViewById(R.id.usagePanel),
-                soccerCard = findViewById(R.id.soccerPanel), nowCard = findViewById(R.id.nowPlaying);
+                soccerCard = findViewById(R.id.soccerPanel), dailyCard = findViewById(R.id.dailyPanel),
+                nowCard = findViewById(R.id.nowPlaying);
         homeViews = new View[] {findViewById(R.id.clockBlock), findViewById(R.id.pills), findViewById(R.id.dockBand),
                 sysCard, prayerCard, usageCard, weatherCard, findViewById(R.id.peekFade), nowCard};
         system = new SystemPanel(this, sysCard, worker);
@@ -349,6 +351,7 @@ public class MainActivity extends Activity {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         weather = new WeatherPanel(this, weatherCard, weatherFx);
         soccer = new SoccerPanel(this, soccerCard);
+        daily = new DailyPanel(this, dailyCard);
         alignSystemPanel();
         centreDatesOnClock();
 
@@ -1827,6 +1830,7 @@ public class MainActivity extends Activity {
             case LauncherSettings.SHOW_SYSTEM:
             case LauncherSettings.SHOW_NOW:
             case LauncherSettings.SHOW_SOCCER:
+            case LauncherSettings.SHOW_DAILY:
                 applyCardSettings();
                 break;
             case LauncherSettings.SOCCER_LEAGUE:
@@ -1866,11 +1870,12 @@ public class MainActivity extends Activity {
      */
     private void applyCardSettings() {
         View prayerCard = findViewById(R.id.prayerPanel), weatherCard = findViewById(R.id.weatherPanel),
-                soccerCard = findViewById(R.id.soccerPanel);
+                soccerCard = findViewById(R.id.soccerPanel), dailyCard = findViewById(R.id.dailyPanel);
         boolean showPrayer = LauncherSettings.flag(this, LauncherSettings.SHOW_PRAYER);
         prayerCard.setVisibility(showPrayer ? View.VISIBLE : View.GONE);
         weatherCard.setVisibility(LauncherSettings.flag(this, LauncherSettings.SHOW_WEATHER) ? View.VISIBLE : View.GONE);
         soccerCard.setVisibility(LauncherSettings.flag(this, LauncherSettings.SHOW_SOCCER) ? View.VISIBLE : View.GONE);
+        dailyCard.setVisibility(LauncherSettings.flag(this, LauncherSettings.SHOW_DAILY) ? View.VISIBLE : View.GONE);
         ViewGroup.MarginLayoutParams wlp = (ViewGroup.MarginLayoutParams) weatherCard.getLayoutParams();
         wlp.topMargin = showPrayer ? px(10) : 0;
         weatherCard.setLayoutParams(wlp);

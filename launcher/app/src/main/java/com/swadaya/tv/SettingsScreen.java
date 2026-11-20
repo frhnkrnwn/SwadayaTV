@@ -844,7 +844,7 @@ final class SettingsScreen {
         boolean auto = LauncherSettings.zoneAuto(ctx);
         String[] z = RemoteSettings.zoneEntry(ctx, zone);
         Row r = new Row(PICKER, "Zone");
-        r.sub = z != null ? z[0] + " · " + z[2] : "JAKIM e-solat zone";
+        r.sub = z != null ? z[0] + " · " + z[2] : "Kemenag prayer times (Aladhan)";
         r.value = () -> auto ? "Auto (" + zone + ")" : zone;
         r.action = this::openZonePicker;
         out.add(r);
@@ -867,8 +867,8 @@ final class SettingsScreen {
         Weather.Place place = WeatherPanel.place(ctx, places);
         boolean auto = LauncherSettings.weatherPlace(ctx).isEmpty();
         Row loc = new Row(PICKER, "Location");
-        loc.sub = place != null ? "MET Malaysia's forecast for this " + place.type().toLowerCase(Locale.ROOT)
-                : "MET Malaysia's forecast. Auto: the town nearest your TV";
+        loc.sub = place != null ? "BMKG forecast for this " + place.type().toLowerCase(Locale.ROOT)
+                : "BMKG forecast. Auto: the town nearest your TV";
         loc.value = () -> place == null ? "Auto" : auto ? "Auto (" + place.name + ")" : place.name;
         loc.action = this::openPlacePicker;
         out.add(loc);
@@ -920,6 +920,7 @@ final class SettingsScreen {
         out.add(toggle(LauncherSettings.SHOW_SYSTEM, "System card", "CPU, RAM, storage, network and USB debugging"));
         out.add(toggle(LauncherSettings.SHOW_NOW, "Now Playing card", "Cover, title and controls while something plays"));
         out.add(toggle(LauncherSettings.SHOW_SOCCER, "Soccer card", "Standings for your league"));
+        out.add(toggle(LauncherSettings.SHOW_DAILY, "Daily card", "A daily Quran verse and dua on the home screen"));
         {
             int[] ids = new int[SoccerData.LEAGUES.length];
             String[] names = new String[SoccerData.LEAGUES.length];

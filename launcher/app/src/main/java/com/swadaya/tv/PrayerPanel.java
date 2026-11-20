@@ -39,8 +39,8 @@ import java.util.concurrent.Executor;
  * network comes back). Display updates ride on the clock's minute tick, so there's no polling.
  */
 final class PrayerPanel {
-    private static final String API =
-            "https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=month&zone=";
+    private static final String API_BASE =
+            "https://api.aladhan.com/v1/calendarByCity?city=%s&country=Indonesia&method=20&month=%d&year=%d";
     private static final String[] KEYS = {"fajr", "dhuhr", "asr", "maghrib", "isha"};
     static final String[] NAMES = {"Fajr", "Dhuhr", "Asr", "Maghrib", "Isya"};
     /** Dawn, midday sun, afternoon sun, sunset, night: one per prayer, in NAMES order. */
@@ -334,7 +334,10 @@ final class PrayerPanel {
             JSONArray result = null;
             HttpURLConnection c = null;
             try {
-                c = (HttpURLConnection) new URL(API + z).openConnection();
+                String url = String.format(java.util.Locale.ROOT, API_BASE,
+                        java.net.URLEncoder.encode(z, "UTF-8"),
+                        ym.getMonthValue(), ym.getYear());
+                c = (HttpURLConnection) new URL(url).openConnection();
                 c.setConnectTimeout(15_000);
                 c.setReadTimeout(15_000);
                 c.setRequestProperty("Accept", "application/json");
@@ -346,11 +349,37 @@ final class PrayerPanel {
                             new InputStreamReader(c.getInputStream(), StandardCharsets.UTF_8))) {
                         for (String line; (line = r.readLine()) != null; ) sb.append(line);
                     }
-                    JSONArray arr = new JSONObject(sb.toString()).getJSONArray("prayerTime");
-                    // The API serves the server's current month; only keep it if that's ours.
-                    String first = arr.getJSONObject(0).optString("date");
-                    String expect = "-" + MALAY_MONTHS[ym.getMonthValue() - 1] + "-" + ym.getYear();
-                    if (first.toLowerCase(Locale.ROOT).endsWith(expect.toLowerCase(Locale.ROOT))) {
+                    JSONArray data = new JSONObject(sb.toString()).getJSONArray("data");
+                    JSONArray arr = new JSONArray();
+                    for (int i = 0; i < data.length(); i++) {
+                        JSONObject d = data.optJSONObject(i);
+                        if (d == null) continue;
+                        JSONObject timings = d.optJSONObject("timings");
+                        JSONObject dateObj = d.optJSONObject("date");
+                        if (timings == null || dateObj == null) continue;
+                        JSONObject greg = dateObj.optJSONObject("gregorian");
+                        JSONObject hijri = dateObj.optJSONObject("hijri");
+                        JSONObject entry = new JSONObject();
+                        String day = greg != null ? greg.optString("day") : String.valueOf(i + 1);
+                        entry.put("date", day + "-" + ym.getMonthValue() + "-" + ym.getYear());
+                        String[] ks = {"Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"};
+                        for (int k = 0; k < KEYS.length; k++) {
+                            String v = timings.optString(ks[k]);
+                            int sp = v.indexOf(' ');
+                            if (sp >= 0) v = v.substring(0, sp);
+                            entry.put(KEYS[k], v);
+                        }
+                        if (hijri != null) {
+                            String yh = hijri.optString("year");
+                            String mh = "";
+                            JSONObject mobj = hijri.optJSONObject("month");
+                            if (mobj != null) mh = mobj.optString("number");
+                            String dh = hijri.optString("day");
+                            entry.put("hijri", yh + "-" + mh + "-" + dh);
+                        }
+                        arr.put(entry);
+                    }
+                    if (arr.length() > 0) {
                         result = arr;
                         writeCache(z, ym, arr);
                     }
@@ -362,7 +391,7 @@ final class PrayerPanel {
             }
             JSONArray done = result;
             main.post(() -> {
-                if (!z.equals(zone)) return; // the zone changed meanwhile
+                if (!z.equals(zone)) return; // the city changed meanwhile
                 fetching = false;
                 if (done != null) {
                     month = done;

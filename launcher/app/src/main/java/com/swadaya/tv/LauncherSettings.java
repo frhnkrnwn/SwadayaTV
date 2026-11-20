@@ -34,6 +34,7 @@ final class LauncherSettings {
             STATUS_BG = "status_background", APPS_PER_ROW = "apps_per_row",
             SHOW_SOCCER = "show_soccer", SOCCER_LEAGUE = "soccer_league", SOCCER_TEAM = "soccer_team",
             PRAYER_SUBUH_OFFSET = "prayer_subuh_offset",
+            SHOW_DAILY = "show_daily",
             USER_NAME = "user_name";
     // Live TV (Settings → Live TV): the screen above Running apps, and each station in it
     // (stationKey); all on by default.

@@ -68,7 +68,7 @@ final class WeatherPanel {
             FALLING = 0xFF63D489; // a falling API: the System card's green
     /** The API's trend: the newest reading against the one this many hours before. */
     private static final int TREND_HOURS = 3;
-    private static final String NONE = "–", MET_NAME = "MET";
+    private static final String NONE = "–", MET_NAME = "BMKG";
     /** One thread for all weather fetches (the card's and Settings'), apart from the app's worker. */
     private static final ExecutorService NET = Executors.newSingleThreadExecutor(r -> {
         Thread t = new Thread(r, "weather");
