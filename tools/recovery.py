@@ -14,7 +14,7 @@ disabled, and reset Home and the animation scales to fixed values instead of to 
 before. Both scripts now go through this record: `disable.sh` writes it before the first command
 reaches the TV, and `restore.sh` replays it.
 
-Records live in ~/.cleanyourtv/, one per TV and list. The first one wins: a retry after a
+Records live in ~/.swadayatv/, one per TV and list. The first one wins: a retry after a
 half-applied list must not record the broken state as the original. The TV is the address it was
 reached at, so a set that takes a new address gets a new record: save() warns when a record under
 another address still holds, as enabled, a package it just found disabled (#2139). A later run, and check.py --fix,
@@ -48,7 +48,7 @@ NOTHING_RECORDED = "Nothing was recorded and nothing was sent to the TV."
 # This project's own launcher. When it already owned Home before debloating while the stock launcher
 # was on, restoring Home to it would leave the stock launcher's Home unused, so restore goes back to the
 # stock one instead. When the stock launcher was already off then, this launcher keeps Home (#1714).
-CUSTOM_LAUNCHER = "com.gathin.tvhome"
+CUSTOM_LAUNCHER = "com.swadaya.tv"
 # The stock launchers launcher/build-and-install.sh knows (its KNOWN_STOCK_LAUNCHERS). save() records
 # the state of each one installed, listed or not, so restore turns one back on only when it was on
 # before cleanup (#1714). tests/test_restore_stock_launcher.py keeps the two lists in step.
@@ -148,7 +148,7 @@ def list_digest(list_path):
 def record_name(list_path, tag):
     digest = list_digest(list_path)
     tag = re.sub(r"[^A-Za-z0-9.-]", "_", tag or "no-host")
-    return Path.home() / ".cleanyourtv" / f"recovery-{tag}-{digest}.json"
+    return Path.home() / ".swadayatv" / f"recovery-{tag}-{digest}.json"
 
 
 def records_under_other_addresses(list_path, path):
@@ -551,7 +551,7 @@ def save(list_path, host):
             "If this is that TV on a new address (a new DHCP lease, or the Wi-Fi forget and re-join "
             "the setupwraith step asks for), undo run from here leaves those off. Run tools/restore.sh "
             "at the old address first, or move that record to "
-            f"~/.cleanyourtv/{path.name} once you are sure it is this TV.\n"
+            f"~/.swadayatv/{path.name} once you are sure it is this TV.\n"
             "If this is a second set cleaned with the same list, nothing is wrong: both records "
             "stay.\n")
     return 0

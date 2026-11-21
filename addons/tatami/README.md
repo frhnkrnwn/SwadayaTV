@@ -1,6 +1,6 @@
 # Tatami
 
-A screensaver for Android TV, and a card on cleanyourtv's Home. Small rooms rearrange themselves in slow, quiet
+A screensaver for Android TV, and a card on SwadayaTV's Home. Small rooms rearrange themselves in slow, quiet
 motion, drawn live on the TV. Inspired by the ending of *The Tatami Galaxy* (2010). It has two looks, and by
 default they take turns:
 
@@ -24,7 +24,7 @@ from the show.
 
 ## Install
 
-From your cleanyourtv checkout, with its `tools/venv` set up as its README says:
+From your SwadayaTV checkout, with its `tools/venv` set up as its README says:
 
 ```bash
 TV_HOST=<tv ip> tools/venv/bin/python -I tools/manage.py install tatami
@@ -72,7 +72,7 @@ TV_HOST=<tv ip> addons/tatami/install.sh --uninstall    # the old screensaver ba
 ## Tatami behind your apps
 
 Want Tatami moving behind the apps on Home, not only as a screensaver? [Tatami Home](https://github.com/PBandDev/tatami-home)
-is cleanyourtv's launcher with Tatami built in. You need only one of the two.
+is SwadayaTV's launcher with Tatami built in. You need only one of the two.
 
 ## License
 

@@ -12,7 +12,7 @@
         android:label="@string/app_name"
         android:theme="@style/Theme.Tatami">
 
-        <!-- The tile, and the card on cleanyourtv's Home (docs/modules.md): Tatami full screen. OK opens the
+        <!-- The tile, and the card on SwadayaTV's Home (docs/modules.md): Tatami full screen. OK opens the
              effects list, Back leaves. -->
         <activity
             android:name="io.github.pbanddev.tatami.PreviewActivity"

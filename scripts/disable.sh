@@ -5,7 +5,7 @@
 # backup/<serial>/disabled-by-us.txt so restore.sh can re-enable it. One pm call per adb shell
 # call: chained pm commands can stop early.
 # --recommended: what the setup app ticks for you: every package marked "safe" in
-# tui/catalog.toml (this project's notes) or tui/catalog-cleanyourtv.toml (cleanyourtv's lists),
+# tui/catalog.toml (this project's notes) or tui/catalog-default.toml (the default lists),
 # ours winning where both list it, minus anything that answers Home or is the keyboard.
 source "$(dirname "$0")/env.sh"
 tv_backup || exit 1
@@ -16,7 +16,7 @@ if [ "$1" = "--recommended" ]; then
   set -- $(awk 'function flush() {
                   if (p != "") {
                     if (f == 1) { ours[p] = 1; if (a == "safe") print p }   # ours: catalog.toml
-                    else if (!(p in ours) && a == "safe") print p          # cleanyourtv, unless ours lists it
+                    else if (!(p in ours) && a == "safe") print p          # the default list, unless ours lists it
                   }
                   p = ""; a = ""
                 }
@@ -24,7 +24,7 @@ if [ "$1" = "--recommended" ]; then
                 /^\[\[app\]\]/ { flush() }
                 /^package = / { gsub(/"/, "", $3); p = $3 }
                 /^advice = / { gsub(/"/, "", $3); a = $3 }
-                END { flush() }' "$(dirname "$0")/../tui/catalog.toml" "$(dirname "$0")/../tui/catalog-cleanyourtv.toml")
+                END { flush() }' "$(dirname "$0")/../tui/catalog.toml" "$(dirname "$0")/../tui/catalog-default.toml")
   GUARD="$(A shell cmd package query-activities --brief -a android.intent.action.MAIN -c android.intent.category.HOME \
     | tr -d '\r' | grep / | cut -d/ -f1) $(A shell settings get secure default_input_method | tr -d '\r' | cut -d/ -f1)"
 fi
