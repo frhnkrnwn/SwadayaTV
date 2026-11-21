@@ -171,7 +171,7 @@ public class RemoteWallpaperActivity extends Activity {
             server.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
         } catch (IOException e) {
             status.setText("Couldn't start the upload page (port " + PORT + " is in use). "
-                    + "Close the phone remote's wallpaper page and open this screen again.");
+                    + "Another app on the TV is using that port; close it and open this screen again.");
             server = null;
         }
     }
@@ -186,6 +186,12 @@ public class RemoteWallpaperActivity extends Activity {
 
         @Override
         public Response serve(IHTTPSession session) {
+            // Only a plain IP address in Host: a name that resolves to the TV (DNS rebinding) can't
+            // drive this page from a website the user happens to have open on the phone.
+            if (!isIpHost(session.getHeaders().get("host"))) {
+                return page(Response.Status.FORBIDDEN, form("Open the address shown on the TV "
+                        + "(http://<TV's IP>:" + PORT + "), not a name."));
+            }
             try {
                 if (session.getMethod() == Method.GET) return page(Response.Status.OK, form(null));
                 if (session.getMethod() != Method.POST) {
@@ -281,6 +287,45 @@ public class RemoteWallpaperActivity extends Activity {
             if (b[0] == 'R' && b[1] == 'I' && b[2] == 'F' && b[3] == 'F'
                     && b[8] == 'W' && b[9] == 'E' && b[10] == 'B' && b[11] == 'P') return ".webp";
             return null;
+        }
+
+        /** True when the Host header is a bare IP address, with or without a port ([::1]:8080). */
+        static boolean isIpHost(String host) {
+            if (host == null) return false;
+            String h = host.trim();
+            if (h.isEmpty()) return false;
+            if (h.startsWith("[")) {
+                int close = h.indexOf(']');
+                if (close < 0) return false;
+                String rest = h.substring(close + 1);
+                if (!rest.isEmpty() && !(rest.startsWith(":") && rest.length() > 1)) return false;
+                String v6 = h.substring(1, close);
+                if (!v6.contains(":")) return false;
+                for (int i = 0; i < v6.length(); i++) {
+                    char c = v6.charAt(i);
+                    if (Character.digit(c, 16) < 0 && c != ':' && c != '.') return false;
+                }
+                return true;
+            }
+            int colon = h.indexOf(':');
+            if (colon >= 0) {
+                String port = h.substring(colon + 1);
+                if (port.isEmpty()) return false;
+                for (int i = 0; i < port.length(); i++) {
+                    if (!Character.isDigit(port.charAt(i))) return false;
+                }
+                h = h.substring(0, colon);
+            }
+            String[] parts = h.split("\\.", -1);
+            if (parts.length != 4) return false;
+            for (String p : parts) {
+                if (p.isEmpty() || p.length() > 3) return false;
+                for (int i = 0; i < p.length(); i++) {
+                    if (!Character.isDigit(p.charAt(i))) return false;
+                }
+                if (Integer.parseInt(p) > 255) return false;
+            }
+            return true;
         }
 
         private Response page(Response.Status status, String html) {
