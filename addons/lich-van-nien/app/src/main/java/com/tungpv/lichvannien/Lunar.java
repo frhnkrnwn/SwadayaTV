@@ -1,7 +1,7 @@
 package com.tungpv.lichvannien;
 
 /**
- * Copied from the launcher's Lunar.java (cleanyourtv, MIT): Hồ Ngọc Đức's public algorithm, new moons and solar
+ * Copied from the launcher's Lunar.java (MIT): Hồ Ngọc Đức's public algorithm, new moons and solar
  * terms from Jean Meeus' formulas. Only the date maths is kept.
  */
 final class Lunar {

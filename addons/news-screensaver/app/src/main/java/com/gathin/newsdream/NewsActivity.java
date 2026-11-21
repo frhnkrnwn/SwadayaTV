@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.view.KeyEvent;
 
 /**
- * The module card on cleanyourtv's Home, and the settings' preview: the same scene as the screensaver, right
+ * The module card on SwadayaTV's Home, and the settings' preview: the same scene as the screensaver, right
  * away. Left and Right page through the headlines; any other key goes back, to Home (or to the settings it was
  * opened from), as the screensaver wakes on any other key.
  */

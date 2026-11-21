@@ -5,10 +5,10 @@ few bats drifting across now and then, a ghost that fades in and floats up every
 glow flickering in the bottom-right corner and a small clock. The photos are in the app (seven, 1280x720, about
 1 MB together) and everything is drawn on one Canvas at about 20 frames a second, so it is light enough for a 1 GB TV.
 
-On cleanyourtv's Home it is also a module card, **Haunted**: press OK on it to start it at once, and Back to leave.
+On SwadayaTV's Home it is also a module card, **Haunted**: press OK on it to start it at once, and Back to leave.
 
 - Package: `com.gathin.haunted`
-- Author: CleanYourTV contributors
+- Author: Community contributors
 - Tested on: Xiaomi Mi TV 4A (MiTV-MOOQ1), Android 10, 29 Oct 2026: crossfade, bats, ghost, glow and clock all show; 3,021 frames, 0.4% janky, 99th percentile 5 ms; any key wakes it
 
 ## Permissions

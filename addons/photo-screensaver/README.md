@@ -6,7 +6,7 @@ and crossfading into the next after 20 seconds (or what you set). A clip plays o
 fill the screen, then the loop moves on; a lone clip loops. Any key wakes the TV back to where it was.
 
 Package `com.gathin.photodream`. You see it as **Photos** (Dutch: **Foto's**) in the TV's screensaver
-settings. On cleanyourtv's Home it is also a module card, **Photos**: OK starts the same slideshow at once,
+settings. On SwadayaTV's Home it is also a module card, **Photos**: OK starts the same slideshow at once,
 holding OK (or Menu) opens the settings, Back leaves.
 
 ## Options

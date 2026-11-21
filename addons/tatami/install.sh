@@ -6,14 +6,13 @@
 #        TV_HOST=192.168.1.50 SKIP_BUILD=1 ./install.sh    install the APK already built (tools/docker-build.sh addons/tatami)
 #        TV_HOST=192.168.1.50 ./install.sh --uninstall     previous screensaver back, app removed
 #
-# In a cleanyourtv checkout this is addons/tatami/install.sh and uses that checkout's tools/. Anywhere else it uses
-# the cleanyourtv checkout in CLEANYOURTV (default: ../cleanyourtv next to this folder).
+# Run this from the SwadayaTV repo: it uses that checkout's tools/.
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && (pwd -W 2>/dev/null || pwd))"
 case "$#:${1:-}" in 0:|1:--no-show|1:--uninstall) ;; *) echo "usage: $0 [--no-show | --uninstall]" >&2; exit 2 ;; esac
 : "${TV_HOST:?set TV_HOST to the TV IP address, e.g. TV_HOST=192.168.1.50 $0}"
-if [ -f "$HERE/../../tools/tv.py" ]; then TOOLS="$HERE/../../tools"; else TOOLS="${CLEANYOURTV:-$HERE/../cleanyourtv}/tools"; fi
-[ -f "$TOOLS/tv.py" ] || { echo "no cleanyourtv tools at $TOOLS: clone https://github.com/Gathin23/cleanyourtv next to this folder, or set CLEANYOURTV to your checkout" >&2; exit 1; }
+TOOLS="$HERE/../../tools"
+[ -f "$TOOLS/tv.py" ] || { echo "no tools/tv.py at $TOOLS: run this from the SwadayaTV repo" >&2; exit 1; }
 # Windows Python cannot open /c/... paths, so hand it C:/... where Git Bash has them.
 TOOLS="$(cd "$TOOLS" && (pwd -W 2>/dev/null || pwd))"
 PY="$TOOLS/venv/bin/python"
@@ -61,7 +60,7 @@ if [[ "$MS" =~ ^-?[0-9]+$ ]]; then
     if [ "$MIN" -ge 60 ] && [ $(( MIN % 60 )) -eq 0 ]; then WHEN="$(( MIN / 60 )) h"; else WHEN="$MIN min"; fi
     echo "The screensaver starts after $WHEN with no key press (Settings > Device Preferences > Screen saver > When to start)."
   fi
-  echo "To make it 5 min, from your cleanyourtv checkout: TV_HOST=$TV_HOST $SHOWPY -I tools/tv.py 'settings put system screen_off_timeout 300000'"
+  echo "To make it 5 min, from the SwadayaTV repo: TV_HOST=$TV_HOST $SHOWPY -I tools/tv.py 'settings put system screen_off_timeout 300000'"
 fi
 
 [ "${1:-}" = --no-show ] || tv "am start -n $PKG/.PreviewActivity" >/dev/null

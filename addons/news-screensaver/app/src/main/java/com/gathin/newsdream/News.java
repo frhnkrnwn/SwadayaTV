@@ -68,7 +68,7 @@ final class News {
         HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
         connection.setConnectTimeout(TIMEOUT_MS);
         connection.setReadTimeout(TIMEOUT_MS);
-        connection.setRequestProperty("User-Agent", "cleanyourtv-news/1.0 (Android TV screensaver)");
+        connection.setRequestProperty("User-Agent", "swadayatv-news/1.0 (Android TV screensaver)");
         connection.setRequestProperty("Accept", "application/rss+xml, application/atom+xml, application/xml, text/xml");
         try {
             int code = connection.getResponseCode();

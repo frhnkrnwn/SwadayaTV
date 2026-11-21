@@ -4,7 +4,7 @@
 
 ## 1. `ThemeManager.java` — tambah konstanta tema
 
-File: `launcher/app/src/main/java/com/gathin/tvhome/ThemeManager.java`
+File: `launcher/app/src/main/java/com/swadaya/tv/ThemeManager.java`
 
 Tambah tiga konstanta baru di bawah `THEME_DARK_GLOW`:
 
@@ -30,7 +30,7 @@ Lalu perbarui method yang sudah ada agar mengenali tema baru, tanpa mengubah tem
 
 ## 2. `MainActivity.java` — `showThemeDialog()` tambah 3 option
 
-File: `launcher/app/src/main/java/com/gathin/tvhome/MainActivity.java`, method `showThemeDialog()` (baris ~4132).
+File: `launcher/app/src/main/java/com/swadaya/tv/MainActivity.java`, method `showThemeDialog()` (baris ~4132).
 
 Saat ini dialog isinya 3 `ThemeOption`: `THEME_FROSTED_GLASS` ("💎 Frosted Glass"), `THEME_NEUMORPHISM` ("⚪ Neumorphism"), `THEME_DARK_GLOW` ("⚡ Dark Glow"). Tambah 3 lagi di bawahnya, supaya urutan tampilnya: Frosted Glass, Neumorphism, Dark Glow, **Swadaya, Swadaya Malam, Swadaya Terang**:
 

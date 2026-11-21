@@ -6,8 +6,7 @@
 #        .\install.ps1 -TvHost 192.168.1.50 -Uninstall    previous screensaver back, app removed
 # $env:TV_HOST and $env:SKIP_BUILD = '1' work as well.
 #
-# In a cleanyourtv checkout this is addons\tatami\install.ps1 and uses that checkout's tools\. Anywhere else it uses
-# the cleanyourtv checkout in $env:CLEANYOURTV (default: ..\cleanyourtv next to this folder).
+# Run this from the SwadayaTV repo: it uses that checkout's tools\.
 param(
     [string]$TvHost = $env:TV_HOST,
     [switch]$Uninstall,
@@ -21,11 +20,7 @@ if ($env:SKIP_BUILD) { $SkipBuild = [switch]$true }
 $here = $PSScriptRoot
 $tools = Join-Path (Split-Path (Split-Path $here -Parent) -Parent) 'tools'
 if (-not (Test-Path (Join-Path $tools 'tv.py'))) {
-    if ($env:CLEANYOURTV) { $cyt = $env:CLEANYOURTV } else { $cyt = Join-Path (Split-Path $here -Parent) 'cleanyourtv' }
-    $tools = Join-Path $cyt 'tools'
-}
-if (-not (Test-Path (Join-Path $tools 'tv.py'))) {
-    throw "no cleanyourtv tools at ${tools}: clone https://github.com/Gathin23/cleanyourtv next to this folder, or set `$env:CLEANYOURTV to your checkout"
+    throw "no tools\tv.py at ${tools}: run this from the SwadayaTV repo"
 }
 $py = Join-Path $tools 'venv\Scripts\python.exe'
 if (-not (Test-Path $py)) { throw 'run: python -m venv tools\venv; tools\venv\Scripts\python.exe -m pip install -r tools\requirements.txt' }
@@ -77,7 +72,7 @@ if ([long]::TryParse($ms, [ref]$n)) {
         if ($min -ge 60 -and $min % 60 -eq 0) { $when = "$($min / 60) h" } else { $when = "$min min" }
         Write-Host "The screensaver starts after $when with no key press (Settings > Device Preferences > Screen saver > When to start)."
     }
-    Write-Host "To make it 5 min, from your cleanyourtv checkout: `$env:TV_HOST = '$TvHost'; tools\venv\Scripts\python.exe -I tools\tv.py 'settings put system screen_off_timeout 300000'"
+    Write-Host "To make it 5 min, from the SwadayaTV repo: `$env:TV_HOST = '$TvHost'; tools\venv\Scripts\python.exe -I tools\tv.py 'settings put system screen_off_timeout 300000'"
 }
 
 if (-not $NoShow) { Tv "am start -n $pkg/.PreviewActivity" | Out-Null }

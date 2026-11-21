@@ -7,7 +7,7 @@ import android.view.KeyEvent;
 import android.view.WindowManager;
 
 /**
- * The module card on cleanyourtv's Home: the same scene as the screensaver, right away, until Back. Holding OK
+ * The module card on SwadayaTV's Home: the same scene as the screensaver, right away, until Back. Holding OK
  * or pressing Menu opens the settings. The screen stays on while it shows.
  */
 public class SlideshowActivity extends Activity {

@@ -10,8 +10,8 @@ Addon adalah aplikasi kecil (APK tambahan) yang memberikan widget/fungsi ekstra 
 2. Build APK-nya (lihat README di folder addon) atau unduh APK siap pakai jika tersedia.
 3. Salin APK ke flash drive/USB, lalu pasang di TV seperti biasa.
 
-### Dari CleanYourTV
-Beberapa addon berasal dari ekosistem CleanYourTV. Ikuti link di [addons/README.md](../addons/README.md) untuk detail.
+### Dari komunitas
+Beberapa addon ditulis kontributor lain. Daftar lengkap dan tautannya ada di [addons/README.md](../addons/README.md).
 
 ## Cara Mengaktifkan Addon di TV
 

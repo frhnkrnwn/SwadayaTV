@@ -1,6 +1,6 @@
 # Panduan Debloat + Pemasangan Manual SwadayaTV
 
-Panduan langkah demi langkah untuk Anda yang ingin memasang SwadayaTV sendiri di TV Android / Google TV, tanpa coding assistant. Saya merangkum dengan bahasa saya sendiri dari README CleanYourTV bagian "Doing it by hand" dan skrip di `tools/` (disable.sh, restore.sh, tv.py, theme.sh) — di SwadayaTV skripnya sama persis, jadi perintahnya tinggal copy-paste. Tidak menyalin mentah lebih dari 100 baris, santai saja membacanya.
+Panduan langkah demi langkah untuk Anda yang ingin memasang SwadayaTV sendiri di TV Android / Google TV, tanpa coding assistant. Panduan ini mengikuti skrip di `tools/` (disable.sh, restore.sh, tv.py, theme.sh) apa adanya, jadi perintahnya tinggal copy-paste.
 
 Prinsipnya mudah: **tidak ada yang di-uninstall selamanya**, hanya **di-disable** per user 0, dan selalu ada jalan kembali. Skripnya juga tidak akan meninggalkan TV tanpa Home screen. Semua membutuhkan komputer yang berada di Wi-Fi yang sama dengan TV.
 
@@ -117,4 +117,4 @@ TV_HOST=192.168.1.50 tools/theme.sh themes/swadaya
 # kembalikan jika perlu: tools/restore.sh examples/<model>/debloat.txt
 ```
 
-Selamat mencoba TV-nya! Jika buntu, baca `docs/TROUBLESHOOTING.md` di repo aslinya.
+Selamat mencoba TV-nya! Jika buntu, baca [`docs/KNOWN_ISSUES.md`](KNOWN_ISSUES.md).

@@ -19,7 +19,7 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            // Sideloaded over ADB like cleanyourtv's launcher: signed with the local debug key.
+            // Sideloaded over ADB like SwadayaTV's launcher: signed with the local debug key.
             signingConfig signingConfigs.debug
         }
     }
