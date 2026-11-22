@@ -328,15 +328,23 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
-                        android:text="Supaya TV tetap punya Home setelah launcher bawaan dimatikan. Unduh APK SwadayaTV di HP (dari Releases repo ini), lalu pilih berkasnya di sini. App akan memasangnya ke TV dan menjadikannya Home." />
+                        android:text="Supaya TV tetap punya Home setelah launcher bawaan dimatikan. Tekan tombol di bawah: app mengambil APK SwadayaTV terbaru (tvhome-*.apk) langsung dari Releases repo ini, mengunduhnya ke HP, lalu memasangnya ke TV dan menjadikannya Home. Tidak perlu mengunduh atau memindahkan berkas sendiri." />
+
+                    <Button
+                        android:id="@+id/btnDownloadLauncher"
+                        style="@style/Button"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="Unduh &amp; pasang SwadayaTV otomatis" />
 
                     <Button
                         android:id="@+id/btnInstallApk"
                         style="@style/ButtonGhost"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:text="Pasang SwadayaTV dari APK di HP" />
+                        android:layout_marginTop="8dp"
+                        android:text="Pasang dari APK di HP (manual)" />
 
                     <TextView
                         android:id="@+id/installState"

@@ -53,7 +53,7 @@ public class MainActivity extends Activity {
     private TextView step0, step1, step2, step3;
     private View screenConnect, screenPlan, screenClean, screenRestore;
     private EditText host, port;
-    private Button btnFind, btnConnect, btnInstallApk, btnClean, btnRefresh, btnCleanNow, btnGoRestore;
+    private Button btnFind, btnConnect, btnDownloadLauncher, btnInstallApk, btnClean, btnRefresh, btnCleanNow, btnGoRestore;
     private Button btnEnableAll, btnExport;
     private ProgressBar connectProgress, cleanProgress;
     private TextView connectState, deviceInfo, planSummary, installState, keptTitle, cleanBody, cleanLog;
@@ -83,6 +83,7 @@ public class MainActivity extends Activity {
         port = findViewById(R.id.port);
         btnFind = findViewById(R.id.btnFind);
         btnConnect = findViewById(R.id.btnConnect);
+        btnDownloadLauncher = findViewById(R.id.btnDownloadLauncher);
         btnInstallApk = findViewById(R.id.btnInstallApk);
         btnClean = findViewById(R.id.btnClean);
         btnRefresh = findViewById(R.id.btnRefresh);
@@ -122,6 +123,7 @@ public class MainActivity extends Activity {
         btnClean.setOnClickListener(v -> showStep(STEP_CLEAN));
         btnGoRestore.setOnClickListener(v -> showStep(STEP_RESTORE));
         btnCleanNow.setOnClickListener(v -> confirmClean());
+        btnDownloadLauncher.setOnClickListener(v -> installLauncherFromReleases());
         btnInstallApk.setOnClickListener(v -> pickApk());
         btnEnableAll.setOnClickListener(v -> restoreAll());
         btnExport.setOnClickListener(v -> shareScript());
@@ -565,6 +567,53 @@ public class MainActivity extends Activity {
 
     // ---------------------------------------------------------- launcher APK
 
+    /** Fetches the newest tvhome APK from this repository's Releases and installs it on the TV. */
+    private void installLauncherFromReleases() {
+        if (!tv.connected()) {
+            toast("Sambungkan ke TV dulu.");
+            return;
+        }
+        btnDownloadLauncher.setEnabled(false);
+        btnInstallApk.setEnabled(false);
+        installState.setText("Mencari rilis SwadayaTV terbaru di GitHub…");
+        io.execute(() -> {
+            File apk = new File(getCacheDir(), "swadayatv-download.apk");
+            try {
+                LauncherApk.Release release = LauncherApk.latest();
+                ui.post(() -> installState.setText("Mengunduh " + release.asset
+                        + " dari Releases (" + LauncherApk.sizeText(release.size) + ")…"));
+                LauncherApk.download(release, apk, percent -> ui.post(() ->
+                        installState.setText("Mengunduh " + release.asset + " · " + percent + "%")));
+                ui.post(() -> installState.setText("Memasang SwadayaTV "
+                        + (release.version.isEmpty() ? "" : release.version + " ") + "di TV…"));
+                String done = installToTv(apk);
+                ui.post(() -> installState.setText(done));
+            } catch (Throwable e) {
+                String why = e.getMessage() == null ? e.toString() : e.getMessage();
+                ui.post(() -> installState.setText("Gagal mengunduh/memasang: " + why
+                        + " Kalau GitHub tidak bisa dihubungi, pakai tombol APK di HP."));
+            } finally {
+                //noinspection ResultOfMethodCallIgnored
+                apk.delete();
+                ui.post(() -> {
+                    btnDownloadLauncher.setEnabled(true);
+                    btnInstallApk.setEnabled(true);
+                });
+            }
+        });
+    }
+
+    /** Installs an APK on the TV and makes it Home. Blocks; throws when the TV refuses the install. */
+    private String installToTv(File apk) throws Exception {
+        tv.installApk(apk);
+        try {
+            tv.setSwadayaHome();
+            return "SwadayaTV terpasang dan sudah jadi Home. Tekan Home di remote untuk mencobanya.";
+        } catch (Throwable e) {
+            return "SwadayaTV terpasang. Tekan Home di remote, pilih SwadayaTV, lalu Always.";
+        }
+    }
+
     private void pickApk() {
         if (!tv.connected()) {
             toast("Sambungkan ke TV dulu.");
@@ -611,16 +660,8 @@ public class MainActivity extends Activity {
 
             ui.post(() -> installState.setText("Memasang SwadayaTV di TV…"));
             try {
-                tv.installApk(apk);
-                String msg;
-                try {
-                    tv.setSwadayaHome();
-                    msg = "SwadayaTV terpasang dan sudah jadi Home. Tekan Home di remote untuk mencobanya.";
-                } catch (Throwable e) {
-                    msg = "SwadayaTV terpasang. Tekan Home di remote, pilih SwadayaTV, lalu Always.";
-                }
-                final String done = msg;
-                ui.post(() -> installState.setText(done));
+                String msg = installToTv(apk);
+                ui.post(() -> installState.setText(msg));
             } catch (Throwable e) {
                 ui.post(() -> installState.setText("Gagal memasang: " + e.getMessage()));
             } finally {
