@@ -2,6 +2,8 @@
 
 Aplikasi Android untuk **menonaktifkan bloatware dan iklan di Android TV / Google TV langsung dari HP**, tanpa PC, tanpa laptop dan tanpa AI. HP menjadi ADB host: ia bicara protokol ADB sendiri ke TV di Wi-Fi yang sama, membaca daftar aplikasi, menunjukkan rencananya, lalu mematikan yang dipilih. **Tidak ada yang di-uninstall** — semua bisa dinyalakan lagi dari app ini.
 
+**Unduh:** [Releases](https://github.com/frhnkrnwn/SwadayaTV/releases) → `swadaya-app-<versi>.apk`, atau jalankan workflow **Release Swadaya App** di tab Actions (APK yang sudah ditandatangani ikut terbit di Releases).
+
 Panduan langkah demi langkah (Bahasa Indonesia, untuk pemula): [docs/TUTORIAL_HP_TANPA_PC.md](../docs/TUTORIAL_HP_TANPA_PC.md).
 
 ## Alur
@@ -30,9 +32,25 @@ TV yang hanya punya *Wireless debugging* dengan kode pairing membutuhkan satu ka
 ```bash
 cd phone-app
 ./gradlew assembleDebug      # JDK 17 + Android SDK 36
+./gradlew assembleRelease    # ditandatangani kunci rilis, di-shrink R8
 ```
 
-APK hasil build ada di `app/build/outputs/apk/debug/app-debug.apk`.
+APK hasil build ada di `app/build/outputs/apk/debug/app-debug.apk` dan
+`app/build/outputs/apk/release/app-release.apk`. Butuh `local.properties` berisi `sdk.dir=…`
+(tidak di-commit).
+
+## Rilis dan tanda tangan
+
+`.github/workflows/release-app.yml` membangun APK rilis lalu menerbitkannya sebagai GitHub Release
+dengan tag `swadaya-app-v<versi>`: buka **Actions → Release Swadaya App → Run workflow**, atau push
+tag `swadaya-app-v1.0.0`. Naikkan `versionCode` dan `versionName` di `app/build.gradle` sebelum rilis
+berikutnya. Release ini **tidak** ditandai “latest”, supaya pembaruan OTA launcher di TV tetap
+menemukan `tvhome-*.apk` di release-nya sendiri.
+
+APK rilis ditandatangani kunci tetap yang di-commit: `../launcher/tvhome-release.jks` dengan
+konfigurasi di `keystore.properties`. Karena itu APK dari Releases selalu bisa dipasang di atas
+versi sebelumnya. Rahasia CI `SIGNING_*` (kalau diisi) menggantikan kunci itu; tanpa kunci sama
+sekali, build rilis memakai kunci debug mesin setempat.
 
 ## Struktur
 
@@ -43,7 +61,7 @@ APK hasil build ada di `app/build/outputs/apk/debug/app-debug.apk`.
 | `Catalog.java` | Membaca `assets/bloat.json`. |
 | `Planner.java` | Menyusun rencana + daftar “dibiarkan” dan pengaman Home/keyboard. |
 | `RestoreStore.java` | Catatan perubahan di HP + ekspor skrip pemulihan. |
-| `TvFinder.java` | Menemukan TV lewat mDNS (`_adb._tcp`, `_adb-tls-connect._tcp`). |
+| `TvFinder.java` | Menemukan TV lewat mDNS (`_adb._tcp`, `_adb-tls-connect._tcp`), tanpa duplikat. |
 | `assets/bloat.json` | Daftar paket per kategori dan merek. |
 
 Daftar di `assets/bloat.json` sengaja konservatif: hanya paket yang jelas iklan/pelacakan/aplikasi bawaan. Tambah entri baru dengan `{"p": "nama.paket", "n": "Nama", "g": "ads|tracking|bloat|extra", "b": ["merek"]}`; `keep: true` untuk paket yang harus selalu dibiarkan.

@@ -6,7 +6,7 @@ SwadayaTV is a fast, minimal home screen for **Android TV and Google TV** (Andro
 
 **Install it on your TV:** [Windows](docs/install-windows.md) · [macOS](docs/install-macos.md) · [Linux](docs/install-linux.md) · [with an AI agent](docs/install-with-ai-agent.md)
 
-**No computer at all?** [Swadaya App](phone-app/README.md) installs the launcher and debloats the TV from an Android phone over Wi-Fi: [Panduan dari HP](docs/TUTORIAL_HP_TANPA_PC.md).
+**No computer at all?** [Swadaya App](phone-app/README.md) installs the launcher and debloats the TV from an Android phone over Wi-Fi: [download the APK](https://github.com/frhnkrnwn/SwadayaTV/releases) · [Panduan dari HP](docs/TUTORIAL_HP_TANPA_PC.md).
 
 <table>
   <tr>
@@ -160,7 +160,7 @@ Everything location-based uses Indonesian sources and settings:
 
 You need an Android TV or Google TV running Android 8.0 or newer. The APK installs from a USB drive or the Downloader app, so the simplest way needs no computer, no adb and no Developer options.
 
-- **Phone only, including the clean-up:** [Swadaya App](phone-app/README.md) connects to the TV over Wi-Fi, installs SwadayaTV as Home and switches the bloat off — see [Panduan dari HP](docs/TUTORIAL_HP_TANPA_PC.md).
+- **Phone only, including the clean-up:** [Swadaya App](phone-app/README.md) connects to the TV over Wi-Fi, installs SwadayaTV as Home and switches the bloat off — [download `swadaya-app-<version>.apk`](https://github.com/frhnkrnwn/SwadayaTV/releases), then see [Panduan dari HP](docs/TUTORIAL_HP_TANPA_PC.md).
 - **Easiest (no computer):** download the ready-made APK from [Releases](https://github.com/frhnkrnwn/SwadayaTV/releases/latest) — under **Assets**, `tvhome-<version>.apk` — copy it to the TV, allow installing from that app, and install it. Then pick SwadayaTV as Home in the TV's own settings. The same release carries the Net traffic engine's files, which the app downloads by itself when the monitor first starts; later updates are in **Settings → About** or the bell.
 - **With a computer and adb:** install that same APK over the network: [Windows](docs/install-windows.md#install-the-ready-made-apk-instead-no-building) · [macOS](docs/install-macos.md#install-the-ready-made-apk-instead-no-building) · [Linux](docs/install-linux.md#install-the-ready-made-apk-instead-no-building)
 - **Build it yourself:** [Windows](docs/install-windows.md) · [macOS](docs/install-macos.md) · [Linux](docs/install-linux.md) build the launcher from source and install it over network ADB.

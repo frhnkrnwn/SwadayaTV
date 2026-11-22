@@ -6,7 +6,7 @@ Panduan ini untuk orang yang **hanya punya HP Android dan TV** — tanpa laptop,
 
 ## Ringkasan
 
-1. Pasang **Swadaya App** di HP (APK dari [Releases](../releases) repo ini).
+1. Pasang **Swadaya App** di HP (APK dari [Releases](https://github.com/frhnkrnwn/SwadayaTV/releases) repo ini).
 2. Nyalakan **USB debugging** + **Network debugging** di TV, catat IP TV.
 3. Sambungkan app ke TV, izinkan sekali di TV.
 4. **Pasang SwadayaTV dulu**, jadikan Home.
@@ -20,6 +20,8 @@ Panduan ini untuk orang yang **hanya punya HP Android dan TV** — tanpa laptop,
 1. Unduh `swadaya-app-<versi>.apk` dari halaman **Releases** repo ini ke HP.
 2. Buka berkasnya. Android akan bertanya apakah boleh memasang dari aplikasi ini (Files/Chrome): pilih **Allow / Izinkan**.
 3. Pasang, lalu buka **Swadaya App**.
+
+APK di Releases sudah ditandatangani kunci rilis SwadayaTV, jadi versi baru bisa dipasang langsung di atas versi lama (tidak perlu uninstall).
 
 Tidak perlu root, tidak perlu Play Store, tidak perlu langganan.
 
@@ -51,7 +53,7 @@ Bisa juga tekan **Cari TV**: app mencari TV yang mengumumkan ADB di Wi-Fi (`_adb
 
 Ini bagian yang paling sering terlewat. Kalau launcher bawaan dimatikan sebelum ada pengganti, TV bisa tidak punya Home.
 
-1. Di HP, unduh APK SwadayaTV dari **Releases** repo ini (`tvhome-<versi>.apk`).
+1. Di HP, unduh APK SwadayaTV dari [Releases](https://github.com/frhnkrnwn/SwadayaTV/releases) repo ini (`tvhome-<versi>.apk`).
 2. Di Swadaya App, langkah **Analisa**, tekan **Pasang SwadayaTV dari APK di HP**.
 3. Pilih berkas APK tadi. App menyalinnya, mengirim ke TV lewat ADB, memasangnya, lalu menjalankan `cmd package set-home-activity` supaya SwadayaTV langsung menjadi Home.
 4. Kalau TV menolak memasang (mis. “Install blocked”), di TV buka **Settings → Security & restrictions → Install unknown apps**, izinkan untuk aplikasi yang dipakai (mis. Package Installer / Files), lalu ulangi.
