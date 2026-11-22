@@ -1,13 +1,14 @@
 name: Release Swadaya App
 
 # Publishes the phone-side app (phone-app/) as a signed APK on GitHub Releases, where it can be
-# downloaded straight to a phone. Run it from Actions → "Release Swadaya App" → Run workflow, or by
-# pushing a tag like swadaya-app-v1.0.0. The tag name comes from versionName in
-# phone-app/app/build.gradle, so bump that first.
+# downloaded straight to a phone. It runs on its own when a change to phone-app/ lands on main, and
+# can be started by hand from Actions → "Release Swadaya App" → Run workflow. The tag name comes
+# from versionName in phone-app/app/build.gradle, so bump that before a new release.
 on:
   workflow_dispatch:
   push:
-    tags: ['swadaya-app-v*']
+    branches: [main]
+    paths: ['phone-app/**']
 
 permissions:
   contents: write
