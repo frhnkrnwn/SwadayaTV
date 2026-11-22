@@ -47,6 +47,7 @@ public class MainActivity extends Activity {
     private Catalog catalog;
     private Planner plan;
     private final Set<String> selectedGroups = new LinkedHashSet<>();
+    private boolean selectionSeeded;
 
     private TextView tvStatus, btnReconnect;
     private TextView step0, step1, step2, step3;
@@ -132,8 +133,14 @@ public class MainActivity extends Activity {
                 Catalog c = Catalog.load(this);
                 ui.post(() -> {
                     catalog = c;
-                    selectedGroups.clear();
-                    selectedGroups.addAll(c.groupIds());
+                    if (!selectionSeeded) {
+                        selectedGroups.addAll(c.groupIds());
+                        selectionSeeded = true;
+                    }
+                    // A quick connection can land on Analisa before the lists are ready.
+                    if (currentStep == STEP_PLAN && tv.connected() && plan == null) {
+                        analyse();
+                    }
                 });
             } catch (Throwable e) {
                 ui.post(() -> toast("Daftar debloat gagal dimuat: " + e));
@@ -207,31 +214,34 @@ public class MainActivity extends Activity {
             try {
                 tv.connect(h, portNo);
                 getPreferences(MODE_PRIVATE).edit().putString("host", h).apply();
-                tvStatus.setText(tv.model + " · Android " + tv.androidVersion);
-                btnReconnect.setVisibility(View.VISIBLE);
+                final String model = tv.model;
+                final String version = tv.androidVersion;
                 ui.post(() -> {
+                    tvStatus.setText(model + " · Android " + version);
+                    btnReconnect.setVisibility(View.VISIBLE);
                     btnConnect.setEnabled(true);
                     connectProgress.setVisibility(View.GONE);
-                    connectState.setText("Tersambung ke " + tv.model + ".");
+                    connectState.setText("Tersambung ke " + model + ".");
                     toast("Tersambung ke TV");
                     showStep(STEP_PLAN);
                 });
             } catch (Throwable e) {
+                final String why = explainConnect(e, portNo);
                 tv.close();
                 ui.post(() -> {
                     btnConnect.setEnabled(true);
                     connectProgress.setVisibility(View.GONE);
-                    connectState.setText(explainConnect(e));
+                    connectState.setText(why);
                 });
             }
         });
     }
 
-    private String explainConnect(Throwable e) {
+    private String explainConnect(Throwable e, int portNo) {
         String m = e.getMessage() == null ? e.toString() : e.getMessage();
         String low = m.toLowerCase();
         if (low.contains("refused") || low.contains("econnrefused")) {
-            return "Port " + port.getText() + " tertutup di TV. Nyalakan Network debugging / ADB over network di Developer options, lalu coba lagi.";
+            return "Port " + portNo + " tertutup di TV. Nyalakan Network debugging / ADB over network di Developer options, lalu coba lagi.";
         }
         if (low.contains("timeout") || low.contains("timed out")) {
             return "TV tidak menjawab. Pastikan HP dan TV di Wi-Fi yang sama, IP benar, dan debugging menyala.";
@@ -309,9 +319,6 @@ public class MainActivity extends Activity {
                 Planner p = Planner.build(catalog, enabled, disabled, tv.brand, home, claims, keyboard);
                 ui.post(() -> {
                     plan = p;
-                    if (selectedGroups.isEmpty()) {
-                        selectedGroups.addAll(p.groups);
-                    }
                     renderPlan();
                 });
             } catch (Throwable e) {
@@ -388,8 +395,9 @@ public class MainActivity extends Activity {
         if (items.isEmpty()) {
             sb.append("Tidak ada yang dipilih. Kembali ke Analisa dan pilih minimal satu kategori.");
         } else {
-            sb.append("Yang tetap hidup: Wi-Fi, Play Store, Settings, keyboard, input TV, dan Home ")
-                    .append("(kecuali SwadayaTV sudah terpasang sebagai Home).\n\n")
+            sb.append("Yang tetap hidup: Wi-Fi, Play Store, Settings, keyboard, dan input TV. ")
+                    .append("Home bawaan hanya ikut dimatikan kalau SwadayaTV (atau launcher lain) ")
+                    .append("sudah terpasang dan siap menggantikannya.\n\n")
                     .append("Setiap perubahan dicatat di HP ini, jadi bisa dipulihkan dari langkah 4.");
         }
         cleanBody.setText(sb);
@@ -446,6 +454,7 @@ public class MainActivity extends Activity {
                 log("");
                 log("Selesai: " + okCount + " dinonaktifkan, " + failedCount + " gagal.");
                 log("Buka langkah 4 (Pulihkan) kalau ada yang perlu dinyalakan lagi.");
+                analyse(); // the plan on the previous screen is stale now
             });
         });
     }
@@ -497,7 +506,9 @@ public class MainActivity extends Activity {
         action.setEnabled(false);
         io.execute(() -> {
             try {
-                tv.enable(e.pkg);
+                if (!tv.enable(e.pkg)) {
+                    throw new Exception("TV menolak perintah enable");
+                }
                 RestoreStore.remove(this, e.pkg, tv.model);
                 ui.post(() -> {
                     toast(e.name + " dinyalakan lagi");
@@ -520,17 +531,24 @@ public class MainActivity extends Activity {
         btnEnableAll.setEnabled(false);
         io.execute(() -> {
             int ok = 0;
+            int failed = 0;
             for (RestoreStore.Entry e : mine) {
                 try {
-                    tv.enable(e.pkg);
-                    RestoreStore.remove(this, e.pkg, tv.model);
-                    ok++;
+                    if (tv.enable(e.pkg)) {
+                        RestoreStore.remove(this, e.pkg, tv.model);
+                        ok++;
+                    } else {
+                        failed++;
+                    }
                 } catch (Throwable ignored) {
+                    failed++;
                 }
             }
             final int done = ok;
+            final int left = failed;
             ui.post(() -> {
-                toast(done + " aplikasi dipulihkan");
+                toast(left == 0 ? done + " aplikasi dipulihkan"
+                        : done + " dipulihkan, " + left + " gagal");
                 loadRestore();
             });
         });

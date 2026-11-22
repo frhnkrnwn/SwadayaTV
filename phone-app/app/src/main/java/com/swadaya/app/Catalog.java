@@ -55,15 +55,6 @@ final class Catalog {
         return ids;
     }
 
-    Group group(String id) {
-        for (Group g : groups) {
-            if (g.id.equals(id)) {
-                return g;
-            }
-        }
-        return null;
-    }
-
     static Catalog load(Context ctx) throws Exception {
         String json;
         try (InputStream in = ctx.getAssets().open("bloat.json")) {

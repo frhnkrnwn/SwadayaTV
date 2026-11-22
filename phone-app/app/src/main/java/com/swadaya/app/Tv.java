@@ -28,7 +28,6 @@ final class Tv {
     String model = "";
     String brand = "";
     String androidVersion = "";
-    String sdk = "";
 
     Tv(Context ctx) {
         this.ctx = ctx.getApplicationContext();
@@ -47,19 +46,42 @@ final class Tv {
         }
         AdbKeyPair keys = AdbKeyPair.Companion.read(priv, pub);
         Dadb d = Dadb.Companion.create(host, port, keys, 8000, 0, false);
+
+        // Read the TV's identity on the new connection before making it "the" connection: a TV
+        // that accepts the socket but never answers must not leave a half-open session behind.
+        String newModel;
+        String newBrand;
+        String newVersion;
+        try {
+            newModel = shell("getprop ro.product.model", d).trim();
+            String b = shell("getprop ro.product.brand", d).trim();
+            String manufacturer = shell("getprop ro.product.manufacturer", d).trim();
+            if (b.isEmpty()) {
+                b = manufacturer;
+            }
+            newBrand = (b + " " + manufacturer).toLowerCase(java.util.Locale.ROOT).trim();
+            newVersion = shell("getprop ro.build.version.release", d).trim();
+        } catch (Throwable e) {
+            quietClose(d);
+            throw e;
+        }
+        if (newModel.isEmpty() && newVersion.isEmpty()) {
+            quietClose(d);
+            throw new IOException("TV tersambung tapi tidak menjawab.");
+        }
+
         this.dadb = d;
         this.host = host;
         this.port = port;
-        model = shell("getprop ro.product.model", d).trim();
-        String b = shell("getprop ro.product.brand", d).trim();
-        if (b.isEmpty()) {
-            b = shell("getprop ro.product.manufacturer", d).trim();
-        }
-        brand = (b + " " + shell("getprop ro.product.manufacturer", d)).toLowerCase().trim();
-        androidVersion = shell("getprop ro.build.version.release", d).trim();
-        sdk = shell("getprop ro.build.version.sdk", d).trim();
-        if (model.isEmpty() && androidVersion.isEmpty()) {
-            throw new IOException("TV tersambung tapi tidak menjawab.");
+        this.model = newModel;
+        this.brand = newBrand;
+        this.androidVersion = newVersion;
+    }
+
+    private static void quietClose(Dadb d) {
+        try {
+            d.close();
+        } catch (Throwable ignored) {
         }
     }
 

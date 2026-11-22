@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -42,7 +43,6 @@ final class Planner {
     final List<Kept> kept = new ArrayList<>();
     final Map<String, List<Item>> byGroup = new LinkedHashMap<>();
     final Set<String> groups = new LinkedHashSet<>();
-    int installedKnown;
 
     List<Item> itemsIn(Set<String> selected) {
         List<Item> out = new ArrayList<>();
@@ -87,44 +87,42 @@ final class Planner {
         Planner p = new Planner();
         Set<String> on = new LinkedHashSet<>(enabled);
         Set<String> off = new LinkedHashSet<>(disabled);
-        String brandText = brand == null ? "" : brand.toLowerCase();
+        String brandText = brand == null ? "" : brand.toLowerCase(Locale.ROOT);
         String home = homeOwner == null ? "" : homeOwner;
         String kb = keyboard == null ? "" : keyboard;
 
-        // Which Home claimants stay enabled: everything installed and enabled except the owner,
-        // which only goes when another claimant is installed and staying.
-        List<String> enabledHomes = new ArrayList<>();
-        for (String h : homeClaims) {
-            if (on.contains(h)) {
-                enabledHomes.add(h);
+        // First pass: the catalog apps that match this TV, and the ones that would really go.
+        // Home's owner is left out here: whether it may go depends on the Home the TV keeps.
+        List<Catalog.App> matches = new ArrayList<>();
+        Set<String> targets = new LinkedHashSet<>();
+        for (Catalog.App a : cat.apps) {
+            if (!on.contains(a.pkg) && !off.contains(a.pkg)) {
+                continue;
             }
+            if (!brandMatches(a, brandText)) {
+                continue;
+            }
+            matches.add(a);
+            if (off.contains(a.pkg) || a.keep || isProtected(a.pkg)
+                    || a.pkg.equals(kb) || a.pkg.equals(home)) {
+                continue;
+            }
+            targets.add(a.pkg);
         }
+
+        // Home's owner only goes when another enabled Home claimant is not in the plan itself:
+        // two stock launchers switched off together would leave the TV with no Home at all.
         boolean canSwitchHome = false;
-        for (String h : enabledHomes) {
-            if (!h.equals(home)) {
-                canSwitchHome = true;
-                break;
+        if (!home.isEmpty()) {
+            for (String h : homeClaims) {
+                if (on.contains(h) && !h.equals(home) && !targets.contains(h)) {
+                    canSwitchHome = true;
+                    break;
+                }
             }
         }
 
-        for (Catalog.App a : cat.apps) {
-            boolean installed = on.contains(a.pkg) || off.contains(a.pkg);
-            if (!installed) {
-                continue;
-            }
-            p.installedKnown++;
-            boolean brandOk = a.brands == null;
-            if (!brandOk) {
-                for (String b : a.brands) {
-                    if (brandText.contains(b)) {
-                        brandOk = true;
-                        break;
-                    }
-                }
-            }
-            if (!brandOk) {
-                continue;
-            }
+        for (Catalog.App a : matches) {
             if (off.contains(a.pkg)) {
                 p.kept.add(new Kept(a.pkg, a.name, "sudah nonaktif"));
                 continue;
@@ -137,12 +135,8 @@ final class Planner {
                 p.kept.add(new Kept(a.pkg, a.name, "keyboard aktif"));
                 continue;
             }
-            if (a.pkg.equals(home)) {
-                if (!canSwitchHome) {
-                    p.kept.add(new Kept(a.pkg, a.name, "satu-satunya Home; pasang SwadayaTV dulu"));
-                } else {
-                    p.items.add(new Item(a.pkg, a.name, a.group));
-                }
+            if (a.pkg.equals(home) && !canSwitchHome) {
+                p.kept.add(new Kept(a.pkg, a.name, "satu-satunya Home; pasang SwadayaTV dulu"));
                 continue;
             }
             p.items.add(new Item(a.pkg, a.name, a.group));
@@ -161,6 +155,18 @@ final class Planner {
             }
         }
         return p;
+    }
+
+    private static boolean brandMatches(Catalog.App a, String brandText) {
+        if (a.brands == null) {
+            return true;
+        }
+        for (String b : a.brands) {
+            if (brandText.contains(b)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     static boolean isProtected(String pkg) {

@@ -7,6 +7,10 @@ import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.Looper;
 
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 /** Finds TVs that advertise ADB (wireless debugging) on the same Wi-Fi. */
 final class TvFinder {
 
@@ -15,10 +19,11 @@ final class TvFinder {
         void onFinished();
     }
 
+    // Only the services a TV accepts a connection on. Pairing ("_adb-tls-pairing._tcp") is left
+    // out: that port hands out a code the app cannot use, so listing it would be a dead end.
     private static final String[] TYPES = {
             "_adb-tls-connect._tcp",
             "_adb._tcp",
-            "_adb-tls-pairing._tcp",
     };
 
     private TvFinder() {
@@ -45,6 +50,8 @@ final class TvFinder {
         Handler main = new Handler(Looper.getMainLooper());
         NsdManager.DiscoveryListener[] started = new NsdManager.DiscoveryListener[TYPES.length];
         final boolean[] finished = {false};
+        // The same TV answers on both service types: show it once.
+        final Set<String> seen = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
         Runnable finish = () -> {
             if (finished[0]) {
@@ -90,9 +97,10 @@ final class TvFinder {
                                 if (host == null || host.isEmpty()) {
                                     return;
                                 }
-                                String name = serviceInfo.getServiceName();
-                                listener.onFound(name + (type.contains("pairing") ? " (pairing)" : ""),
-                                        host, port);
+                                if (!seen.add(host + ":" + port)) {
+                                    return;
+                                }
+                                listener.onFound(serviceInfo.getServiceName(), host, port);
                             }
                         });
                     } catch (Throwable ignored) {
