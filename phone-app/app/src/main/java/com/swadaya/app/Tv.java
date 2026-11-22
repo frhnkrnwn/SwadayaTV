@@ -20,6 +20,9 @@ import dadb.Dadb;
  */
 final class Tv {
 
+    /** The launcher this app installs and makes Home. */
+    static final String SWADAYA_TV = "com.swadaya.tv";
+
     private final Context ctx;
     private Dadb dadb;
 
@@ -180,6 +183,56 @@ final class Tv {
         return out.contains("new state: enabled") || out.contains("enabled");
     }
 
+    /** A version that names itself, so the app can say what is on the TV and what it installed. */
+    static final class AppVersion {
+        final String name; // may be "" when the package states no name
+        final long code;   // 0 when the package states no code
+
+        AppVersion(String name, long code) {
+            this.name = name == null ? "" : name.trim();
+            this.code = code;
+        }
+
+        boolean isEmpty() {
+            return name.isEmpty() && code == 0;
+        }
+
+        /** "1.2.0 (build 9)", or just the part that is known. */
+        String text() {
+            if (name.isEmpty()) {
+                return "build " + code;
+            }
+            return code == 0 ? name : name + " (build " + code + ")";
+        }
+    }
+
+    /** The version of an installed package, or null when the TV doesn't have it. */
+    AppVersion installedVersion(String pkg) throws IOException {
+        String out = shell("dumpsys package " + pkg);
+        String name = "";
+        long code = 0;
+        for (String raw : out.split("\\r?\\n")) {
+            String line = raw.trim();
+            if (name.isEmpty() && line.startsWith("versionName=")) {
+                name = line.substring("versionName=".length()).trim();
+            } else if (code == 0 && line.startsWith("versionCode=")) {
+                // "versionCode=9 minSdk=26 targetSdk=34"
+                String rest = line.substring("versionCode=".length()).trim();
+                int space = rest.indexOf(' ');
+                try {
+                    code = Long.parseLong(space > 0 ? rest.substring(0, space) : rest);
+                } catch (Exception ignored) {
+                    code = 0;
+                }
+            }
+            if (!name.isEmpty() && code != 0) {
+                break;
+            }
+        }
+        AppVersion v = new AppVersion(name, code);
+        return v.isEmpty() ? null : v;
+    }
+
     void installApk(File apk) throws IOException {
         Dadb d = dadb;
         if (d == null) {
@@ -190,7 +243,7 @@ final class Tv {
 
     /** Makes SwadayaTV the Home app (Android 10+). */
     void setSwadayaHome() throws IOException {
-        shell("cmd package set-home-activity com.swadaya.tv/com.swadaya.tv.MainActivity");
+        shell("cmd package set-home-activity " + SWADAYA_TV + "/" + SWADAYA_TV + ".MainActivity");
     }
 
     void close() {

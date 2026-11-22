@@ -14,7 +14,7 @@ Panduan langkah demi langkah (Bahasa Indonesia, untuk pemula): [docs/TUTORIAL_HP
 
 ## Yang dijaga
 
-- **Home:** launcher bawaan hanya dimatikan kalau sudah ada launcher lain yang bisa menjawab Home. Karena itu app menawarkan **Unduh & pasang SwadayaTV otomatis**: app mengambil `tvhome-<versi>.apk` dari rilis terbaru repo ini (`api.github.com/repos/frhnkrnwn/SwadayaTV/releases/latest`), memeriksa ukuran dan SHA-256-nya, memasangnya ke TV lewat ADB lalu menjadikannya Home. Rilis dibaca dari `api.github.com/repos/frhnkrnwn/SwadayaTV/releases/latest`; kalau API sedang membatasi permintaan (60/jam per IP tanpa token), app memakai pengalihan `/releases/latest` dan mengunduh `releases/latest/download/tvhome-<versi>.apk`, jadi tombolnya tetap bekerja. Ada juga **Pasang dari APK di HP (manual)** untuk dipakai tanpa internet.
+- **Home:** launcher bawaan hanya dimatikan kalau sudah ada launcher lain yang bisa menjawab Home. Karena itu app menawarkan **Unduh & pasang SwadayaTV otomatis**: app mengambil `tvhome-<versi>.apk` dari rilis terbaru repo ini (`api.github.com/repos/frhnkrnwn/SwadayaTV/releases/latest`), memeriksa ukuran dan SHA-256-nya, memasangnya ke TV lewat ADB lalu menjadikannya Home. Rilis dibaca dari `api.github.com/repos/frhnkrnwn/SwadayaTV/releases/latest`; kalau API sedang membatasi permintaan (60/jam per IP tanpa token), app memakai pengalihan `/releases/latest` dan mengunduh `releases/latest/download/tvhome-<versi>.apk`, jadi tombolnya tetap bekerja. Versi sebelum dan sesudah pemasangan ditampilkan: app membaca versi SwadayaTV yang terpasang di TV (`dumpsys package com.swadaya.tv`: nama + versionCode), menampilkan versi berkas rilis terbaru yang baru diunduh, lalu menyimpulkan apakah TV benar-benar diperbarui atau sudah memakai versi terbaru. Ada juga **Pasang dari APK di HP (manual)** untuk dipakai tanpa internet; jalur ini juga menampilkan perbandingan versi dengan berkas APK yang dipilih.
 - **Keyboard, Settings, Play Store, Play Services, SystemUI, permission controller, package installer, dan input TV** tidak pernah disentuh.
 - **Tidak ada uninstall.** Semua perubahan `disable-user`, bisa dibalik kapan saja.
 - **Tidak ada akun, analytics, atau iklan.** App hanya bicara ke TV di jaringan lokal.
@@ -57,7 +57,7 @@ sekali, build rilis memakai kunci debug mesin setempat.
 | Berkas | Isi |
 |---|---|
 | `MainActivity.java` | Alur 4 langkah dan seluruh UI. |
-| `Tv.java` | Koneksi ADB (dadb), baca paket, disable/enable, install APK. |
+| `Tv.java` | Koneksi ADB (dadb), baca paket, disable/enable, install APK, baca versi terpasang. |
 | `LauncherApk.java` | Mencari `tvhome-*.apk` di rilis terbaru GitHub dan mengunduhnya (ukuran + SHA-256 diperiksa). |
 | `Catalog.java` | Membaca `assets/bloat.json`. |
 | `Planner.java` | Menyusun rencana + daftar “dibiarkan” dan pengaman Home/keyboard. |

@@ -3,6 +3,7 @@ package com.swadaya.app;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -579,6 +580,11 @@ public class MainActivity extends Activity {
         io.execute(() -> {
             File apk = new File(getCacheDir(), "swadayatv-download.apk");
             try {
+                Tv.AppVersion onTv = tvVersion();
+                ui.post(() -> installState.setText((onTv == null
+                        ? "SwadayaTV belum terpasang di TV. "
+                        : "Versi di TV sekarang: SwadayaTV " + onTv.text() + ". ")
+                        + "Mencari rilis terbaru di GitHub…"));
                 LauncherApk.Release release = LauncherApk.latest();
                 ui.post(() -> installState.setText("Mengunduh " + release.asset
                         + " dari Releases (" + LauncherApk.sizeText(release.size) + ")…"));
@@ -586,7 +592,7 @@ public class MainActivity extends Activity {
                         installState.setText("Mengunduh " + release.asset + " · " + percent + "%")));
                 ui.post(() -> installState.setText("Memasang SwadayaTV "
                         + (release.version.isEmpty() ? "" : release.version + " ") + "di TV…"));
-                String done = installToTv(apk);
+                String done = installToTv(apk, true);
                 ui.post(() -> installState.setText(done));
             } catch (Throwable e) {
                 String why = e.getMessage() == null ? e.toString() : e.getMessage();
@@ -603,14 +609,81 @@ public class MainActivity extends Activity {
         });
     }
 
-    /** Installs an APK on the TV and makes it Home. Blocks; throws when the TV refuses the install. */
-    private String installToTv(File apk) throws Exception {
+    /**
+     * Installs an APK on the TV, makes it Home, then reports which version the TV had before,
+     * which one it has now, and whether that matches the APK that was installed. Blocks; throws
+     * when the TV refuses the install.
+     */
+    private String installToTv(File apk, boolean fromReleases) throws Exception {
+        Tv.AppVersion apkVersion = apkVersion(apk);
+        Tv.AppVersion before = tvVersion();
         tv.installApk(apk);
+        String home;
         try {
             tv.setSwadayaHome();
-            return "SwadayaTV terpasang dan sudah jadi Home. Tekan Home di remote untuk mencobanya.";
+            home = "SwadayaTV terpasang dan sudah jadi Home. Tekan Home di remote untuk mencobanya.";
         } catch (Throwable e) {
-            return "SwadayaTV terpasang. Tekan Home di remote, pilih SwadayaTV, lalu Always.";
+            home = "SwadayaTV terpasang. Tekan Home di remote, pilih SwadayaTV, lalu Always.";
+        }
+        return home + "\n\n"
+                + versionReport(apkVersion, fromReleases ? "Rilis terbaru" : "APK ini", before, tvVersion());
+    }
+
+    /** The "what is on the TV, and is it the newest?" lines under the install buttons. */
+    private String versionReport(Tv.AppVersion apk, String apkLabel, Tv.AppVersion before, Tv.AppVersion after) {
+        if (after == null) {
+            return "Versi SwadayaTV tidak terbaca di TV (paket " + Tv.SWADAYA_TV
+                    + " tidak ditemukan), jadi tidak bisa dibandingkan dengan rilis terbaru.";
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("Versi di TV sekarang: SwadayaTV ").append(after.text()).append('.');
+        if (apk == null) {
+            sb.append("\nVersi berkas APK tidak terbaca, jadi tidak bisa dibandingkan dengan rilis.");
+            return sb.toString();
+        }
+        sb.append('\n').append(apkLabel).append(": SwadayaTV ").append(apk.text()).append('.');
+        boolean changed = before != null && !sameVersion(before, after);
+        if (changed) {
+            sb.append("\nVersi di TV berubah: ").append(before.text()).append(" → ").append(after.text()).append('.');
+        } else if (before != null) {
+            sb.append("\nVersi di TV tidak berubah, sebelumnya juga ").append(before.text()).append('.');
+        }
+        if (sameVersion(after, apk)) {
+            sb.append(changed ? "\nTV sekarang memakai versi terbaru."
+                    : "\nTV sudah memakai versi terbaru, jadi tidak ada versi yang berubah.");
+        } else {
+            sb.append("\nTV belum memakai versi terbaru. Coba tombol sekali lagi, atau pasang manual.");
+        }
+        return sb.toString();
+    }
+
+    /** Version codes are the real order; version names are the fallback when one is missing. */
+    private static boolean sameVersion(Tv.AppVersion a, Tv.AppVersion b) {
+        if (a == null || b == null) {
+            return false;
+        }
+        if (a.code > 0 && b.code > 0) {
+            return a.code == b.code;
+        }
+        return !a.name.isEmpty() && a.name.equals(b.name);
+    }
+
+    /** The version inside the APK file itself, or null when it can't be read. */
+    private Tv.AppVersion apkVersion(File apk) {
+        try {
+            PackageInfo info = getPackageManager().getPackageArchiveInfo(apk.getAbsolutePath(), 0);
+            return info == null ? null : new Tv.AppVersion(info.versionName, info.versionCode);
+        } catch (Throwable e) {
+            return null;
+        }
+    }
+
+    /** The version on the TV, or null when it isn't installed or can't be read. */
+    private Tv.AppVersion tvVersion() {
+        try {
+            return tv.installedVersion(Tv.SWADAYA_TV);
+        } catch (Throwable e) {
+            return null;
         }
     }
 
@@ -660,7 +733,7 @@ public class MainActivity extends Activity {
 
             ui.post(() -> installState.setText("Memasang SwadayaTV di TV…"));
             try {
-                String msg = installToTv(apk);
+                String msg = installToTv(apk, false);
                 ui.post(() -> installState.setText(msg));
             } catch (Throwable e) {
                 ui.post(() -> installState.setText("Gagal memasang: " + e.getMessage()));
