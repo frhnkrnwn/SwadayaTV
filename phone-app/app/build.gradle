@@ -1,0 +1,57 @@
+plugins {
+    id 'com.android.application'
+}
+
+// Release signing: one fixed key, so an APK downloaded from Releases installs over the last one.
+// The key and its passwords are committed (../keystore.properties): this project is open source and
+// the key only has to be the same in every build. SIGNING_* environment variables, e.g. a rotated
+// key in CI secrets, replace them when set. Without either, release builds fall back to this
+// computer's debug key, as before.
+def keyProps = new Properties()
+def keyPropsFile = rootProject.file('keystore.properties')
+if (keyPropsFile.exists()) keyPropsFile.withInputStream { keyProps.load(it) }
+def signing = { String env, String prop -> System.getenv(env) ?: keyProps.getProperty(prop) }
+def releaseStore = signing('SIGNING_STORE_FILE', 'storeFile')
+
+android {
+    namespace 'com.swadaya.app'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId 'com.swadaya.app'
+        minSdk 26
+        targetSdk 36
+        versionCode 1
+        versionName '1.0.0'
+    }
+
+    signingConfigs {
+        release {
+            if (releaseStore) {
+                storeFile rootProject.file(releaseStore)
+                storePassword signing('SIGNING_STORE_PASSWORD', 'storePassword')
+                keyAlias signing('SIGNING_KEY_ALIAS', 'keyAlias')
+                keyPassword signing('SIGNING_KEY_PASSWORD', 'keyPassword')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig releaseStore ? signingConfigs.release : signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    // Pure-Java ADB client: the app is the ADB host, no computer in between.
+    implementation 'dev.mobile:dadb:1.2.10'
+}

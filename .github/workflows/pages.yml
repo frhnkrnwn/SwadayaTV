@@ -1,0 +1,48 @@
+name: Pages
+
+# The site is published by this workflow, not from the branch: a commit pushed by another workflow
+# with the repository's GITHUB_TOKEN never triggers a GitHub Pages build (documented behaviour), so
+# the APK refresh in "Release Swadaya App" would leave the download button serving the old file.
+# Publishing through deploy-pages makes every update explicit. Settings → Pages → Source must be
+# "GitHub Actions" for this to be the publishing source.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time: an older upload must not land on top of a newer one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Only what the pages actually load: the HTML, its stylesheet, the screenshots and guides in
+      # docs/, and the APK in release/. App sources and build tooling stay out of the artifact.
+      - name: Collect the site
+        run: |
+          mkdir -p _site
+          cp ./*.html site.css _site/
+          cp -r docs release _site/
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4

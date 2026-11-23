@@ -1,0 +1,152 @@
+name: Release Swadaya App
+
+# Publishes the phone-side app (phone-app/) as a signed APK on GitHub Releases, where it can be
+# downloaded straight to a phone. It runs on its own when a change to phone-app/ lands on main, and
+# can be started by hand from Actions → "Release Swadaya App" → Run workflow. The tag name comes
+# from versionName in phone-app/app/build.gradle, so bump that before a new release.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['phone-app/**']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-app-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      # Normally empty: the committed key signs every build. A rotated key in secrets replaces it.
+      SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+    steps:
+      # Always build main: the release body and the version-less APK below both belong to main.
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platforms;android-36 build-tools;36.0.0'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Release signing key
+        if: env.SIGNING_KEYSTORE_BASE64 != ''
+        run: |
+          echo "$SIGNING_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          echo "SIGNING_STORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+
+      - name: Read the version
+        id: version
+        working-directory: phone-app
+        run: |
+          version=$(awk -F"'" '/versionName/{print $2; exit}' app/build.gradle)
+          echo "name=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Build the signed release APK
+        working-directory: phone-app
+        env:
+          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        run: ./gradlew --no-daemon assembleRelease
+
+      # Refuse to publish an APK that is unsigned or signed with an unexpected key.
+      - name: Check the signature
+        working-directory: phone-app
+        run: |
+          APK=app/build/outputs/apk/release/app-release.apk
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$APK"
+          cp "$APK" "swadaya-app-${{ steps.version.outputs.name }}.apk"
+
+      - name: Upload the APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: swadaya-app-release
+          path: phone-app/swadaya-app-*.apk
+          if-no-files-found: error
+
+      # make_latest stays false: the launcher's own updater reads the repository's latest release
+      # and must keep seeing a tvhome-*.apk there.
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: swadaya-app-v${{ steps.version.outputs.name }}
+          name: Swadaya App ${{ steps.version.outputs.name }}
+          make_latest: false
+          body: |
+            Swadaya App ${{ steps.version.outputs.name }} — bersihkan Android TV / Google TV dari HP.
+
+            HP menjadi ADB host: sambung ke TV di Wi-Fi yang sama, baca isinya, lalu nonaktifkan
+            aplikasi yang dipilih. Tidak ada yang di-uninstall dan semuanya bisa dipulihkan.
+
+            Cara pakai: unduh `swadaya-app-${{ steps.version.outputs.name }}.apk` di bawah ke HP,
+            pasang (izinkan "Install unknown apps" untuk browser), lalu ikuti panduan
+            `docs/TUTORIAL_HP_TANPA_PC.md` di repo ini.
+          files: phone-app/swadaya-app-*.apk
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # The site's download button points at release/swadaya-app.apk, a name without a version in
+      # it, so it keeps working release after release. Replace that copy (GitHub Pages serves it
+      # from main) with this build; the versioned APK stays in the Release above. The path filter
+      # at the top of this file means this commit does not trigger the release again.
+      - name: Refresh release/swadaya-app.apk
+        working-directory: phone-app
+        env:
+          VERSION: ${{ steps.version.outputs.name }}
+        run: |
+          cp "swadaya-app-$VERSION.apk" ../release/swadaya-app.apk
+          git add ../release/swadaya-app.apk
+          if git diff --cached --quiet; then exit 0; fi
+          git -c user.name='github-actions[bot]' \
+              -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+              commit -q -m "chore(release): point release/swadaya-app.apk at $VERSION"
+          git push -q origin HEAD:main
+
+  # That push uses GITHUB_TOKEN, and such a push never triggers another workflow — including a
+  # Pages build — so the site would still serve the previous APK. Deploy it here, from a fresh
+  # checkout of main, so the download button and the Release always describe the same build.
+  site:
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      # Same set as .github/workflows/pages.yml: the pages, their stylesheet, docs/ and release/.
+      - name: Collect the site
+        run: |
+          mkdir -p _site
+          cp ./*.html site.css _site/
+          cp -r docs release _site/
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4

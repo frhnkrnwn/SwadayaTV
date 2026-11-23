@@ -1,5 +1,7 @@
 # Tutorial Debloat SwadayaTV (Untuk Pemula)
 
+> Kalau Anda cuma punya HP (tanpa PC dan tanpa AI), pakai [Swadaya App](TUTORIAL_HP_TANPA_PC.md): app Android yang menyambung ke TV lewat Wi-Fi, memasang SwadayaTV, dan menonaktifkan bloatware. Tutorial di bawah ini untuk jalur PC/LADb.
+
 ## Kenapa perlu debloat?
 Banyak TV/STB Android datang dengan aplikasi bawaan (bloatware) yang jarang dipakai. Aplikasi ini memakan RAM dan memperlambat TV. Debloat = menonaktifkan/menghapus aplikasi tersebut agar TV lebih ringan.
 
