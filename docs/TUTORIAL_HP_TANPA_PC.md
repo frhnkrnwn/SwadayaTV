@@ -17,7 +17,7 @@ Panduan ini untuk orang yang **hanya punya HP Android dan TV** — tanpa laptop,
 
 ## 1. Siapkan HP
 
-1. Unduh `swadaya-app-<versi>.apk` dari halaman **Releases** repo ini ke HP.
+1. Unduh `swadaya-app-<versi>.apk` ke HP: tekan tombol **Unduh Swadaya App** di [situs SwadayaTV](https://frhnkrnwn.github.io/SwadayaTV/id.html#app), atau ambil dari halaman **Releases**. Simpan berkasnya di folder **Download** supaya mudah ditemukan.
 2. Buka berkasnya. Android akan bertanya apakah boleh memasang dari aplikasi ini (Files/Chrome): pilih **Allow / Izinkan**.
 3. Pasang, lalu buka **Swadaya App**.
 
@@ -55,8 +55,8 @@ Ini bagian yang paling sering terlewat. Kalau launcher bawaan dimatikan sebelum 
 
 1. Di Swadaya App, langkah **Analisa**, tekan **Unduh & pasang SwadayaTV otomatis**. App mencari rilis terbaru di GitHub, mengunduh `tvhome-<versi>.apk` ke HP, mengirimnya ke TV lewat ADB, memasangnya, lalu menjalankan `cmd package set-home-activity` supaya SwadayaTV langsung menjadi Home. Tidak ada berkas yang perlu diunduh atau dipindahkan sendiri. Setelah selesai, app menampilkan tiga baris ringkas: **SwadayaTV di TV** (nama versi + build), **versi rilis terbaru** yang baru dipasang, lalu kesimpulan **TV sudah memakai versi terbaru** (plus versi asalnya kalau baru diperbarui) atau **TV belum memakai versi terbaru**.
 2. Kalau HP sedang tanpa internet (atau GitHub tidak bisa dihubungi), unduh APK-nya dari [Releases](https://github.com/frhnkrnwn/SwadayaTV/releases) (`tvhome-<versi>.apk`), lalu tekan **Pasang dari APK di HP (manual)** dan pilih berkas itu.
-4. Kalau TV menolak memasang (mis. “Install blocked”), di TV buka **Settings → Security & restrictions → Install unknown apps**, izinkan untuk aplikasi yang dipakai (mis. Package Installer / Files), lalu ulangi.
-5. Tekan **Home** di remote untuk memastikan SwadayaTV muncul. Kalau muncul pilihan Home, pilih **SwadayaTV** → **Always**.
+3. Kalau TV menolak memasang (mis. “Install blocked”), di TV buka **Settings → Security & restrictions → Install unknown apps**, izinkan untuk aplikasi yang dipakai (mis. Package Installer / Files), lalu ulangi.
+4. Tekan **Home** di remote untuk memastikan SwadayaTV muncul. Kalau muncul pilihan Home, pilih **SwadayaTV** → **Always**.
 
 > Swadaya App juga berguna tanpa SwadayaTV: ia tetap bisa menonaktifkan aplikasi, asalkan TV masih punya launcher lain. Tapi urutan yang disarankan tetap: pasang launcher dulu, debloat kemudian.
 
