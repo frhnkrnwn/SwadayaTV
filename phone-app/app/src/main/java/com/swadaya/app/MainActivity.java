@@ -582,9 +582,9 @@ public class MainActivity extends Activity {
             try {
                 Tv.AppVersion onTv = tvVersion();
                 ui.post(() -> installState.setText((onTv == null
-                        ? "SwadayaTV belum terpasang di TV. "
-                        : "Versi di TV sekarang: SwadayaTV " + onTv.text() + ". ")
-                        + "Mencari rilis terbaru di GitHub…"));
+                        ? "SwadayaTV belum terpasang di TV."
+                        : "SwadayaTV di TV: " + onTv.text() + ".")
+                        + " Mencari rilis terbaru di GitHub…"));
                 LauncherApk.Release release = LauncherApk.latest();
                 ui.post(() -> installState.setText("Mengunduh " + release.asset
                         + " dari Releases (" + LauncherApk.sizeText(release.size) + ")…"));
@@ -610,9 +610,8 @@ public class MainActivity extends Activity {
     }
 
     /**
-     * Installs an APK on the TV, makes it Home, then reports which version the TV had before,
-     * which one it has now, and whether that matches the APK that was installed. Blocks; throws
-     * when the TV refuses the install.
+     * Installs an APK on the TV, makes it Home, then compares the version now on the TV with the
+     * version inside the APK. Blocks; throws when the TV refuses the install.
      */
     private String installToTv(File apk, boolean fromReleases) throws Exception {
         Tv.AppVersion apkVersion = apkVersion(apk);
@@ -629,30 +628,23 @@ public class MainActivity extends Activity {
                 + versionReport(apkVersion, fromReleases ? "Rilis terbaru" : "APK ini", before, tvVersion());
     }
 
-    /** The "what is on the TV, and is it the newest?" lines under the install buttons. */
+    /** "TV vs. the APK just installed", in three short lines. */
     private String versionReport(Tv.AppVersion apk, String apkLabel, Tv.AppVersion before, Tv.AppVersion after) {
         if (after == null) {
-            return "Versi SwadayaTV tidak terbaca di TV (paket " + Tv.SWADAYA_TV
+            return "Versi SwadayaTV di TV tidak terbaca (paket " + Tv.SWADAYA_TV
                     + " tidak ditemukan), jadi tidak bisa dibandingkan dengan rilis terbaru.";
         }
-        StringBuilder sb = new StringBuilder();
-        sb.append("Versi di TV sekarang: SwadayaTV ").append(after.text()).append('.');
+        StringBuilder sb = new StringBuilder("SwadayaTV di TV: ").append(after.text());
         if (apk == null) {
-            sb.append("\nVersi berkas APK tidak terbaca, jadi tidak bisa dibandingkan dengan rilis.");
-            return sb.toString();
+            return sb.append("\nVersi berkas APK tidak terbaca, jadi tidak bisa dibandingkan.").toString();
         }
-        sb.append('\n').append(apkLabel).append(": SwadayaTV ").append(apk.text()).append('.');
-        boolean changed = before != null && !sameVersion(before, after);
-        if (changed) {
-            sb.append("\nVersi di TV berubah: ").append(before.text()).append(" → ").append(after.text()).append('.');
-        } else if (before != null) {
-            sb.append("\nVersi di TV tidak berubah, sebelumnya juga ").append(before.text()).append('.');
+        sb.append('\n').append(apkLabel).append(": ").append(apk.text());
+        if (!sameVersion(after, apk)) {
+            return sb.append("\nTV belum memakai versi terbaru. Coba tombol sekali lagi, atau pasang manual.").toString();
         }
-        if (sameVersion(after, apk)) {
-            sb.append(changed ? "\nTV sekarang memakai versi terbaru."
-                    : "\nTV sudah memakai versi terbaru, jadi tidak ada versi yang berubah.");
-        } else {
-            sb.append("\nTV belum memakai versi terbaru. Coba tombol sekali lagi, atau pasang manual.");
+        sb.append("\nTV sudah memakai versi terbaru.");
+        if (before != null && !sameVersion(before, after)) {
+            sb.append(" Diperbarui dari ").append(before.text()).append('.');
         }
         return sb.toString();
     }
