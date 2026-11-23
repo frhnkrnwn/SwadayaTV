@@ -112,3 +112,41 @@ jobs:
               -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
               commit -q -m "chore(release): point release/swadaya-app.apk at $VERSION"
           git push -q origin HEAD:main
+
+  # That push uses GITHUB_TOKEN, and such a push never triggers another workflow — including a
+  # Pages build — so the site would still serve the previous APK. Deploy it here, from a fresh
+  # checkout of main, so the download button and the Release always describe the same build.
+  site:
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      # Same set as .github/workflows/pages.yml: the pages, their stylesheet, docs/ and release/.
+      - name: Collect the site
+        run: |
+          mkdir -p _site
+          cp ./*.html site.css _site/
+          cp -r docs release _site/
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4

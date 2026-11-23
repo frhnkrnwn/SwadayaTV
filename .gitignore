@@ -13,3 +13,6 @@ build/
 local.properties
 *.apk
 !release/*.apk
+
+# Staging folder for the Pages workflow (.github/workflows/pages.yml).
+_site/
