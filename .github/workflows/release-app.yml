@@ -24,7 +24,10 @@ jobs:
       # Normally empty: the committed key signs every build. A rotated key in secrets replaces it.
       SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
     steps:
+      # Always build main: the release body and the version-less APK below both belong to main.
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - uses: actions/setup-java@v4
         with:
@@ -92,3 +95,21 @@ jobs:
             `docs/TUTORIAL_HP_TANPA_PC.md` di repo ini.
           files: phone-app/swadaya-app-*.apk
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      # The site links to release/swadaya-app.apk (no version in the name) so its download button
+      # keeps working release after release. Replace that copy with this build, and commit it to
+      # main, which is the branch GitHub Pages serves. The versioned APK stays in the Release.
+      - name: Refresh release/swadaya-app.apk
+        working-directory: phone-app
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          cp "swadaya-app-${{ steps.version.outputs.name }}.apk" ../release/swadaya-app.apk
+          git add ../release/swadaya-app.apk
+          # Nothing to do when this build is byte-identical to the one already on main.
+          if git diff --cached --quiet; then
+            echo 'release/swadaya-app.apk already matches this build.'
+            exit 0
+          fi
+          git commit -m "chore(release): point release/swadaya-app.apk at ${{ steps.version.outputs.name }}"
+          git push origin HEAD:main

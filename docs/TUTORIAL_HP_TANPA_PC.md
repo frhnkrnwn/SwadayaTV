@@ -17,7 +17,7 @@ Panduan ini untuk orang yang **hanya punya HP Android dan TV** — tanpa laptop,
 
 ## 1. Siapkan HP
 
-1. Unduh `swadaya-app-<versi>.apk` ke HP: tekan tombol **Unduh Swadaya App** di [situs SwadayaTV](https://frhnkrnwn.github.io/SwadayaTV/id.html#app), atau ambil dari halaman **Releases**. Simpan berkasnya di folder **Download** supaya mudah ditemukan.
+1. Unduh `swadaya-app.apk` (selalu versi terbaru) ke HP: tekan tombol **Unduh Swadaya App terbaru** di [situs SwadayaTV](https://frhnkrnwn.github.io/SwadayaTV/id.html#app). Kalau butuh versi tertentu, ambil `swadaya-app-<versi>.apk` dari halaman **Releases**. Simpan berkasnya di folder **Download** supaya mudah ditemukan.
 2. Buka berkasnya. Android akan bertanya apakah boleh memasang dari aplikasi ini (Files/Chrome): pilih **Allow / Izinkan**.
 3. Pasang, lalu buka **Swadaya App**.
 

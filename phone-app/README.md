@@ -2,7 +2,7 @@
 
 Aplikasi Android untuk **menonaktifkan bloatware dan iklan di Android TV / Google TV langsung dari HP**, tanpa PC, tanpa laptop dan tanpa AI. HP menjadi ADB host: ia bicara protokol ADB sendiri ke TV di Wi-Fi yang sama, membaca daftar aplikasi, menunjukkan rencananya, lalu mematikan yang dipilih. **Tidak ada yang di-uninstall** — semua bisa dinyalakan lagi dari app ini.
 
-**Unduh:** [Releases](https://github.com/frhnkrnwn/SwadayaTV/releases) → `swadaya-app-<versi>.apk`, atau jalankan workflow **Release Swadaya App** di tab Actions (APK yang sudah ditandatangani ikut terbit di Releases).
+**Unduh:** `release/swadaya-app.apk` ([tautan langsung](https://frhnkrnwn.github.io/SwadayaTV/id.html#app)) selalu berisi versi terbaru — workflow **Release Swadaya App** menimpanya setiap rilis. Versi tertentu ada di [Releases](https://github.com/frhnkrnwn/SwadayaTV/releases) sebagai `swadaya-app-<versi>.apk`; workflow itu juga bisa dijalankan manual dari tab Actions.
 
 Panduan langkah demi langkah (Bahasa Indonesia, untuk pemula): [docs/TUTORIAL_HP_TANPA_PC.md](../docs/TUTORIAL_HP_TANPA_PC.md).
 
