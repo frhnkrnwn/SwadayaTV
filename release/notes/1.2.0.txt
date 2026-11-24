@@ -1,0 +1,1 @@
+Rilis fitur: Pemetaan Tombol (tekan sekali, dua kali, lama), unggah wallpaper dari HP lewat kode QR, Net traffic monitor tanpa ADB (mesin VPN ikut diunduh dari rilis), Live TV Indonesia (TVRI/Metro), data BMKG/Kemenag, speed test fast.com, pembaruan OTA dengan kunci rilis tetap

@@ -69,6 +69,16 @@ jobs:
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$APK"
           cp "$APK" "swadaya-app-${{ steps.version.outputs.name }}.apk"
 
+      # The site states the app's version, size and SHA-256 from this file, so nobody copies numbers
+      # by hand and a visitor can check the file they just downloaded.
+      - name: Write release/app.json
+        working-directory: phone-app
+        env:
+          VERSION: ${{ steps.version.outputs.name }}
+        run: |
+          code=$(awk '/versionCode/{print $2; exit}' app/build.gradle)
+          ../scripts/write-app-json.sh "$VERSION" "$code" "swadaya-app-$VERSION.apk"
+
       - name: Upload the APK artifact
         uses: actions/upload-artifact@v4
         with:
@@ -106,7 +116,7 @@ jobs:
           VERSION: ${{ steps.version.outputs.name }}
         run: |
           cp "swadaya-app-$VERSION.apk" ../release/swadaya-app.apk
-          git add ../release/swadaya-app.apk
+          git add ../release
           if git diff --cached --quiet; then exit 0; fi
           git -c user.name='github-actions[bot]' \
               -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
@@ -128,12 +138,8 @@ jobs:
         with:
           ref: main
 
-      # Same set as .github/workflows/pages.yml: the pages, their stylesheet, docs/ and release/.
       - name: Collect the site
-        run: |
-          mkdir -p _site
-          cp ./*.html site.css _site/
-          cp -r docs release _site/
+        run: ./scripts/collect-site.sh _site
 
       - uses: actions/configure-pages@v6
 
@@ -160,3 +166,16 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deploy
         uses: actions/deploy-pages@v5
+
+  # A download site fails silently: the button still looks right while it serves a 404 or last
+  # build's APK. Retries inside the script cover the minutes a deploy takes to reach every edge.
+  smoke:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Check the live site
+        run: ./scripts/check-site.sh

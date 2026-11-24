@@ -15,18 +15,21 @@ import java.security.MessageDigest;
 import java.util.Locale;
 
 /**
- * The newest SwadayaTV APK on this repository's Releases, so the phone can fetch it and hand it to
- * the TV without the user copying a file around.
+ * The newest SwadayaTV APK, so the phone can fetch it and hand it to the TV without the user copying
+ * a file around.
  *
- * It reads {@code releases/latest}, which never points at a draft or a pre-release, and takes the
- * {@code tvhome-<version>.apk} asset from it. That is the same release the launcher's own updater
- * uses, so the APK is signed with the same key every release is, and it installs over the version
- * on the TV with its settings kept.
+ * It asks the project's site first ({@code release/version.json}): that file is written by the same
+ * build that publishes {@code release/tvhome-latest.apk}, so the version, size and SHA-256 always
+ * describe the file behind it, and the site has no rate limit. GitHub's Releases stay as the
+ * fallback ({@code releases/latest} and its redirect). Either way the APK is signed with the same
+ * key every release is, and it installs over the version on the TV with its settings kept.
  */
 final class LauncherApk {
 
     private static final String REPO = "frhnkrnwn/SwadayaTV";
     private static final String LATEST = "https://api.github.com/repos/" + REPO + "/releases/latest";
+    /** The site's own version file: one build, one APK, no API limit. */
+    private static final String SITE = "https://frhnkrnwn.github.io/SwadayaTV/release/version.json";
 
     /** Download progress, 0–100. Called on the calling thread. */
     interface Progress {
@@ -55,29 +58,50 @@ final class LauncherApk {
 
     /** The latest release's launcher APK. Blocks; throws with a readable reason. */
     static Release latest() throws Exception {
-        Exception apiFailure;
+        StringBuilder why = new StringBuilder();
+        try {
+            return fromSite();
+        } catch (Exception e) {
+            why.append("situs: ").append(reason(e));
+        }
         try {
             return fromApi();
         } catch (Exception e) {
             // The API is rate limited per IP (60 requests an hour without a token) and a shared
             // network can use them all up: the release's own download link still works, so ask
             // the releases page where it redirects instead and build the link from that.
-            apiFailure = e;
+            why.append("; GitHub API: ").append(reason(e));
         }
         try {
             return fromRedirect();
         } catch (Exception e) {
-            String a = apiFailure.getMessage() == null ? apiFailure.toString() : apiFailure.getMessage();
-            String b = e.getMessage() == null ? e.toString() : e.getMessage();
-            throw new Exception("GitHub tidak bisa dihubungi (" + a + "; " + b + ").");
+            throw new Exception("Server tidak bisa dihubungi (" + why + "; " + reason(e) + ").");
         }
+    }
+
+    private static String reason(Exception e) {
+        return e.getMessage() == null ? e.toString() : e.getMessage();
+    }
+
+    /** The site's version.json, which names the very APK its download button serves. */
+    private static Release fromSite() throws Exception {
+        JSONObject r = new JSONObject(get(SITE, null));
+        String version = r.optString("versionName", "").trim();
+        String url = r.optString("apkUrl", "").trim();
+        if (version.isEmpty() || !url.startsWith("https://") || !url.endsWith(".apk")) {
+            throw new Exception("version.json situs tidak lengkap");
+        }
+        String name = r.optString("apkName", "").trim();
+        String sha = r.optString("apkSha256", "").trim().toLowerCase(Locale.ROOT);
+        return new Release(version, name.isEmpty() ? assetName(url) : name, url,
+                r.optLong("apkSize", 0), sha.matches("[0-9a-f]{64}") ? sha : null);
     }
 
     /** The latest release and its tvhome asset, from the GitHub API (it states the SHA-256). */
     private static Release fromApi() throws Exception {
         String body;
         try {
-            body = get(LATEST);
+            body = get(LATEST, "application/vnd.github+json");
         } catch (Exception e) {
             String why = e.getMessage() == null ? e.toString() : e.getMessage();
             if (why.contains("404")) {
@@ -254,11 +278,14 @@ final class LauncherApk {
         return sb.toString();
     }
 
-    private static String get(String url) throws Exception {
+    /** One GET as a string. {@code accept} is null for the site, GitHub's media type for the API. */
+    private static String get(String url, String accept) throws Exception {
         HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
         c.setConnectTimeout(20_000);
         c.setReadTimeout(20_000);
-        c.setRequestProperty("Accept", "application/vnd.github+json");
+        if (accept != null) {
+            c.setRequestProperty("Accept", accept);
+        }
         c.setRequestProperty("User-Agent", "swadaya-app");
         try {
             int code = c.getResponseCode();

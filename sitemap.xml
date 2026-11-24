@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Every page the site publishes, with its language twin. Keep this list in step with the HTML
+     at the repository root: the smoke test checks the pages it lists here exist. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://frhnkrnwn.github.io/SwadayaTV/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://frhnkrnwn.github.io/SwadayaTV/"/>
+    <xhtml:link rel="alternate" hreflang="id" href="https://frhnkrnwn.github.io/SwadayaTV/id.html"/>
+  </url>
+  <url>
+    <loc>https://frhnkrnwn.github.io/SwadayaTV/id.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://frhnkrnwn.github.io/SwadayaTV/"/>
+    <xhtml:link rel="alternate" hreflang="id" href="https://frhnkrnwn.github.io/SwadayaTV/id.html"/>
+  </url>
+  <url>
+    <loc>https://frhnkrnwn.github.io/SwadayaTV/whats-new.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://frhnkrnwn.github.io/SwadayaTV/whats-new.html"/>
+    <xhtml:link rel="alternate" hreflang="id" href="https://frhnkrnwn.github.io/SwadayaTV/id-whats-new.html"/>
+  </url>
+  <url>
+    <loc>https://frhnkrnwn.github.io/SwadayaTV/id-whats-new.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://frhnkrnwn.github.io/SwadayaTV/whats-new.html"/>
+    <xhtml:link rel="alternate" hreflang="id" href="https://frhnkrnwn.github.io/SwadayaTV/id-whats-new.html"/>
+  </url>
+  <url>
+    <loc>https://frhnkrnwn.github.io/SwadayaTV/help.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://frhnkrnwn.github.io/SwadayaTV/help.html"/>
+    <xhtml:link rel="alternate" hreflang="id" href="https://frhnkrnwn.github.io/SwadayaTV/id-help.html"/>
+  </url>
+  <url>
+    <loc>https://frhnkrnwn.github.io/SwadayaTV/id-help.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://frhnkrnwn.github.io/SwadayaTV/help.html"/>
+    <xhtml:link rel="alternate" hreflang="id" href="https://frhnkrnwn.github.io/SwadayaTV/id-help.html"/>
+  </url>
+  <url><loc>https://frhnkrnwn.github.io/SwadayaTV/tv/</loc></url>
+</urlset>

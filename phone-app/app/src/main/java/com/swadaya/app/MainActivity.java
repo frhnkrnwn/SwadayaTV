@@ -576,7 +576,7 @@ public class MainActivity extends Activity {
         }
         btnDownloadLauncher.setEnabled(false);
         btnInstallApk.setEnabled(false);
-        installState.setText("Mencari rilis SwadayaTV terbaru di GitHub…");
+        installState.setText("Mencari SwadayaTV terbaru di situs…");
         io.execute(() -> {
             File apk = new File(getCacheDir(), "swadayatv-download.apk");
             try {
@@ -584,7 +584,7 @@ public class MainActivity extends Activity {
                 ui.post(() -> installState.setText((onTv == null
                         ? "SwadayaTV belum terpasang di TV."
                         : "SwadayaTV di TV: " + onTv.text() + ".")
-                        + " Mencari rilis terbaru di GitHub…"));
+                        + " Mencari versi terbaru…"));
                 LauncherApk.Release release = LauncherApk.latest();
                 ui.post(() -> installState.setText("Mengunduh " + release.asset
                         + " dari Releases (" + LauncherApk.sizeText(release.size) + ")…"));
@@ -597,7 +597,7 @@ public class MainActivity extends Activity {
             } catch (Throwable e) {
                 String why = e.getMessage() == null ? e.toString() : e.getMessage();
                 ui.post(() -> installState.setText("Gagal mengunduh/memasang: " + why
-                        + " Kalau GitHub tidak bisa dihubungi, pakai tombol APK di HP."));
+                        + " Kalau server tidak bisa dihubungi, pakai tombol APK di HP."));
             } finally {
                 //noinspection ResultOfMethodCallIgnored
                 apk.delete();

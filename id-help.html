@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fdf7f0">
+  <meta name="description" content="Bantuan pasang dan perbarui SwadayaTV: Play Protect, sumber tidak dikenal, 'Aplikasi tidak terpasang', tombol Home, kembali ke versi lama, checksum, dan Obtainium.">
+  <title>SwadayaTV — Bantuan</title>
+  <link rel="canonical" href="https://frhnkrnwn.github.io/SwadayaTV/id-help.html">
+  <link rel="alternate" hreflang="en" href="help.html">
+  <link rel="alternate" hreflang="id" href="id-help.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="SwadayaTV">
+  <meta property="og:title" content="SwadayaTV — Bantuan">
+  <meta property="og:description" content="Yang perlu dilakukan saat Android, Play Protect, atau browser TV menghalangi pemasangan SwadayaTV.">
+  <meta property="og:image" content="https://frhnkrnwn.github.io/SwadayaTV/og.jpg">
+  <meta property="og:url" content="https://frhnkrnwn.github.io/SwadayaTV/id-help.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+  <a class="skip" href="#main">Lompat ke isi</a>
+  <header class="site-header" id="top">
+    <nav class="nav wrap" aria-label="Navigasi utama">
+      <a class="brand" href="id.html" aria-label="SwadayaTV, beranda"><span class="brand-mark" aria-hidden="true">S</span><span>SwadayaTV</span></a>
+      <div class="nav-links">
+        <a href="id.html#features">Fitur</a>
+        <a href="id.html#install">Pasang</a>
+        <a href="id-whats-new.html">Apa yang baru</a>
+        <a href="id-help.html" aria-current="page">Bantuan</a>
+        <a class="nav-download" href="release/tvhome-latest.apk" download>Unduh →</a>
+      </div>
+      <div class="language-switch" aria-label="Bahasa"><a href="help.html" lang="en">EN</a><a href="id-help.html" lang="id" aria-current="page">ID</a></div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="wrap page-head" data-build="release/version.json">
+      <span class="eyebrow">Bantuan</span>
+      <h1>Saat Android<br><em>menghalangi.</em></h1>
+      <p class="lede">Memasang satu APK biasanya cukup empat ketukan. Berikut empat tempat yang sering menghentikannya, cara membatalkan pembaruan, dan cara memastikan berkas yang Anda terima adalah berkas yang diterbitkan situs ini.</p>
+      <p class="build-line">Build terbaru: <strong>v<span data-version>&mdash;</span></strong> (<span data-build>build</span>, <span data-date>&mdash;</span>) &middot; APK <span data-size>&mdash;</span> &middot; SHA-256 <code data-sha>di release/version.json</code></p>
+      <div class="page-links"><a class="button primary" href="release/tvhome-latest.apk" download>Unduh launcher-nya <span aria-hidden="true">↓</span></a><a class="button secondary" href="id.html#install">Langkah pemasangan <span aria-hidden="true">↘</span></a></div>
+    </section>
+
+    <section class="wrap page-body">
+      <h2>Memasang</h2>
+      <div class="faq">
+        <details><summary>Browser di TV tidak mau mengunduh berkasnya</summary>
+          <p>Kebanyakan browser TV membuka APK sebagai teks atau menolaknya. Dua cara yang selalu berhasil:</p>
+          <ul>
+            <li>Buka <a class="text-link" href="tv/">halaman TV yang ringan</a>, pindai kode QR-nya dari HP yang Anda pakai sekarang, lalu kirim berkasnya ke TV (Downloader, flashdisk, atau menu bagikan di HP).</li>
+            <li>Pasang aplikasi <strong>Downloader</strong> di TV dan ketik <code>frhnkrnwn.github.io/SwadayaTV/tv</code> di kolom alamatnya. Halamannya hanya teks, jadi tetap terbuka di TV lambat.</li>
+          </ul>
+          <p>Aplikasi Swadaya App di HP melakukan pekerjaan yang sama tanpa mengetik apa pun: launcher diunduh di HP lalu dipasang ke TV lewat Wi-Fi.</p>
+        </details>
+        <details><summary>Play Protect bilang aplikasi tidak bisa diperiksa</summary>
+          <p>Launcher ini tidak lewat Google Play, jadi Play Protect tidak punya catatannya. Di peringatan itu ketuk <strong>More details</strong> (Detail lainnya), lalu <strong>Install anyway</strong> (Tetap pasang). Play Protect tidak perlu dimatikan.</p>
+        </details>
+        <details><summary>TV meminta izin memasang aplikasi</summary>
+          <p>Android hanya mengizinkan pengelola berkas, browser, atau Downloader memasang aplikasi setelah diizinkan: <strong>Setelan → Aplikasi → Akses aplikasi khusus → Pasang aplikasi tak dikenal</strong>, pilih aplikasi sumbernya, lalu izinkan. Di sebagian TV, izin ini muncul sendiri dengan tombol <strong>Setelan</strong>&mdash;pakai tombol itu.</p>
+        </details>
+        <details><summary>&ldquo;Aplikasi tidak terpasang&rdquo;</summary>
+          <p>Hampir selalu karena tanda tangan berbeda: salinan lama di TV ditandatangani kunci lain (build debug, atau build sebelum situs ini ada). Android menolak menggantinya. Copot dulu SwadayaTV lama, lalu pasang APK dari situs ini. Setelan dan dock ikut hilang saat mencopot, jadi lakukan sekali saja dan setelah itu selalu pakai APK dari situs ini&mdash;semua build di sini ditandatangani kunci rilis yang sama dan bisa menimpa versi sebelumnya.</p>
+        </details>
+        <details><summary>Tombol Home masih membuka launcher lama</summary>
+          <p>SwadayaTV sudah terpasang tetapi belum dipilih. Di Google TV: <strong>Setelan → Sistem → Layar utama</strong> (atau <strong>Aplikasi → Aplikasi default → Home</strong>). Di Android TV lain ada di <strong>Setelan → Preferensi perangkat → Layar utama</strong>. Pilih SwadayaTV, lalu tekan Home dua kali.</p>
+        </details>
+      </div>
+
+      <h2 style="margin-top:56px">Memperbarui dan kembali</h2>
+      <div class="faq">
+        <details><summary>Bagaimana pembaruan datang</summary>
+          <p>Launcher memeriksa <code>release/version.json</code> di situs ini sekali sehari; build baru muncul di lonceng dan di <strong>Setelan → Tentang → Periksa pembaruan</strong>. APK diunduh dari situs ini, SHA-256-nya diperiksa, lalu diserahkan ke Android. Setelan Anda tetap.</p>
+          <p>Kalau situs tidak bisa dihubungi, launcher memakai rilis GitHub sebagai cadangan, jadi pembaruan tetap jalan.</p>
+        </details>
+        <details><summary>Saya ingin kembali ke build sebelumnya</summary>
+          <p>Android menolak memasang versi lebih lama di atas versi lebih baru, jadi ada dua langkah: copot SwadayaTV, lalu pasang <a class="text-link" href="release/tvhome-previous.apk" download>build sebelumnya</a>. Mencopot menghapus setelan launcher, jadi jadikan pilihan terakhir dan laporkan apa yang rusak&mdash;perbaikan di build berikutnya biasanya lebih cepat.</p>
+          <p>Daftar build lama ada di <a class="text-link" href="https://github.com/frhnkrnwn/SwadayaTV/releases">Releases ↗</a>.</p>
+        </details>
+        <details><summary>Pembaruan otomatis lewat Obtainium</summary>
+          <p>Ingin aplikasi lain yang mengurus pembaruan? Pasang <a class="text-link" href="https://github.com/ImranR98/Obtainium">Obtainium ↗</a>, tambahkan <code>https://github.com/frhnkrnwn/SwadayaTV</code>, dan aplikasi itu mengikuti rilis repo ini. APK-nya ditandatangani kunci yang sama, jadi pembaruan Obtainium menimpa launcher seperti pembaruan bawaan.</p>
+        </details>
+      </div>
+
+      <h2 style="margin-top:56px">Memeriksa berkas</h2>
+      <div class="faq">
+        <details><summary>Apa arti SHA-256</summary>
+          <p>Setiap build punya sidik jari: SHA-256 dari APK yang persis ada di balik tombol situs ini. Nilainya ada di <a class="text-link" href="release/version.json">release/version.json</a> dan di samping tiap build pada <a class="text-link" href="id-whats-new.html">Apa yang baru</a>.</p>
+          <p>Di komputer: <code>sha256sum tvhome-latest.apk</code> (Linux) atau <code>shasum -a 256 tvhome-latest.apk</code> (macOS). Di HP, aplikasi checksum apa pun menampilkan string yang sama. Kalau tidak cocok, unduhan berubah atau terputus&mdash;hapus dan unduh lagi.</p>
+        </details>
+        <details><summary>Perlu USB debugging atau komputer?</summary>
+          <p>Tidak. USB debugging hanya untuk beberapa tambahan di dalam aplikasi (lihat catatan di <a class="text-link" href="id.html#install">Pasang</a>). Launcher, Live TV, wallpaper, cuaca, jadwal salat, remote HP, dan pembaruan tetap jalan tanpa itu.</p>
+        </details>
+      </div>
+
+      <h2 style="margin-top:56px">Swadaya App di HP</h2>
+      <div class="faq">
+        <details><summary>Aplikasi tidak menemukan TV</summary>
+          <ul>
+            <li>HP dan TV harus di Wi-Fi yang sama; jaringan tamu dan &ldquo;AP isolation&rdquo; memblokirnya.</li>
+            <li>Di TV, nyalakan <strong>USB debugging</strong> dan <strong>Network debugging</strong> (Opsi pengembang). TV meminta izin pertama kali&mdash;pilih <strong>Selalu izinkan</strong>.</li>
+            <li>Ketik alamat IP TV persis seperti di <strong>Setelan → Jaringan</strong> pada TV.</li>
+            <li>Matikan lagi debugging setelah selesai; aplikasi tidak membutuhkannya lagi.</li>
+          </ul>
+        </details>
+        <details><summary>Bisakah aplikasi memasang launcher ke TV?</summary>
+          <p>Bisa. Itu jalur terpendek: pasang <a class="text-link" href="release/swadaya-app.apk" download>Swadaya App</a> di HP, sambungkan ke TV, lalu pakai tombol pasang di aplikasi. Aplikasi mengunduh APK yang sama dengan yang diterbitkan situs ini dan mengirimkannya ke TV; Anda tidak perlu mengetik alamat apa pun di TV.</p>
+        </details>
+      </div>
+
+      <p class="muted-note" style="margin-top:44px">Ada yang belum tercakup? <a class="text-link" href="https://github.com/frhnkrnwn/SwadayaTV/issues">Buka issue ↗</a> dengan model TV, versi Android dari <strong>Setelan → Tentang</strong>, dan apa yang Anda lihat.</p>
+    </section>
+  </main>
+
+  <footer><div class="footer-inner wrap"><div><a class="brand" href="id.html"><span class="brand-mark" aria-hidden="true">S</span><span>SwadayaTV</span></a><p>Launcher ringan untuk TV yang terasa lebih pribadi. Dibuat agar aplikasi dan kehidupan sehari-hari Anda kembali menjadi fokus.</p></div><nav aria-label="Tautan lainnya"><a href="https://github.com/frhnkrnwn/SwadayaTV">GitHub</a><a href="id.html#install">Pasang</a><a href="id-whats-new.html">Apa yang baru</a><a href="id-help.html">Bantuan</a><a href="tv/">Untuk TV</a><a href="https://github.com/frhnkrnwn/SwadayaTV/releases/latest">Rilis</a></nav></div></footer>
+  <script src="site.js"></script>
+</body>
+</html>
