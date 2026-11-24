@@ -43,7 +43,11 @@ jobs:
       - name: Read the version
         id: version
         working-directory: launcher
-        run: echo "name=$(sed -n "s/.*versionName '\([^']*\)'.*/\1/p" app/build.gradle)" >> "$GITHUB_OUTPUT"
+        run: |
+          name=$(grep -o "versionName '[^']*'" app/build.gradle | head -1 | cut -d"'" -f2)
+          code=$(grep -o 'versionCode [0-9]*' app/build.gradle | head -1 | awk '{print $2}')
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "code=$code" >> "$GITHUB_OUTPUT"
 
       # The keystore lives only in the runner's temp folder, for this job.
       - name: Release signing key
@@ -99,18 +103,26 @@ jobs:
             launcher/app/build/outputs/netengine/release/netengine-*.so
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # The site's download button points at release/tvhome-latest.apk, a name without a version or
-      # a build number in it, so one link keeps working release after release. Keep the versioned
-      # APK in the Release above and refresh this plain copy (GitHub Pages serves it from main) to
-      # the same build. The bot push uses GITHUB_TOKEN, so it never starts another workflow.
-      - name: Refresh release/tvhome-latest.apk
+      # The site is the one place a TV gets its version from: release/tvhome-latest.apk is a name
+      # without a version or build number, and release/version.json is written here from this exact
+      # file, so the download button, the What's new page and the launcher's updater all describe
+      # one build — without asking api.github.com (60 requests an hour per IP, shared networks use
+      # them up). One previous build stays beside them for a one-tap rollback.
+      # The bot push uses GITHUB_TOKEN, so it never starts another workflow.
+      - name: Refresh the site's APK, version file and history
         if: github.event_name == 'push'
         env:
           VERSION: ${{ steps.version.outputs.name }}
+          CODE: ${{ steps.version.outputs.code }}
           BUILD: ${{ steps.buildnum.outputs.number }}
         run: |
-          cp "launcher/tvhome-$VERSION.apk" release/tvhome-latest.apk
-          git add release/tvhome-latest.apk
+          APK="launcher/tvhome-$VERSION.apk"
+          if [ -f release/tvhome-latest.apk ] && ! cmp -s release/tvhome-latest.apk "$APK"; then
+            cp release/tvhome-latest.apk release/tvhome-previous.apk
+          fi
+          cp "$APK" release/tvhome-latest.apk
+          ./scripts/write-version-json.sh "$VERSION" "$CODE" "$BUILD" "v$VERSION-build$BUILD" "$APK"
+          git add release
           if git diff --cached --quiet; then exit 0; fi
           git -c user.name='github-actions[bot]' \
               -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
@@ -133,12 +145,8 @@ jobs:
         with:
           ref: main
 
-      # Same set as .github/workflows/pages.yml: the pages, their stylesheet, docs/ and release/.
       - name: Collect the site
-        run: |
-          mkdir -p _site
-          cp ./*.html site.css _site/
-          cp -r docs release _site/
+        run: ./scripts/collect-site.sh _site
 
       - uses: actions/configure-pages@v6
 
@@ -165,3 +173,18 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deploy
         uses: actions/deploy-pages@v5
+
+  # A download site fails silently: the button still looks right while it serves a 404 or last
+  # build's APK. This checks the live pages, both APKs (byte for byte) and the version files that
+  # the updater reads, so a bad deploy is a red run instead of a report from a user.
+  smoke:
+    needs: deploy
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Check the live site
+        run: ./scripts/check-site.sh

@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fdf7f0">
+  <meta name="description" content="Install and update help for SwadayaTV: Play Protect, unknown sources, 'App not installed', the Home button, rollback, checksums and Obtainium.">
+  <title>SwadayaTV — Help</title>
+  <link rel="canonical" href="https://frhnkrnwn.github.io/SwadayaTV/help.html">
+  <link rel="alternate" hreflang="en" href="help.html">
+  <link rel="alternate" hreflang="id" href="id-help.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="SwadayaTV">
+  <meta property="og:title" content="SwadayaTV — Help">
+  <meta property="og:description" content="What to do when Android, Play Protect or the TV's browser gets in the way of installing SwadayaTV.">
+  <meta property="og:image" content="https://frhnkrnwn.github.io/SwadayaTV/og.jpg">
+  <meta property="og:url" content="https://frhnkrnwn.github.io/SwadayaTV/help.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="site-header" id="top">
+    <nav class="nav wrap" aria-label="Main navigation">
+      <a class="brand" href="index.html" aria-label="SwadayaTV, home"><span class="brand-mark" aria-hidden="true">S</span><span>SwadayaTV</span></a>
+      <div class="nav-links">
+        <a href="index.html#features">Features</a>
+        <a href="index.html#install">Install</a>
+        <a href="whats-new.html">What&rsquo;s new</a>
+        <a href="help.html" aria-current="page">Help</a>
+        <a class="nav-download" href="release/tvhome-latest.apk" download>Get it →</a>
+      </div>
+      <div class="language-switch" aria-label="Language"><a href="help.html" lang="en" aria-current="page">EN</a><a href="id-help.html" lang="id">ID</a></div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="wrap page-head" data-build="release/version.json">
+      <span class="eyebrow">Help</span>
+      <h1>When Android<br><em>gets in the way.</em></h1>
+      <p class="lede">Sideloading one APK is normally four taps. These are the four places it can stop, plus how to undo an update and how to check that the file you got is the file this site published.</p>
+      <p class="build-line">Newest build: <strong>v<span data-version>&mdash;</span></strong> (<span data-build>build</span>, <span data-date>&mdash;</span>) &middot; APK <span data-size>&mdash;</span> &middot; SHA-256 <code data-sha>in release/version.json</code></p>
+      <div class="page-links"><a class="button primary" href="release/tvhome-latest.apk" download>Download the launcher <span aria-hidden="true">↓</span></a><a class="button secondary" href="index.html#install">Install steps <span aria-hidden="true">↘</span></a></div>
+    </section>
+
+    <section class="wrap page-body">
+      <h2>Installing</h2>
+      <div class="faq">
+        <details><summary>The TV browser won&rsquo;t download the file</summary>
+          <p>Most TV browsers open the APK as text or refuse it. Two ways that always work:</p>
+          <ul>
+            <li>Open <a class="text-link" href="tv/">the plain TV page</a> and scan its QR code from the phone you are reading this on, then send the file to the TV (Downloader, a USB drive, or the phone&rsquo;s own share sheet).</li>
+            <li>Install the <strong>Downloader</strong> app on the TV and type <code>frhnkrnwn.github.io/SwadayaTV/tv</code> into its address bar. The page is text only, so it loads even on a slow TV.</li>
+          </ul>
+          <p>The phone app does the same job without typing anything: it downloads the launcher on the phone and installs it on the TV over Wi-Fi.</p>
+        </details>
+        <details><summary>Play Protect says it can&rsquo;t check the app</summary>
+          <p>The launcher isn&rsquo;t distributed through Google Play, so Play Protect has no record of it. On the warning sheet tap <strong>More details</strong>, then <strong>Install anyway</strong>. You do not need to turn Play Protect off.</p>
+        </details>
+        <details><summary>The TV asks for permission to install</summary>
+          <p>Android only lets a file manager, browser or Downloader install apps after you allow it: <strong>Settings → Apps → Special app access → Install unknown apps</strong>, pick the app you are installing from, and allow it. On some TVs the prompt appears by itself with a <strong>Settings</strong> button&mdash;use that.</p>
+        </details>
+        <details><summary>&ldquo;App not installed&rdquo;</summary>
+          <p>Almost always a signature mismatch: an older copy on the TV was signed with a different key (a debug build, or a build from before this site existed). Android refuses to replace it. Uninstall the old SwadayaTV first, then install the APK from this site. Settings and the dock are lost with that uninstall, so do it once and keep using this site&rsquo;s APK afterwards&mdash;every build here is signed with the same release key and installs over the previous one.</p>
+        </details>
+        <details><summary>Pressing Home still opens the old launcher</summary>
+          <p>SwadayaTV is installed but not selected. On Google TV: <strong>Settings → System → Home screen</strong> (or <strong>Apps → Default apps → Home</strong>). On other Android TVs the entry is under <strong>Settings → Device preferences → Home screen</strong>. Pick SwadayaTV, then press Home twice.</p>
+        </details>
+      </div>
+
+      <h2 style="margin-top:56px">Updating, and going back</h2>
+      <div class="faq">
+        <details><summary>How updates arrive</summary>
+          <p>The launcher checks this site&rsquo;s <code>release/version.json</code> once a day; a newer build appears in the bell and in <strong>Settings → About → Check for updates</strong>. It downloads the APK from this site, verifies its SHA-256, and hands it to Android. Your settings stay.</p>
+          <p>If the site is ever unreachable, the launcher falls back to the GitHub release, so updates keep working.</p>
+        </details>
+        <details><summary>I want the previous build back</summary>
+          <p>Android refuses to install an older version over a newer one, so this is a two-step: uninstall SwadayaTV, then install <a class="text-link" href="release/tvhome-previous.apk" download>the previous build</a>. Uninstalling clears the launcher&rsquo;s settings, so treat it as a last resort and report what broke&mdash;a fix in the next build is usually quicker.</p>
+          <p>The full list of older builds is on <a class="text-link" href="https://github.com/frhnkrnwn/SwadayaTV/releases">Releases ↗</a>.</p>
+        </details>
+        <details><summary>Automatic updates with Obtainium</summary>
+          <p>Prefer an app that updates it for you? Install <a class="text-link" href="https://github.com/ImranR98/Obtainium">Obtainium ↗</a>, add <code>https://github.com/frhnkrnwn/SwadayaTV</code>, and it follows this repository&rsquo;s releases. The APKs are signed with the same key, so Obtainium&rsquo;s updates install over the launcher just like the built-in updater&rsquo;s.</p>
+        </details>
+      </div>
+
+      <h2 style="margin-top:56px">Checking the file</h2>
+      <div class="faq">
+        <details><summary>What the SHA-256 means</summary>
+          <p>Every build has a fingerprint: the SHA-256 of the exact APK behind the button on this site. The live value is in <a class="text-link" href="release/version.json">release/version.json</a> and next to each build in <a class="text-link" href="whats-new.html">What&rsquo;s new</a>.</p>
+          <p>On a computer: <code>sha256sum tvhome-latest.apk</code> (Linux) or <code>shasum -a 256 tvhome-latest.apk</code> (macOS). On a phone, any checksum app shows the same string. If it doesn&rsquo;t match, the download was altered or cut short&mdash;delete it and download again.</p>
+        </details>
+        <details><summary>Does installing this need USB debugging or a computer?</summary>
+          <p>No. USB debugging is only for a few extras inside the app (see the note in <a class="text-link" href="index.html#install">Install</a>). The launcher, Live TV, wallpapers, weather, prayer times, the phone remote and updates work without it.</p>
+        </details>
+      </div>
+
+      <h2 style="margin-top:56px">Swadaya App on the phone</h2>
+      <div class="faq">
+        <details><summary>The app can&rsquo;t find the TV</summary>
+          <ul>
+            <li>Phone and TV must be on the same Wi-Fi; guest networks and &ldquo;AP isolation&rdquo; block it.</li>
+            <li>On the TV, turn on <strong>USB debugging</strong> and <strong>Network debugging</strong> (Developer options). The TV asks for permission the first time&mdash;choose <strong>Always allow</strong>.</li>
+            <li>Type the TV&rsquo;s IP address exactly as shown in <strong>Settings → Network</strong> on the TV.</li>
+            <li>Turn debugging back off when you are done; nothing in the app needs it afterwards.</li>
+          </ul>
+        </details>
+        <details><summary>Can the app install the launcher on the TV for me?</summary>
+          <p>Yes. That is the shortest path: install <a class="text-link" href="release/swadaya-app.apk" download>Swadaya App</a> on the phone, connect it to the TV, and use its install button. The app downloads the same APK this site publishes and pushes it to the TV; you never type an address on the TV.</p>
+        </details>
+      </div>
+
+      <p class="muted-note" style="margin-top:44px">Something not covered here? <a class="text-link" href="https://github.com/frhnkrnwn/SwadayaTV/issues">Open an issue ↗</a> with the TV model, the Android version from <strong>Settings → About</strong>, and what you saw.</p>
+    </section>
+  </main>
+
+  <footer><div class="footer-inner wrap"><div><a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true">S</span><span>SwadayaTV</span></a><p>A small home screen for a TV that feels like yours. Built to put your apps and your day back in focus.</p></div><nav aria-label="More links"><a href="https://github.com/frhnkrnwn/SwadayaTV">GitHub</a><a href="index.html#install">Install</a><a href="whats-new.html">What&rsquo;s new</a><a href="help.html">Help</a><a href="tv/">For the TV</a><a href="https://github.com/frhnkrnwn/SwadayaTV/releases/latest">Releases</a></nav></div></footer>
+  <script src="site.js"></script>
+</body>
+</html>

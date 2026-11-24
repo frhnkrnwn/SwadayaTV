@@ -14,15 +14,19 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Is there a newer SwadayaTV on GitHub? Reads the repository's latest release (drafts and
- * pre-releases are never "latest") and its tvhome-<version>.apk. Releases are signed with the
- * same key as the installed app, so UpdateActivity can install one over it, settings kept.
- * Debug builds don't look: they're signed with another key and couldn't take the update.
+ * Is there a newer SwadayaTV? Asks the project's own site first (release/version.json), which is
+ * written by the same build that publishes release/tvhome-latest.apk: one file and one APK from
+ * one commit, and no API limit. GitHub's latest release stays as the fallback for when the site
+ * can't be read (the API allows 60 requests an hour per IP, and a shared network uses them up).
+ * Releases are signed with the same key as the installed app, so UpdateActivity can install one
+ * over it, settings kept. Debug builds don't look: they're signed with another key.
  */
 final class UpdateCheck {
     static final String REPO = "frhnkrnwn/SwadayaTV";
     private static final String LATEST = "https://api.github.com/repos/" + REPO + "/releases/latest";
     private static final String RELEASES = "https://api.github.com/repos/" + REPO + "/releases?per_page=30";
+    /** The site's version file: the same APK its download button hands out. Regenerated each build. */
+    private static final String SITE = "https://frhnkrnwn.github.io/SwadayaTV/release/version.json";
 
     /** A release newer than the installed app. */
     static final class Release {
@@ -119,7 +123,41 @@ final class UpdateCheck {
         }
         String current = installedVersion(ctx);
         if (current == null) throw new IllegalStateException("no version");
-        JSONObject r = new JSONObject(get(LATEST));
+        try {
+            return fromSite(current);
+        } catch (Exception site) {
+            // The site is one small file and never rate-limits. GitHub is only the fallback: an
+            // unreachable or renamed site must not leave a TV unable to update.
+            try {
+                return fromGitHub(current);
+            } catch (Exception github) {
+                throw new IllegalStateException("situs: " + message(site) + "; GitHub: " + message(github));
+            }
+        }
+    }
+
+    /**
+     * The site's version.json: the exact APK the download button serves, with its size and SHA-256.
+     * Returns null when this build already has it, so being up to date never falls back to GitHub
+     * and disagrees with the site.
+     */
+    private static Release fromSite(String current) throws Exception {
+        JSONObject r = new JSONObject(get(SITE, null));
+        String version = r.optString("versionName", "").trim();
+        if (version.isEmpty()) throw new IllegalStateException("no version in version.json");
+        if (compare(version, current) <= 0) return null;
+        String url = r.optString("apkUrl", "").trim();
+        if (!url.startsWith("https://") || !url.endsWith(".apk")) {
+            throw new IllegalStateException("no APK in version.json");
+        }
+        String sha = r.optString("apkSha256", "").trim().toLowerCase(java.util.Locale.ROOT);
+        if (!sha.matches("[0-9a-f]{64}")) sha = null; // the installer still verifies the key
+        return new Release(version, url, r.optLong("apkSize", 0), sha);
+    }
+
+    /** GitHub's latest release, used only when the site can't be read. Null when up to date. */
+    private static Release fromGitHub(String current) throws Exception {
+        JSONObject r = new JSONObject(get(LATEST, "application/vnd.github+json"));
         String version = versionFromTag(r.optString("tag_name"));
         if (version.isEmpty()) throw new IllegalStateException("no release");
         if (compare(version, current) <= 0) return null;
@@ -133,6 +171,10 @@ final class UpdateCheck {
             return new Release(version, a.optString("browser_download_url"), a.optLong("size"), sha);
         }
         return null; // a newer release without its APK yet (CI still building): nothing to install
+    }
+
+    private static String message(Exception e) {
+        return e.getMessage() == null ? e.toString() : e.getMessage();
     }
 
     /** Releases are tagged v<version>-build<run>; the app compares and shows just the version. */
@@ -156,10 +198,30 @@ final class UpdateCheck {
         return null;
     }
 
-    /** The release tag for {@code version}, from GitHub (null when offline or not released). Blocks. */
-    static String releaseTag(String version) {
+    /**
+     * The release tag the site names for {@code version}, or null (a TV running an older build than
+     * the site describes). Saves a rate-limited API call when the traffic engine needs its files.
+     * Blocks.
+     */
+    static String siteTag(String version) {
         try {
-            return tagFor(new JSONArray(get(RELEASES)), version);
+            JSONObject r = new JSONObject(get(SITE, null));
+            String tag = r.optString("tag", "").trim();
+            return version.equals(r.optString("versionName", "")) && tag.startsWith("v") ? tag : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * The release tag for {@code version}: the site's answer first, GitHub's releases when the site
+     * can't name it (an older build, or offline). Null when neither knows. Blocks.
+     */
+    static String releaseTag(String version) {
+        String tag = siteTag(version);
+        if (tag != null) return tag;
+        try {
+            return tagFor(new JSONArray(get(RELEASES, "application/vnd.github+json")), version);
         } catch (Exception e) {
             return null;
         }
@@ -191,11 +253,12 @@ final class UpdateCheck {
         }
     }
 
-    private static String get(String url) throws Exception {
+    /** One GET as a string. {@code accept} is null for the site, GitHub's media type for the API. */
+    private static String get(String url, String accept) throws Exception {
         HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
         c.setConnectTimeout(20_000);
         c.setReadTimeout(20_000);
-        c.setRequestProperty("Accept", "application/vnd.github+json");
+        if (accept != null) c.setRequestProperty("Accept", accept);
         c.setRequestProperty("User-Agent", "tvhome");
         try {
             if (c.getResponseCode() != 200) throw new IllegalStateException("HTTP " + c.getResponseCode());
