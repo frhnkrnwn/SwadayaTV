@@ -41,7 +41,10 @@ check_page() {
   local path="$1" body="$TMP/$(echo "$1" | tr '/?' '__')" code size
   code="$(fetch "$path" "$body")" || { fail "$path -> HTTP $code"; return; }
   size="$(wc -c <"$body" | tr -d ' ')"
-  if [ "$size" -lt 500 ]; then
+  # A page that answers with a stub is a failure; small assets (robots.txt) are legitimately tiny.
+  local minimum=1
+  case "$path" in *.html) minimum=500 ;; esac
+  if [ "$size" -lt "$minimum" ]; then
     fail "$path -> HTTP 200 but only $size bytes"
   else
     ok "$path ($size bytes)"
@@ -138,7 +141,9 @@ PY
 
 echo "Checking $BASE_URL"
 
-PAGES="index.html id.html docs/index.html docs/id.html whats-new.html id-whats-new.html help.html id-help.html tv/index.html"
+# Pages first, then the files the pages load: a stylesheet or script left out of the artifact is
+# exactly the kind of breakage this check exists for.
+PAGES="index.html id.html docs/index.html docs/id.html whats-new.html id-whats-new.html help.html id-help.html tv/index.html site.css site.js sitemap.xml robots.txt"
 for attempt in $(seq 1 "$ATTEMPTS"); do
   FAILED=0
   echo "Attempt $attempt of $ATTEMPTS"

@@ -20,7 +20,7 @@ rm -rf "$OUT"
 mkdir -p "$OUT"
 
 cp "$ROOT"/*.html "$OUT"/
-for f in site.css og.jpg sitemap.xml robots.txt; do
+for f in site.css site.js og.jpg sitemap.xml robots.txt; do
   [ -f "$ROOT/$f" ] && cp "$ROOT/$f" "$OUT"/
 done
 cp -r "$ROOT/docs" "$ROOT/release" "$OUT"/
