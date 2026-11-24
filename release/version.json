@@ -1,13 +1,13 @@
 {
   "versionName": "1.2.0",
   "versionCode": 9,
-  "build": 37,
-  "tag": "v1.2.0-build37",
+  "build": 39,
+  "tag": "v1.2.0-build39",
   "releaseDate": "2026-11-24",
   "apkUrl": "https://frhnkrnwn.github.io/SwadayaTV/release/tvhome-latest.apk",
   "apkName": "tvhome-latest.apk",
-  "apkSize": 595613,
-  "apkSha256": "320f9ad7094bd4d74f4988c15034dccce08ca91d3c971edc25e16d4602dd028e",
+  "apkSize": 595941,
+  "apkSha256": "fc672b1c8b9fe45fe048a90e72587afcfbb07ed7444017eb0ebe9cf8d8c91838",
   "changelog": "Rilis fitur: Pemetaan Tombol (tekan sekali, dua kali, lama), unggah wallpaper dari HP lewat kode QR, Net traffic monitor tanpa ADB (mesin VPN ikut diunduh dari rilis), Live TV Indonesia (TVRI/Metro), data BMKG/Kemenag, speed test fast.com, pembaruan OTA dengan kunci rilis tetap",
   "notesUrl": "https://frhnkrnwn.github.io/SwadayaTV/whats-new.html"
 }
