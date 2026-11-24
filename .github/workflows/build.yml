@@ -98,3 +98,70 @@ jobs:
             launcher/tvhome-*.apk
             launcher/app/build/outputs/netengine/release/netengine-*.so
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      # The site's download button points at release/tvhome-latest.apk, a name without a version or
+      # a build number in it, so one link keeps working release after release. Keep the versioned
+      # APK in the Release above and refresh this plain copy (GitHub Pages serves it from main) to
+      # the same build. The bot push uses GITHUB_TOKEN, so it never starts another workflow.
+      - name: Refresh release/tvhome-latest.apk
+        if: github.event_name == 'push'
+        env:
+          VERSION: ${{ steps.version.outputs.name }}
+          BUILD: ${{ steps.buildnum.outputs.number }}
+        run: |
+          cp "launcher/tvhome-$VERSION.apk" release/tvhome-latest.apk
+          git add release/tvhome-latest.apk
+          if git diff --cached --quiet; then exit 0; fi
+          git -c user.name='github-actions[bot]' \
+              -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+              commit -q -m "chore(release): point release/tvhome-latest.apk at $VERSION build $BUILD"
+          git push -q origin HEAD:main
+
+  # That push uses GITHUB_TOKEN, and such a push never triggers another workflow — Pages included
+  # (see pages.yml) — so the site would keep serving the previous APK. Deploy it here, from a
+  # fresh checkout of main, so the download button and the Release always describe one build.
+  site:
+    needs: build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      # Same set as .github/workflows/pages.yml: the pages, their stylesheet, docs/ and release/.
+      - name: Collect the site
+        run: |
+          mkdir -p _site
+          cp ./*.html site.css _site/
+          cp -r docs release _site/
+
+      - uses: actions/configure-pages@v6
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+  # Separate from the upload for the same reason as in pages.yml: in one job, deploy-pages can look
+  # for the artifact before the run lists it (actions/deploy-pages#451).
+  deploy:
+    needs: site
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v5
