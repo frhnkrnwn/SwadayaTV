@@ -23,6 +23,32 @@
     return (document.documentElement.lang || 'en').toLowerCase();
   }
 
+  function number(value) {
+    return typeof value === 'number' && isFinite(value)
+      ? value.toLocaleString(lang() === 'id' ? 'id-ID' : 'en-GB')
+      : '';
+  }
+
+  // Download counts live in release/downloads.json, refreshed by a scheduled workflow. They arrive
+  // after the history list may already be drawn, so each entry carries its tag and the counts are
+  // filled in whenever they turn up.
+  var downloadsByTag = {};
+  function applyCounts() {
+    Object.keys(downloadsByTag).forEach(function (tag) {
+      document.querySelectorAll('[data-release-tag]').forEach(function (entry) {
+        if (entry.getAttribute('data-release-tag') !== tag) return;
+        var slot = entry.querySelector('[data-downloads-count]');
+        if (!slot) {
+          slot = document.createElement('span');
+          slot.className = 'downloads';
+          slot.setAttribute('data-downloads-count', '');
+          entry.appendChild(slot);
+        }
+        slot.textContent = number(downloadsByTag[tag]) + ' downloads';
+      });
+    });
+  }
+
   var build = document.querySelector('[data-build]');
   if (build && window.fetch) {
     fetch(build.getAttribute('data-build'), { cache: 'no-store' })
@@ -47,6 +73,7 @@
         entries.slice(0, 12).forEach(function (e) {
           var item = document.createElement('li');
           item.className = 'entry';
+          if (e.tag) item.setAttribute('data-release-tag', e.tag);
 
           var head = document.createElement('div');
           head.className = 'entry-head';
@@ -84,6 +111,25 @@
         });
         list.textContent = '';
         list.appendChild(fragment);
+        applyCounts();
+      })
+      .catch(function () { /* keep the static text */ });
+  }
+
+  var stats = document.querySelector('[data-downloads]');
+  if (stats && window.fetch) {
+    fetch(stats.getAttribute('data-downloads'), { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+      .then(function (d) {
+        var launcher = d.launcher || {};
+        var app = d.app || {};
+        fill(stats, 'downloads-total', number(launcher.total));
+        fill(stats, 'downloads-releases', number(launcher.releases));
+        fill(stats, 'downloads-app', number(app.total));
+        (d.releases || []).forEach(function (e) {
+          if (e && e.tag) downloadsByTag[e.tag] = e.downloads || 0;
+        });
+        applyCounts();
       })
       .catch(function () { /* keep the static text */ });
   }

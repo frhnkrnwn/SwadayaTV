@@ -40,13 +40,14 @@
       <h1>Every build,<br><em>in plain words.</em></h1>
       <p class="lede">The newest build is <strong>SwadayaTV <span data-version>the latest release</span></strong> (<span data-build>newest build</span>, <span data-date>&mdash;</span>). The download button always hands out that one file, and the launcher&rsquo;s own update check reads the same file: nothing is published here that the TV can&rsquo;t get.</p>
       <p class="build-line">APK <span data-size>&mdash;</span> &middot; SHA-256 <code data-sha>listed in release/version.json</code> &middot; <a class="text-link" href="release/version.json">version.json</a></p>
+      <p class="downloads-line" data-downloads="release/downloads.json"><strong data-downloads-total>&mdash;</strong> downloads over <span data-downloads-releases>&mdash;</span> builds &middot; Swadaya App <strong data-downloads-app>&mdash;</strong> &middot; counted from GitHub Releases, not from this page.</p>
       <div class="page-links"><a class="button primary" href="release/tvhome-latest.apk" download>Download the launcher <span aria-hidden="true">↓</span></a><a class="button secondary" href="index.html#install">How to install <span aria-hidden="true">↘</span></a></div>
     </section>
 
     <section class="wrap page-body">
       <h2>Builds</h2>
       <p class="muted-note">Newest first. The SHA-256 is the fingerprint of the exact APK behind the button, so you can check the file you received.</p>
-      <ul class="entry-list" data-releases="release/releases.json">
+      <ul class="entry-list" data-releases="release/releases.json" data-downloads="release/downloads.json">
         <li class="entry"><p>Loading the release history&hellip; if it stays empty, the list is also in <a class="text-link" href="release/releases.json">release/releases.json</a>.</p></li>
       </ul>
       <p class="muted-note" style="margin-top:26px">Every build is also a GitHub Release with the same APK, used by TVs still on an older version for the <code>netengine-*.so</code> files. <a class="text-link" href="https://github.com/frhnkrnwn/SwadayaTV/releases">Open Releases ↗</a></p>

@@ -40,13 +40,14 @@
       <h1>Tiap build,<br><em>dengan bahasa sederhana.</em></h1>
       <p class="lede">Build terbaru adalah <strong>SwadayaTV <span data-version>rilis terbaru</span></strong> (<span data-build>build terbaru</span>, <span data-date>&mdash;</span>). Tombol unduh selalu memberikan berkas yang sama, dan pemeriksa pembaruan di launcher membaca berkas yang sama: tidak ada yang diterbitkan di sini tanpa bisa didapat oleh TV.</p>
       <p class="build-line">APK <span data-size>&mdash;</span> &middot; SHA-256 <code data-sha>ada di release/version.json</code> &middot; <a class="text-link" href="release/version.json">version.json</a></p>
+      <p class="downloads-line" data-downloads="release/downloads.json"><strong data-downloads-total>&mdash;</strong> unduhan dari <span data-downloads-releases>&mdash;</span> build &middot; Swadaya App <strong data-downloads-app>&mdash;</strong> &middot; dihitung dari GitHub Releases, bukan dari halaman ini.</p>
       <div class="page-links"><a class="button primary" href="release/tvhome-latest.apk" download>Unduh launcher-nya <span aria-hidden="true">↓</span></a><a class="button secondary" href="id.html#install">Cara memasang <span aria-hidden="true">↘</span></a></div>
     </section>
 
     <section class="wrap page-body">
       <h2>Daftar build</h2>
       <p class="muted-note">Terbaru di atas. SHA-256 adalah sidik jari APK yang persis ada di balik tombol unduh, jadi Anda bisa memeriksa berkas yang diterima.</p>
-      <ul class="entry-list" data-releases="release/releases.json">
+      <ul class="entry-list" data-releases="release/releases.json" data-downloads="release/downloads.json">
         <li class="entry"><p>Memuat riwayat rilis&hellip; kalau daftar ini tetap kosong, isinya juga ada di <a class="text-link" href="release/releases.json">release/releases.json</a>.</p></li>
       </ul>
       <p class="muted-note" style="margin-top:26px">Setiap build juga menjadi GitHub Release dengan APK yang sama, dipakai TV yang masih versi lama untuk mengambil berkas <code>netengine-*.so</code>. <a class="text-link" href="https://github.com/frhnkrnwn/SwadayaTV/releases">Buka Releases ↗</a></p>

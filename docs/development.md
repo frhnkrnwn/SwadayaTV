@@ -27,9 +27,19 @@ SwadayaTV/
 ├── launcher/                    the launcher source (Java, AndroidX RecyclerView, minSdk 26, targetSdk 36), incl. the phone remote
 │   ├── app/src/main/            the launcher, the phone remote page (assets/remote.html) and its resources
 │   └── app/src/test/            unit tests for the pure logic (no TV or emulator needed)
+├── index.html, id.html, …       the download site (also whats-new, help, tv/ and release/): published by CI, see below
 ├── .github/workflows/ci.yml     GitHub Actions: lint, unit tests and the release build on every push
+├── .github/workflows/build.yml  build, publish the release, refresh release/ and deploy the site
+├── .github/workflows/pages.yml  deploy the site from main for a docs-only push (and check it)
+├── .github/workflows/release-app.yml  release Swadaya App, refresh release/swadaya-app.apk
+├── .github/workflows/download-stats.yml  refresh release/downloads.json once a day
 ├── scripts/
 │   ├── build-and-install.sh     check the computer and TV, build the launcher (R8 release, ~0.6 MB APK), install it, make it the home screen
+│   ├── collect-site.sh          copy exactly what the site serves into one folder (every deploy uses it)
+│   ├── check-site.sh            post-deploy smoke test: live pages, APKs and version files
+│   ├── write-version-json.sh    release/version.json + release/releases.json from a released APK
+│   ├── write-app-json.sh        release/app.json from the phone app's APK
+│   ├── write-downloads-json.sh  release/downloads.json from GitHub's release download counts
 │   ├── benchmark.sh             measure a launcher's memory, CPU, start-up and smoothness
 │   ├── restore.sh               undo everything (back to the TV's own launcher)
 │   ├── disable.sh               disable packages, or --recommended (and log them so restore.sh can undo)
@@ -73,14 +83,50 @@ Check a build's signature with `apksigner verify --print-certs launcher/app/buil
 
 ### Publishing a version
 
-1. Bump `versionCode` (by 1) and `versionName` in `launcher/app/build.gradle`, and commit.
-2. Push it to `main`. The Build workflow (`.github/workflows/build.yml`) runs the tests, builds the release APK and publishes the release `v<versionName>-build<number>` with `tvhome-<versionName>.apk` and the eight `netengine-*.so` files.
+1. Bump `versionCode` (by 1) and `versionName` in `launcher/app/build.gradle`, add the changelog line as `release/notes/<versionName>.txt`, and commit.
+2. Push it to `main`. The Build workflow (`.github/workflows/build.yml`) runs the tests, builds the release APK, publishes the release `v<versionName>-build<number>` with `tvhome-<versionName>.apk` and the eight `netengine-*.so` files, then refreshes `release/` and deploys the site, where a smoke job checks the live files.
 3. CI (`.github/workflows/ci.yml`) runs lint and the unit tests on the push and on pull requests.
 
 TVs running 1.1.2 or newer see the release in the bell within a day and can update from there; **Settings → About** checks on demand.
 
+`release/notes/<versionName>.txt` is the one-paragraph changelog quoted in `version.json`, `releases.json` and the What's new history; it is named by `versionName`, so 1.2.1 adds `release/notes/1.2.1.txt`. Without it the changelog is left empty rather than copied from the previous release.
+
 The release tag is `v<versionName>-build<number>`, and the APK asset is named `tvhome-<versionName>.apk` so the in-app updater finds it. The number is the count of releases already published plus one (26, 27, 28…), so it runs on without gaps whatever happens to the CI runs; a push that is still building holds the next one back (the workflow has a concurrency group). Every build signs with the committed release key (`launcher/tvhome-release.jks` and `launcher/keystore.properties`), so a downloaded release updates the previous one in place, settings kept. `SIGNING_*` secrets only override that key when it is rotated.
 
+
+## The site, version files and download statistics
+
+The site is the single place a TV reads its version from. Everything under `release/` is written by CI from the APK it just published, so the download button, the What's new history and the launcher's update check cannot describe different builds, and no build needs `api.github.com` to learn which version is newest (the API allows 60 requests an hour per IP, which a shared network uses up).
+
+| File | Written by | What it holds |
+| --- | --- | --- |
+| `release/tvhome-latest.apk` | Build → *Refresh the site's APK, version file and history* | The APK of the build that just became a release, under a name with no version in it. |
+| `release/tvhome-previous.apk` | The same step, **before** that copy | The APK that was `tvhome-latest.apk` until this build, so the previous version stays one tap away. It is not rotated when the new build is byte-identical, and the smoke test skips it in a repository that has no such file. |
+| `release/version.json` | `scripts/write-version-json.sh` | `versionName`, `versionCode`, `build` (the release number), `tag`, `releaseDate`, `apkUrl`, `apkName`, `apkSize`, `apkSha256`, `changelog`, `notesUrl`. |
+| `release/releases.json` | The same script | The last 40 builds, newest first, each with its APK's SHA-256 and size; one entry per tag, so a rerun cannot duplicate a build. |
+| `release/app.json` | `scripts/write-app-json.sh` in *Release Swadaya App* | The same details for `release/swadaya-app.apk`. |
+| `release/downloads.json` | `scripts/write-downloads-json.sh` in *Download stats* | Totals and per-release download counts. |
+
+`apkUrl` points at this site, not at GitHub, so the updater's first request is a static file. `UpdateCheck` and the phone app's `LauncherApk` read the site first and fall back to `api.github.com` for a TV that cannot reach it or that still runs a build from before this change.
+
+### Collecting and checking a deploy
+
+Four workflows publish the site — Build (after the bot commit that updates `release/`), Release Swadaya App (after it replaces `release/swadaya-app.apk`), Download stats (nightly) and Pages (a docs-only push) — and all of them run the same two scripts:
+
+- `scripts/collect-site.sh [out]` copies exactly what the pages load: every root `*.html`, `site.css`, `site.js`, `og.jpg`, `sitemap.xml`, `robots.txt`, `docs/`, `release/` and `tv/`. Nothing else goes into the artifact, and no workflow lists files by hand, so the four deploys cannot drift apart.
+- `scripts/check-site.sh` is the smoke test after a deploy. It fetches every page and asset with a cache-busting query, downloads the three APKs, and verifies that each JSON describes the APK actually served — SHA-256, size, `apkUrl`, and the `versionName` in the matching `build.gradle`. It retries for about two minutes because a deploy reaches GitHub's edges at different times; `BASE_URL`, `SMOKE_ATTEMPTS` and `SMOKE_DELAY` override the defaults for a local run.
+
+### Why the deploy order matters
+
+Two of those workflows can be in flight at once, and their shared `concurrency: pages` group only queues deploys — it does not promise the newer content lands last. An older deploy landing last would overwrite the newer site, and the newer run's smoke check would be right to fail. So every deploy job asks `git ls-remote` whether `main` is still the commit it collected; if `main` has moved on, it skips the deploy and the later run publishes instead.
+
+The smoke job checks out the exact commit its deploy published, not whatever `main` is by now. `check-site.sh` then treats a site that is *newer* than that checkout as a race it lost: it still requires the served JSON to describe the served APK, but does not demand the file be byte-identical to its own commit. A site *older* than the checkout still fails after the retries — that is the failure the check exists for.
+
+### Download statistics
+
+Pages keeps no access logs, so the site cannot count its own downloads. `scripts/write-downloads-json.sh` sums the `download_count` GitHub keeps for each release asset instead: `launcher` (every `tvhome-*.apk` across releases), `app` (`swadaya-app-*.apk`), and one entry per tag for the history list. Because the API is rate-limited per IP, the numbers are collected server-side by `download-stats.yml` (03:17 UTC daily, or *Run workflow*) using the runner's token, committed as `release/downloads.json` and published like any other site change. The pages say the counts come from GitHub Releases; copies downloaded from the site itself are not counted.
+
+To refresh them locally: `gh auth login && scripts/write-downloads-json.sh`, or point `RELEASES_JSON` at a saved `gh api --paginate "repos/{owner}/{repo}/releases?per_page=100"` dump.
 
 ## Tests and CI
 

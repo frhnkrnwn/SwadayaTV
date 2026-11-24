@@ -140,10 +140,16 @@ jobs:
       contents: read
       pages: write
       id-token: write
+    outputs:
+      sha: ${{ steps.revision.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
         with:
           ref: main
+
+      - name: Record the revision
+        id: revision
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Collect the site
         run: ./scripts/collect-site.sh _site
@@ -169,9 +175,32 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
+    outputs:
+      deployed: ${{ steps.publish.outputs.deployed }}
+      sha: ${{ steps.publish.outputs.sha }}
     steps:
+      - uses: actions/checkout@v4
+
+      # Pages and Download stats publish to the same place, and the shared concurrency group only
+      # queues them: it does not promise that the newer content lands last. So a run whose commit
+      # has already been overtaken steps aside instead of overwriting the newer site — otherwise
+      # the older deploy wins and the newer run's smoke check rightly (but confusingly) goes red.
+      - name: Is this still the newest main?
+        id: publish
+        run: |
+          sha="${{ needs.site.outputs.sha }}"
+          tip=$(git ls-remote origin refs/heads/main | cut -f1)
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          if [ "$sha" = "$tip" ]; then
+            echo "deployed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "deployed=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::main is at $tip, so that run publishes the site instead of $sha."
+          fi
+
       - name: Deploy to GitHub Pages
         id: deploy
+        if: steps.publish.outputs.deployed == 'true'
         uses: actions/deploy-pages@v5
 
   # A download site fails silently: the button still looks right while it serves a 404 or last
@@ -179,12 +208,14 @@ jobs:
   # the updater reads, so a bad deploy is a red run instead of a report from a user.
   smoke:
     needs: deploy
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && needs.deploy.outputs.deployed == 'true'
     runs-on: ubuntu-latest
     steps:
+      # The commit this run published, not whatever main is by now: a newer push must not turn
+      # this run's check into a comparison against a site it never deployed.
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ needs.deploy.outputs.sha }}
 
       - name: Check the live site
         run: ./scripts/check-site.sh

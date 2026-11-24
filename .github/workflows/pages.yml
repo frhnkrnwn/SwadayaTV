@@ -27,8 +27,14 @@ jobs:
   # exactly how the first deploy of this workflow failed.
   build:
     runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.revision.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Record the revision
+        id: revision
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       # Only what the pages actually load: the HTML, its stylesheet, the screenshots and guides in
       # docs/, and the APKs and version files in release/. App sources and build tooling stay out
@@ -45,21 +51,50 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
+    outputs:
+      deployed: ${{ steps.publish.outputs.deployed }}
+      sha: ${{ steps.publish.outputs.sha }}
     steps:
+      - uses: actions/checkout@v4
+
+      # Build and Download stats also publish to this site; the shared `pages` concurrency group
+      # queues the deploys but does not order them by content. A run whose commit main has moved
+      # past steps aside, so the newer content is the one that stays published.
+      - name: Is this still the newest main?
+        id: publish
+        run: |
+          sha="${{ needs.build.outputs.sha }}"
+          tip=$(git ls-remote origin refs/heads/main | cut -f1)
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          if [ "$sha" = "$tip" ]; then
+            echo "deployed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "deployed=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::main is at $tip, so that run publishes the site instead of $sha."
+          fi
+
       - name: Deploy to GitHub Pages
         id: deploy
+        if: steps.publish.outputs.deployed == 'true'
         uses: actions/deploy-pages@v5
 
   # A download site fails silently: the button still looks right while it serves a 404 or last
   # build's APK. Retries inside the script cover the minutes a deploy takes to reach every edge.
   smoke:
     needs: deploy
+    if: needs.deploy.outputs.deployed == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.deploy.outputs.sha }}
 
       - name: Check the live site
         run: ./scripts/check-site.sh

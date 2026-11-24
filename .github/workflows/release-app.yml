@@ -133,10 +133,16 @@ jobs:
       contents: read
       pages: write
       id-token: write
+    outputs:
+      sha: ${{ steps.revision.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
         with:
           ref: main
+
+      - name: Record the revision
+        id: revision
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Collect the site
         run: ./scripts/collect-site.sh _site
@@ -162,20 +168,42 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
+    outputs:
+      deployed: ${{ steps.publish.outputs.deployed }}
+      sha: ${{ steps.publish.outputs.sha }}
     steps:
+      - uses: actions/checkout@v4
+
+      # Only the newest main publishes: an older deploy landing last would overwrite the newer
+      # site, and this run's smoke check (rightly) treat that as a failure.
+      - name: Is this still the newest main?
+        id: publish
+        run: |
+          sha="${{ needs.site.outputs.sha }}"
+          tip=$(git ls-remote origin refs/heads/main | cut -f1)
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          if [ "$sha" = "$tip" ]; then
+            echo "deployed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "deployed=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::main is at $tip, so that run publishes the site instead of $sha."
+          fi
+
       - name: Deploy to GitHub Pages
         id: deploy
+        if: steps.publish.outputs.deployed == 'true'
         uses: actions/deploy-pages@v5
 
   # A download site fails silently: the button still looks right while it serves a 404 or last
   # build's APK. Retries inside the script cover the minutes a deploy takes to reach every edge.
   smoke:
     needs: deploy
+    if: needs.deploy.outputs.deployed == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ needs.deploy.outputs.sha }}
 
       - name: Check the live site
         run: ./scripts/check-site.sh

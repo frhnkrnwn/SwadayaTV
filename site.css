@@ -232,6 +232,10 @@ footer nav a { text-underline-offset: 3px; }
 .page-head h1 { font-size: clamp(42px, 5.4vw, 72px); }
 .page-body { padding: 44px 0 96px; }
 .build-line { margin: 16px 0 0; color: var(--muted); font-size: 12px; }
+.downloads-line { margin: 8px 0 0; color: var(--muted); font-size: 12px; }
+.downloads-line strong { color: var(--text); }
+.install-band .downloads-line, .install-band .downloads-line strong { color: #e8cdb9; }
+.entry .downloads { display: block; margin-top: 8px; color: var(--muted); font-size: 12px; }
 .build-line code, .entry .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
 .install-band .build-line, .install-band .build-line code { color: #e8cdb9; }
 .qr-panel { display: flex; align-items: center; gap: 22px; margin-top: 28px; padding: 18px; border: 1px solid var(--line); border-radius: 9px; background: #ffffff0d; }

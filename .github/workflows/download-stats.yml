@@ -1,0 +1,128 @@
+name: Download stats
+
+# Refreshes release/downloads.json from the download counts GitHub keeps for every release asset.
+# It runs on its own once a day (the counts only move slowly) and can be started by hand. The site
+# reads the committed file, so a visitor's browser never calls the GitHub API — that allows 60
+# requests an hour per IP and would leave the numbers missing for many people.
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: download-stats
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Refresh release/downloads.json
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./scripts/write-downloads-json.sh
+
+      - name: Commit the new counts
+        id: commit
+        run: |
+          git add release/downloads.json
+          if git diff --cached --quiet; then
+            echo "Downloads did not change."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          git -c user.name='github-actions[bot]' \
+              -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+              commit -q -m "chore(site): refresh download counts"
+          git push -q origin HEAD:main
+
+  # A push made with GITHUB_TOKEN never triggers another workflow, Pages included (see pages.yml),
+  # so this run publishes what it just committed. The guard in the deploy job keeps a run whose
+  # commit has already been overtaken from overwriting a newer site.
+  site:
+    needs: refresh
+    if: needs.refresh.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    outputs:
+      sha: ${{ steps.revision.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Record the revision
+        id: revision
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Collect the site
+        run: ./scripts/collect-site.sh _site
+
+      - uses: actions/configure-pages@v6
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+  deploy:
+    needs: site
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    outputs:
+      deployed: ${{ steps.publish.outputs.deployed }}
+      sha: ${{ steps.publish.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Two workflows can publish at the same time; the group above queues them, but queue order
+      # is not publish order. So only the newest main is allowed to deploy: a run whose commit has
+      # been overtaken steps aside, and the later run (which collects main) is the one that lands.
+      - name: Is this still the newest main?
+        id: publish
+        run: |
+          sha="${{ needs.site.outputs.sha }}"
+          tip=$(git ls-remote origin refs/heads/main | cut -f1)
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          if [ "$sha" = "$tip" ]; then
+            echo "deployed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "deployed=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::main is at $tip, so that run publishes the site instead of $sha."
+          fi
+
+      - name: Deploy to GitHub Pages
+        id: deploy
+        if: steps.publish.outputs.deployed == 'true'
+        uses: actions/deploy-pages@v5
+
+  smoke:
+    needs: deploy
+    if: needs.deploy.outputs.deployed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.deploy.outputs.sha }}
+
+      - name: Check the live site
+        run: ./scripts/check-site.sh

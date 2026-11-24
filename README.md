@@ -167,6 +167,21 @@ You need an Android TV or Google TV running Android 8.0 or newer. The APK instal
 - Let an AI coding agent do it: [Install with an AI agent](docs/install-with-ai-agent.md)
 - Debloat the TV too, from scratch: give an AI agent [PROMPT.md](PROMPT.md)
 
+## Where a build is published
+
+The [site](https://frhnkrnwn.github.io/SwadayaTV/) is the one place a TV gets its version from, and it never asks GitHub's API (60 requests an hour per IP, which shared networks use up):
+
+| File | What it is |
+| --- | --- |
+| `release/tvhome-latest.apk` | The newest build, behind every download button. CI writes it from the APK it just released. |
+| `release/tvhome-previous.apk` | The build before that one, kept beside it for a one-tap rollback. |
+| `release/version.json` | Version, build number, date, size, SHA-256 and changelog of that APK. The launcher's update check reads this before the GitHub release. |
+| `release/releases.json` | The recent history, newest first, with each build's SHA-256, shown on [What's new](https://frhnkrnwn.github.io/SwadayaTV/whats-new.html). |
+| `release/app.json` | The same details for Swadaya App. |
+| `release/downloads.json` | Download counts per APK, refreshed daily from GitHub Releases and shown on the pages. |
+
+GitHub Releases still carry the same APKs — and the `netengine-*.so` files older TVs fetch — so nothing here replaces them; the site is simply where the newest build and its details live. Release notes are one line per version in `release/notes/<version>.txt`. Maintainers: [development.md](docs/development.md#the-site-version-files-and-download-statistics) covers the scripts, the deploy order and the smoke test.
+
 ## Using it
 
 | On the remote | Does |
@@ -234,5 +249,5 @@ scripts/restore.sh --remove-launcher  # ...and uninstalls this launcher
 
 - [How every feature works](docs/features.md): prayer times and azan, weather and air quality (with data credits), bell, screen savers (and the Globe's data credits), Now Playing, running apps, Settings, Most used, System card, phone remote, dock, wallpapers (with photo credits)
 - [Debloating the original Mi TV](docs/xiaomi-debloat.md): what was disabled and kept, speed tweaks, ad-blocking DNS
-- [Development](docs/development.md): folder structure, rebuilding, benchmark method
+- [Development](docs/development.md): folder structure, rebuilding, benchmark method, [how the site publishes a version](docs/development.md#the-site-version-files-and-download-statistics)
 - [PROMPT.md](PROMPT.md): the prompt to repeat the whole setup on another TV with an AI agent
