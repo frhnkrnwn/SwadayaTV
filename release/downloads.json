@@ -1,0 +1,213 @@
+{
+  "generatedAt": "2026-11-25T13:02:07Z",
+  "source": "GitHub Releases asset download counts",
+  "repository": "frhnkrnwn/SwadayaTV",
+  "launcher": {
+    "total": 72,
+    "releases": 32
+  },
+  "app": {
+    "total": 1,
+    "releases": 1
+  },
+  "releases": [
+    {
+      "tag": "v1.2.0-build40",
+      "kind": "launcher",
+      "downloads": 4,
+      "publishedAt": "2026-11-24"
+    },
+    {
+      "tag": "v1.2.0-build39",
+      "kind": "launcher",
+      "downloads": 1,
+      "publishedAt": "2026-11-24"
+    },
+    {
+      "tag": "v1.2.0-build38",
+      "kind": "launcher",
+      "downloads": 1,
+      "publishedAt": "2026-11-24"
+    },
+    {
+      "tag": "v1.2.0-build37",
+      "kind": "launcher",
+      "downloads": 1,
+      "publishedAt": "2026-11-24"
+    },
+    {
+      "tag": "v1.2.0-build36",
+      "kind": "launcher",
+      "downloads": 3,
+      "publishedAt": "2026-11-23"
+    },
+    {
+      "tag": "swadaya-app-v1.0.0",
+      "kind": "app",
+      "downloads": 1,
+      "publishedAt": "2026-11-23"
+    },
+    {
+      "tag": "v1.2.0-build35",
+      "kind": "launcher",
+      "downloads": 4,
+      "publishedAt": "2026-11-21"
+    },
+    {
+      "tag": "v1.2.0-build34",
+      "kind": "launcher",
+      "downloads": 3,
+      "publishedAt": "2026-11-21"
+    },
+    {
+      "tag": "v1.1.6-build33",
+      "kind": "launcher",
+      "downloads": 2,
+      "publishedAt": "2026-11-21"
+    },
+    {
+      "tag": "v1.1.5-build32",
+      "kind": "launcher",
+      "downloads": 2,
+      "publishedAt": "2026-11-20"
+    },
+    {
+      "tag": "v1.1.4-build31",
+      "kind": "launcher",
+      "downloads": 2,
+      "publishedAt": "2026-11-20"
+    },
+    {
+      "tag": "v1.1.3-build30",
+      "kind": "launcher",
+      "downloads": 2,
+      "publishedAt": "2026-11-20"
+    },
+    {
+      "tag": "v1.1.3-build29",
+      "kind": "launcher",
+      "downloads": 3,
+      "publishedAt": "2026-11-20"
+    },
+    {
+      "tag": "v1.1.2-build28",
+      "kind": "launcher",
+      "downloads": 2,
+      "publishedAt": "2026-11-20"
+    },
+    {
+      "tag": "v1.1.1-build27",
+      "kind": "launcher",
+      "downloads": 2,
+      "publishedAt": "2026-11-20"
+    },
+    {
+      "tag": "v1.1.1-build26",
+      "kind": "launcher",
+      "downloads": 3,
+      "publishedAt": "2026-11-20"
+    },
+    {
+      "tag": "v1.1.0-build25",
+      "kind": "launcher",
+      "downloads": 2,
+      "publishedAt": "2026-11-20"
+    },
+    {
+      "tag": "v1.1.0-build24",
+      "kind": "launcher",
+      "downloads": 2,
+      "publishedAt": "2026-11-20"
+    },
+    {
+      "tag": "build-23",
+      "kind": "launcher",
+      "downloads": 3,
+      "publishedAt": "2026-11-20"
+    },
+    {
+      "tag": "build-22",
+      "kind": "launcher",
+      "downloads": 2,
+      "publishedAt": "2026-11-20"
+    },
+    {
+      "tag": "build-21",
+      "kind": "launcher",
+      "downloads": 2,
+      "publishedAt": "2026-11-20"
+    },
+    {
+      "tag": "build-20",
+      "kind": "launcher",
+      "downloads": 3,
+      "publishedAt": "2026-11-20"
+    },
+    {
+      "tag": "build-19",
+      "kind": "launcher",
+      "downloads": 2,
+      "publishedAt": "2026-11-20"
+    },
+    {
+      "tag": "build-9",
+      "kind": "launcher",
+      "downloads": 2,
+      "publishedAt": "2026-11-19"
+    },
+    {
+      "tag": "build-8",
+      "kind": "launcher",
+      "downloads": 3,
+      "publishedAt": "2026-11-19"
+    },
+    {
+      "tag": "build-18",
+      "kind": "launcher",
+      "downloads": 2,
+      "publishedAt": "2026-11-19"
+    },
+    {
+      "tag": "build-17",
+      "kind": "launcher",
+      "downloads": 2,
+      "publishedAt": "2026-11-19"
+    },
+    {
+      "tag": "build-16",
+      "kind": "launcher",
+      "downloads": 2,
+      "publishedAt": "2026-11-19"
+    },
+    {
+      "tag": "build-14",
+      "kind": "launcher",
+      "downloads": 2,
+      "publishedAt": "2026-11-19"
+    },
+    {
+      "tag": "build-13",
+      "kind": "launcher",
+      "downloads": 2,
+      "publishedAt": "2026-11-19"
+    },
+    {
+      "tag": "build-12",
+      "kind": "launcher",
+      "downloads": 2,
+      "publishedAt": "2026-11-19"
+    },
+    {
+      "tag": "build-11",
+      "kind": "launcher",
+      "downloads": 2,
+      "publishedAt": "2026-11-19"
+    },
+    {
+      "tag": "build-10",
+      "kind": "launcher",
+      "downloads": 2,
+      "publishedAt": "2026-11-19"
+    }
+  ]
+}
